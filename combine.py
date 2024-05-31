@@ -109,13 +109,13 @@ args = parser.parse_args()
 # // Main
 # get content of all files
 result = recursiveRead(
-    args.directory,
+    args.directory.replace("/", "\\"),
     args.allow_file_extension,
     [*args.ignore_path, *[args.destination, os.path.relpath(__file__)]]
 )
 
 # print message
-print("Combined the following files:\n- " + "\n- ".join([path.replace("\\", "/") for path in result.keys()]))
+print("Combined the following files:\n- " + "\n- ".join([*result.keys()]))
 
 # format result
 for path, content in result.items():
