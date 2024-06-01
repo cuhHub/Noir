@@ -30,3 +30,9 @@
 -------------------------------
 -- // Main
 -------------------------------
+
+--[[
+    An internal module of Noir that is used to initialize and start services.<br>
+    Do not use this in your code.
+]]
+Noir.Bootstrapper = {}
