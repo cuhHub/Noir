@@ -16,7 +16,7 @@ Noir contains libraries that provide helpful functions to use throughout your co
 Noir also contains default services which can be found in `Noir.Services`. (TODO)
 
 ## ❔ Example
-Let's say your addon needs to spawn objects, then despawn them after some time. You can create something called a `Service` that handles this.
+Let's say your addon needs to spawn objects then despawn them after some time, you can create something called a `Service` that handles this.
 
 ```lua
 JanitorService = Noir.Services:CreateService("JanitorService")
