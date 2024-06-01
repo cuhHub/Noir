@@ -62,7 +62,6 @@ function Noir.Bootstrapper:InitializeServices()
         end
     end
 
-    -- Sort services by priority
     table.sort(servicesToInit, function(serviceA, serviceB)
         return serviceA.initPriority < serviceB.initPriority
     end)
@@ -98,7 +97,6 @@ function Noir.Bootstrapper:StartServices()
         end
     end
 
-    -- Sort services by priority
     table.sort(servicesToStart, function(serviceA, serviceB)
         return serviceA.startPriority < serviceB.startPriority
     end)
