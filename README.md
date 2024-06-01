@@ -90,7 +90,7 @@ If you would like intellisense, you will need to add some extra bits:
 ---@field startedAt integer
 ```
 
-As well as add `---@type JanitorService` there and then.
+As well as add `---@type JanitorService` there and then. Be sure to disable the `assign-type-mismatch` diagnostic too.
 
 ## 🔨 Installation
 Sorry, installation is complicated, but here's how:
