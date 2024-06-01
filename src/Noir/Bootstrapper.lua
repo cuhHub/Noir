@@ -36,3 +36,75 @@
     Do not use this in your code.
 ]]
 Noir.Bootstrapper = {}
+
+--[[
+    Initialize all services.<br>
+    This will order services by their `initPriority` and then initialize them.<br>
+    Do not use this in your code. This is used internally.
+]]
+function Noir.Bootstrapper:InitializeServices()
+    -- Calculate order of service initialization
+    local servicesToInit = Noir.Libraries.Table:Values(Noir.Services.CreatedServices) ---@type table<integer, NoirService>
+    local lowestInitPriority = 0
+
+    for _, service in pairs(servicesToInit) do
+        local priority = service.initPriority ~= nil and service.initPriority or 0
+
+        if priority >= lowestInitPriority then
+            lowestInitPriority = priority
+        end
+    end
+
+    for _, service in pairs(servicesToInit) do
+        if not service.initPriority then
+            service.initPriority = lowestInitPriority + 1
+            lowestInitPriority = lowestInitPriority + 1
+        end
+    end
+
+    -- Sort services by priority
+    table.sort(servicesToInit, function(serviceA, serviceB)
+        return serviceA.initPriority < serviceB.initPriority
+    end)
+
+    -- Initialize services
+    for _, service in pairs(servicesToInit) do
+        service:Initialize()
+    end
+end
+
+--[[
+    Start all services.<br>
+    This will order services by their `startPriority` and then start them.<br>
+    Do not use this in your code. This is used internally.
+]]
+function Noir.Bootstrapper:StartServices()
+    -- Calculate order of service start
+    local servicesToStart = Noir.Libraries.Table:Values(Noir.Services.CreatedServices) ---@type table<integer, NoirService>
+    local lowestStartPriority = 0
+
+    for _, service in pairs(servicesToStart) do
+        local priority = service.startPriority ~= nil and service.startPriority or 0
+
+        if priority >= lowestStartPriority then
+            lowestStartPriority = priority
+        end
+    end
+
+    for _, service in pairs(servicesToStart) do
+        if not service.startPriority then
+            service.startPriority = lowestStartPriority + 1
+            lowestStartPriority = lowestStartPriority + 1
+        end
+    end
+
+    -- Sort services by priority
+    table.sort(servicesToStart, function(serviceA, serviceB)
+        return serviceA.startPriority < serviceB.startPriority
+    end)
+
+    -- Start services
+    for _, service in pairs(servicesToStart) do
+        service:Start()
+    end
+end
