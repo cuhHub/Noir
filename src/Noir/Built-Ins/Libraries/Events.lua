@@ -171,13 +171,13 @@ end
 ---@field hasFiredOnce boolean Whether or not this event has fired atleast once
 ---
 ---@field Fire fun(self: NoirEvent, ...) A method that fires the event
----@field Connect fun(self: NoirEvent, callback: fun(...)): NoirConnection A method that connects a callback to the event
----@field Once fun(self: NoirEvent, callback: fun(...)): NoirConnection A method that connects a callback to the event that will automatically be disconnected upon the event being fired
+---@field Connect fun(self: NoirEvent, callback: function): NoirConnection A method that connects a callback to the event
+---@field Once fun(self: NoirEvent, callback: function): NoirConnection A method that connects a callback to the event that will automatically be disconnected upon the event being fired
 ---@field Disconnect fun(self: NoirEvent, connection: NoirConnection) A method that disconnects a callback from the event
 
 ---@class NoirConnection: NoirClass
 ---@field ID integer The ID of this connection
----@field callback fun(...) The callback that is assigned to this connection
+---@field callback function The callback that is assigned to this connection
 ---@field parentEvent NoirEvent The event that this connection is connected to
 ---@field connected boolean Whether or not this connection is connected
 ---

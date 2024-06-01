@@ -59,7 +59,7 @@ Noir.Callbacks.Events = {} ---@type table<string, NoirEvent>
     end)
 ]]
 ---@param name string
----@param callback fun(...)
+---@param callback function
 ---@return NoirConnection
 function Noir.Callbacks:Connect(name, callback)
     -- Get or create event
@@ -77,7 +77,7 @@ end
     end)
 ]]
 ---@param name string
----@param callback fun(...)
+---@param callback function
 ---@return NoirConnection
 function Noir.Callbacks:Once(name, callback)
     -- Get or create event
