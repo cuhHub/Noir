@@ -81,7 +81,7 @@ If you would like intellisense, you will need to add some extra bits:
 ```lua
 ---@class JanitorService: NoirService
 ---@field pendingCleanups table<integer, JanitorServiceTimer>
----@field onTick NoirEvent
+---@field onTick NoirConnection
 ---
 ---@field Clean fun(self: JanitorService, object_id: integer, duration: number)
 
