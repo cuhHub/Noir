@@ -1,2 +1,2 @@
-py combine.py --directory "tests" --destination "tests/__build/script.lua" --allow_file_extension ".lua" --ignore_path "tests/__build"
-py sync.py --syncFolder "tests/__build" --destination "%appdata%/Stormworks/data/missions/NoirFrameworkTesting"
+py combine.py --directory "test/addon" --destination "test/script.lua" --allow_file_extension ".lua"
+py sync.py --syncFolder "test/addon" --destination "%appdata%/Stormworks/data/missions/NoirFrameworkTesting"

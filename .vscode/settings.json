@@ -1,12 +1,6 @@
 {
     "Lua.workspace.ignoreDir": [
         ".vscode",
-        "src/script.lua"
-    ],
-
-    "Lua.diagnostics.disable": [
-        "assign-type-mismatch",
-        "param-type-mismatch",
-        "lowercase-global"
+        "test/addon/Noir"
     ]
 }
