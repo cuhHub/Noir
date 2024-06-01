@@ -60,12 +60,13 @@ Noir.Callbacks.Events = {} ---@type table<string, NoirEvent>
 ]]
 ---@param name string
 ---@param callback fun(...)
+---@return NoirConnection
 function Noir.Callbacks:Connect(name, callback)
     -- Get or create event
     local event = self:InstantiateCallback(name)
 
     -- Connect callback to event
-    event:Connect(callback)
+    return event:Connect(callback)
 end
 
 --[[
@@ -77,12 +78,13 @@ end
 ]]
 ---@param name string
 ---@param callback fun(...)
+---@return NoirConnection
 function Noir.Callbacks:Once(name, callback)
     -- Get or create event
     local event = self:InstantiateCallback(name)
 
     -- Connect callback to event
-    event:Once(callback)
+    return event:Once(callback)
 end
 
 --[[
