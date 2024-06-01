@@ -136,7 +136,7 @@ end
 ---@param finish number
 ---@return table
 function Noir.Libraries.Table:Slice(tbl, start, finish)
-    return table.pack(table.unpack(tbl, start, finish))
+    return {table.unpack(tbl, start, finish)}
 end
 
 --[[
