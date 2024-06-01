@@ -32,7 +32,7 @@ However, if we started Noir with `Noir:Start()`, we would encounter an error wit
 
 ```lua
 function JanitorService:ServiceInit()
-    self.pendingCleanups = {} ---@type table<integer, JanitorServiceTimer> <-- Type annotation. Used for intellisense from the Lua LSP Vscode Extension.
+    self.pendingCleanups = {}
 end
 ```
 
