@@ -32,6 +32,11 @@
 -------------------------------
 
 --[[
+    The version of Noir.
+    Version history can be found here: https://github.com/cuhHub/NoirFramework/blob/master/CHANGELOG.md
+]]
+
+--[[
     This event is called when the framework is started.<br>
     Use this event to safely run your code.
 
@@ -42,8 +47,18 @@
 Noir.Started = Noir.Libraries.Events:Create()
 
 --[[
+    This represents whether or not the framework has started.
+]]
+Noir.HasStarted = false
+
+--[[
+    This represents whether or not the framework is starting.
+]]
+Noir.IsStarting = false
+
+--[[
     Starts the framework.<br>
-    This will initalize all services, then upon completion, all services will be started.
+    This will initalize all services, then upon completion, all services will be started.<br>
     Use the `Noir.Started` event to safely run your code.
 
     Noir.Started:Once(function()
@@ -53,10 +68,43 @@ Noir.Started = Noir.Libraries.Events:Create()
     Noir:Start()
 ]]
 function Noir:Start()
-    if self.started then
+    -- Checks
+    if self.IsStarting then
         -- TODO: error
         return
     end
 
-    -- TODO: bootstrapper
+    if self.HasStarted then
+        -- TODO: error
+        return
+    end
+
+    -- Function to setup everything
+    local function setup()
+        -- Set started
+        self.IsStarting = false
+        self.HasStarted = true
+
+        -- Initialize services, then start them
+        self.Bootstrapper:InitializeServices()
+        self.Bootstrapper:StartServices()
+
+        -- Fire event
+        self.Started:Fire()
+    end
+
+    -- Wait for onCreate
+    local onCreate = self.Callbacks:Get("onCreate")
+
+    if not onCreate then -- TODO: add info log
+        self.Callbacks:Once("onCreate", setup) -- setup things when onCreate fires
+        return
+    end
+
+    if onCreate.hasFiredOnce then -- TODO: add info log
+        setup() -- onCreate has fired, so setup now
+        return
+    end
+    -- TODO: add info log
+    self.Callbacks:Once("onCreate", setup) -- setup things when onCreate fires
 end
