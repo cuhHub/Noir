@@ -1,15 +1,94 @@
-![In-Game Screenshot](imgs/2.png)
+<div align="center">
+    <img src = "imgs/banner.png">
+</div>
 
----
-
-# cuhHub - Link Addon
+<div align="center">
+    <img src="https://img.shields.io/badge/Stormworks-Build%20and%20Rescue-blue?style=for-the-badge">
+    <img src="https://img.shields.io/badge/lua-%232C2D72.svg?style=for-the-badge&logo=lua&logoColor=white">
+    <img src="https://img.shields.io/badge/Addon%20Framework-9e6244?style=for-the-badge">
+</div>
 
 ## 📚 Overview
-This is an addon for cuhHub that effectively links the server to the backend via HTTP requests. This addon also handles moderation, sending server data to the backend, and such.
+Noir is a framework for Stormworks: Build and Rescue designed to (metaphorically!) hold your hand in some areas with addon development, while also giving you a neat way of organizing your addon.
 
-## ✨ Credit
-- [**Cuh4**](https://discord.com/users/1141077132915777616) ([GitHub](https://github.com/Cuh4)) - Owner, Main Developer
+More features will be added as time passes. View [`CHANGELOG.md`](https://github.com/cuhHub/Noir/blob/master/CHANGELOG.md) on the GitHub repository to track progress.
+
+## ❔ Example
+Let's say your addon needs to spawn objects, then despawn them after some time. You can create something called a `Service` that handles this.
+
+```lua
+JanitorService = Noir.Services:CreateService("JanitorService")
+JanitorService.initPriority = 1 -- dictates the order of which services are initialized first
+JanitorService.startPriority = 1 -- same here, but with starting services
+```
+
+Boom, we created our first service! 
 
 ---
 
-![In-Game Screenshot](imgs/1.png)
+However, if we started Noir with `Noir:Start()`, we would encounter an error with the service relating to missing a `:ServiceInit()` method. We can fix that like so:
+
+```lua
+function JanitorService:ServiceInit()
+    self.pendingCleanups = {} ---@type table<integer, JanitorServiceTimer> <-- Type annotation. Used for intellisense from the Lua LSP Vscode Extension.
+end
+```
+
+The `:ServiceInit()` method is used to setup things relating to the service.
+
+---
+
+We can then use the optional `:ServiceStart()` method to setup the actual functionality of our service.
+
+```lua
+function JanitorService:ServiceStart()
+    self.onTick = Noir.Callbacks:Connect("onTick", function()
+        for objectID, timer in pairs(self.pendingCleanups) do
+            if (server.getTimeMillisec() / 1000) - timer.startedAt >= timer.duration then
+                server.despawnObject(objectID, true)
+                self.pendingCleanups[objectID] = nil
+            end
+        end
+    end)
+end
+```
+
+This essentially despawns objects in the `pendingCleanups` tables if too much time passes.
+
+---
+
+Now, let's add in a custom method to add objects to these tables.
+
+```lua
+---@param object_id integer <-- This is a parameter annotation. This is used for intellisense from the Lua LSP VSCode extension.
+---@param duration number
+function JanitorService:Clean(object_id, duration)
+    self.pendingCleanups[object_id] = {
+        duration = duration,
+        startedAt = server.getTimeMillisec() / 1000
+    }
+end
+```
+
+Now, we have a fully working service! 🥳 Do note that `Noir.Services:GetService()` will error if the service you are trying to retrieve hasn't initialized yet.
+
+---
+
+If you would like intellisense, you will need to add some extra bits:
+
+```lua
+---@class JanitorService: NoirService
+---@field pendingCleanups table<integer, JanitorServiceTimer>
+---@field onTick NoirEvent
+---
+---@field Clean fun(self: JanitorService, object_id: integer, duration: number)
+
+---@class JanitorServiceTimer
+---@field duration integer
+---@field startedAt integer
+```
+
+As well as add `---@type JanitorService` there and then.
+
+## ✨ Credit
+- [Cuh4](https://github.com/Cuh4)
