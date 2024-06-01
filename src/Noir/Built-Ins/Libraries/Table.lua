@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Table
+-- [Noir] Libraries - Table
 --------------------------------------------------------
 
 --[[
@@ -259,6 +259,8 @@ function Noir.Libraries.Table:Merge(tbl, other)
     for _, value in pairs(other) do
         table.insert(new, value)
     end
+
+    return new
 end
 
 --[[
@@ -279,4 +281,6 @@ function Noir.Libraries.Table:ForceMerge(tbl, other)
     for index, value in pairs(other) do
         new[index] = value
     end
+
+    return new
 end
