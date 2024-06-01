@@ -49,7 +49,7 @@ Noir.Callbacks = {}
     A table of events assigned to game callbacks.<br>
     Do not directly modify this table.
 ]]
-Noir.Callbacks.Events = {} ---@type table<string, NoirLib_Event>
+Noir.Callbacks.Events = {} ---@type table<string, NoirEvent>
 
 --[[
     Connect to a game callback.
@@ -86,11 +86,27 @@ function Noir.Callbacks:Once(name, callback)
 end
 
 --[[
+    Get a game callback event.<br>
+    It's best to use `Noir.Callbacks:Connect()` or `Noir.Callbacks:Once()` instead of getting a callback event directly and connecting to it.
+
+    local event = Noir.Callbacks:Get("onPlayerJoin")
+
+    event:Connect(function()
+        server.announce("Server", "A player joined!")
+    end)
+]]
+---@param name string
+---@return NoirEvent
+function Noir.Callbacks:Get(name)
+    return self.Events[name]
+end
+
+--[[
     Creates an event and an _ENV function for a game callback.<br>
     Used internally, do not use this in your addon.
 ]]
 ---@param name string
----@return NoirLib_Event
+---@return NoirEvent
 function Noir.Callbacks:InstantiateCallback(name)
     -- for later
     local event = Noir.Callbacks.Events[name]
