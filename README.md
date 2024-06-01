@@ -94,10 +94,10 @@ As well as add `---@type JanitorService` there and then.
 
 ## 🔨 Installation
 Sorry, installation is complicated, but here's how:
-- 1) Run `git clone https://github.com/cuhHub/Noir`
-- 2) Move `src/Noir` into your addon directory.
-- 3) Extract all files in `tools` and place them into your addon directory.
-- 4) Create a file called `__order.json` and place the following into it:
+- Run `git clone https://github.com/cuhHub/Noir`
+- Move `src/Noir` into your addon directory.
+- Extract all files in `tools` and place them into your addon directory.
+- Create a file called `__order.json` and place the following into it:
 ```json
 {
     "order" : [
@@ -106,7 +106,7 @@ Sorry, installation is complicated, but here's how:
     ]
 }
 ```
-- 5) Run `build.bat` every time you change your addon. This will combine the contents of `Noir` and your addon's `script.lua` file into one file called `build.lua`.
+- Run `build.bat` every time you change your addon. This will combine the contents of `Noir` and your addon's `script.lua` file into one file called `build.lua`. You can copy and paste the contents of `build.lua` into your `script.lua` file, or even create a script that automates that.
 
 If you are somewhat patient, you can manually add `require()` into each Noir .lua file and use the [Stormworks VSCode extension's](https://marketplace.visualstudio.com/items?itemName=NameousChangey.lifeboatapi) build feature.
 
