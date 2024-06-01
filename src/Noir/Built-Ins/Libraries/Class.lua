@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Class
+-- [Noir] Libraries - Class
 --------------------------------------------------------
 
 --[[
@@ -152,4 +152,3 @@ end
 ---@field __descend fun(from: NoirClass, object: NoirClass, exceptions: table<any, boolean>) A helper function that copies important values from the class to an object
 ---@field IsSameType fun(self: NoirClass, other: NoirClass): boolean A method that returns whether an object is identical to this one
 ---@field InitializeParent fun(self: NoirClass, ...: any) A method that initializes the parent class for this object
----@field IsSameType fun(self: NoirClass, object: NoirClass): boolean A method that returns whether an object is identical to this one
