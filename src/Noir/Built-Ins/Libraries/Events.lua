@@ -169,7 +169,7 @@ end
 -- // Intellisense
 -------------------------------
 
----@class NoirEvent: NoirLib_Class
+---@class NoirEvent: NoirClass
 ---@field currentID integer The ID that will be passed to new connections. Increments by 1 every connection
 ---@field connections table<integer, NoirConnection> The connections that are connected to this event
 ---@field hasFiredOnce boolean Whether or not this event has fired atleast once
@@ -179,7 +179,7 @@ end
 ---@field Once fun(self: NoirEvent, callback: fun(...)): NoirConnection A method that connects a callback to the event that will automatically be disconnected upon the event being fired
 ---@field Disconnect fun(self: NoirEvent, connection: NoirConnection) A method that disconnects a callback from the event
 
----@class NoirConnection: NoirLib_Class
+---@class NoirConnection: NoirClass
 ---@field ID integer The ID of this connection
 ---@field callback fun(...) The callback that is assigned to this connection
 ---@field parentEvent NoirEvent The event that this connection is connected to
