@@ -7,7 +7,7 @@
 
     CREDIT:
         Author: @Cuh4 (GitHub)
-        GitHub Repository: https://github.com/cuhHub/NoirFramework
+        GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
         Copyright (C) 2024 Cuh4

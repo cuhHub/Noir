@@ -7,7 +7,7 @@
 
     CREDIT:
         Author: @Cuh4 (GitHub)
-        GitHub Repository: https://github.com/cuhHub/NoirFramework
+        GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
         Copyright (C) 2024 Cuh4
@@ -32,7 +32,7 @@
 -------------------------------
 
 --[[
-    Noir Framework @ https://github.com/cuhHub/NoirFramework<br>
+    Noir Framework @ https://github.com/cuhHub/Noir<br>
     A framework for making Stormworks addons with ease.
 ]]
 Noir = {}
