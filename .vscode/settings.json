@@ -1,6 +1,5 @@
 {
     "Lua.workspace.ignoreDir": [
-        ".vscode",
-        "test/addon/Noir"
+        ".vscode"
     ]
 }
