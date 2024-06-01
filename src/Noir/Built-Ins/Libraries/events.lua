@@ -69,15 +69,18 @@ function Events.EventClass:Connect(callback)
 
     -- Create connection
     local connection = Events.ConnectionClass:New(callback, self) ---@type NoirLib_Connection
-    connection:Connect(self)
-
     self.connections[self.currentID] = connection
+
+    connection.parentEvent = self
+    connection.ID = self.currentID
+    connection.connected = true
 
     -- Return the connection
     return connection
 end
 
 function Events.EventClass:Once(callback)
+    -- Create connection
     local connection
 
     connection = self:Connect(function(...)
@@ -85,14 +88,16 @@ function Events.EventClass:Once(callback)
         connection:Disconnect()
     end)
 
+    -- Return the connection
     return connection
 end
 
 function Events.EventClass:Disconnect(connection)
+    self.connections[connection.ID] = nil
+
     connection.connected = false
     connection.parentEvent = nil
-
-    self.connections[connection.callbackID] = nil
+    connection.ID = nil
 end
 
 -- Connection Class
@@ -101,14 +106,12 @@ Events.ConnectionClass = Noir.Libraries.Class:Create("Connection") ---@type Noir
 function Events.ConnectionClass:Init(callback)
     self.callback = callback
     self.parentEvent = nil
-    self.callbackID = nil
+    self.ID = nil
     self.connected = false
 end
 
 function Events.ConnectionClass:Connect(event)
-    self.parentEvent = event
-    self.callbackID = event.currentID
-    self.connected = false
+    event:Connect(self)
 end
 
 function Events.ConnectionClass:Fire(...)
@@ -121,9 +124,12 @@ function Events.ConnectionClass:Fire(...)
 end
 
 function Events.ConnectionClass:Disconnect()
-    self.connected = false
-    self.parentEvent = nil
-    self.callbackID = nil
+    if not self.connected then
+        -- TODO: log
+        return
+    end
+
+    self.parentEvent:Disconnect(self)
 end
 
 --[[
@@ -165,7 +171,7 @@ Noir.Libraries.Events = Events
 ---@field Disconnect fun(self: NoirLib_Event, connection: NoirLib_Connection) A method that disconnects a callback from the event
 
 ---@class NoirLib_Connection: NoirLib_Class
----@field callbackID integer
+---@field ID integer
 ---@field callback fun(...)
 ---@field parentEvent NoirLib_Event
 ---@field connected boolean
