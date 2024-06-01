@@ -91,6 +91,9 @@ function Noir:Start()
 
         -- Fire event
         self.Started:Fire()
+
+        -- Send log
+        self.Libraries.Logging:Success("Start", "Noir has started. Bootstrapper has initialized all services.")
     end
 
     -- Set isStarting
