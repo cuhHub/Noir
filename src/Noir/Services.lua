@@ -77,7 +77,7 @@ function Noir.Services.ServiceClass:Initialize()
 
     -- call ServiceInit
     if not self.ServiceInit then
-        -- TODO: warning
+        -- TODO: error
         return
     end
 
@@ -154,7 +154,7 @@ end
 function Noir.Services:GetService(name)
     local service = self.CreatedServices[name]
 
-    if not service.started then
+    if not service.initialized then
         -- TODO: error
         return
     end
@@ -166,7 +166,7 @@ end
 -- // Intellisense
 -------------------------------
 
----@class NoirService: NoirLib_Class
+---@class NoirService: NoirClass
 ---@field name string
 ---@field initialized boolean
 ---@field started boolean
