@@ -11,8 +11,6 @@
 ## 📚 Overview
 Noir is a framework for Stormworks: Build and Rescue designed to (metaphorically!) hold your hand in some areas with addon development, while also giving you a neat way of organizing your addon.
 
-More features will be added as time passes. View [`CHANGELOG.md`](https://github.com/cuhHub/Noir/blob/master/CHANGELOG.md) on the GitHub repository to track progress.
-
 ## ❔ Example
 Let's say your addon needs to spawn objects, then despawn them after some time. You can create something called a `Service` that handles this.
 

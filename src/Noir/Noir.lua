@@ -33,9 +33,8 @@
 
 --[[
     The version of Noir.
-    Version history can be found here: https://github.com/cuhHub/NoirFramework/blob/master/CHANGELOG.md
 ]]
-Noir.Version = "0.0.0" -- TODO
+Noir.Version = "0.0.0"
 
 --[[
     This event is called when the framework is started.<br>
