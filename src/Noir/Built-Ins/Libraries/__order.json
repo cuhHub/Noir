@@ -1,0 +1,8 @@
+{
+    "order" : [
+        "Class.lua",
+        "Logging.lua",
+        "Events.lua",
+        "Table.lua"
+    ]
+}
