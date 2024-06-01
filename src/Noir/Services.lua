@@ -135,7 +135,7 @@ end
     end
 ]]
 ---@param name string
----@return NoirService
+---@return NoirService|nil
 function Noir.Services:CreateService(name)
     -- Check if service already exists
     if self.CreatedServices[name] then
@@ -161,7 +161,7 @@ end
     print(service.name) -- "MyService"
 ]]
 ---@param name string
----@return NoirService
+---@return NoirService|nil
 function Noir.Services:GetService(name)
     -- Get service
     local service = self.CreatedServices[name]
