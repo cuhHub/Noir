@@ -46,29 +46,36 @@
 
     MyEvent:Fire()
 ]]
-local Events = Noir.Libraries:Create("Events")
+Noir.Libraries.Events = Noir.Libraries:Create("NoirEvents")
 
--- Event Class
-Events.EventClass = Noir.Libraries.Class:Create("Event") ---@type NoirLib_Event
+--[[
+    A class for events.<br>
+    Do not use this, but instead use `Noir.Libraries.Events:Create()`.
+]]
+Noir.Libraries.Events.EventClass = Noir.Libraries.Class:Create("NoirEvent") ---@type NoirEvent
 
-function Events.EventClass:Init()
+function Noir.Libraries.Events.EventClass:Init()
     self.currentID = 0
     self.connections = {}
+    self.hasFiredOnce = false
 end
 
-function Events.EventClass:Fire(...)
+function Noir.Libraries.Events.EventClass:Fire(...)
     -- Iterate through all connections and fire them
     for _, connection in pairs(self.connections) do
         connection:Fire(...)
     end
+
+    -- Set hasFiredOnce
+    self.hasFiredOnce = true
 end
 
-function Events.EventClass:Connect(callback)
+function Noir.Libraries.Events.EventClass:Connect(callback)
     -- Increment ID
     self.currentID = self.currentID + 1
 
     -- Create connection
-    local connection = Events.ConnectionClass:New(callback, self) ---@type NoirLib_Connection
+    local connection = Noir.Libraries.Events.ConnectionClass:New(callback, self) ---@type NoirConnection
     self.connections[self.currentID] = connection
 
     connection.parentEvent = self
@@ -79,7 +86,7 @@ function Events.EventClass:Connect(callback)
     return connection
 end
 
-function Events.EventClass:Once(callback)
+function Noir.Libraries.Events.EventClass:Once(callback)
     -- Create connection
     local connection
 
@@ -92,7 +99,7 @@ function Events.EventClass:Once(callback)
     return connection
 end
 
-function Events.EventClass:Disconnect(connection)
+function Noir.Libraries.Events.EventClass:Disconnect(connection)
     self.connections[connection.ID] = nil
 
     connection.connected = false
@@ -100,21 +107,24 @@ function Events.EventClass:Disconnect(connection)
     connection.ID = nil
 end
 
--- Connection Class
-Events.ConnectionClass = Noir.Libraries.Class:Create("Connection") ---@type NoirLib_Connection
+--[[
+    A class for event connections.<br>
+    Do not use this, but instead use `Event:Connect()`.
+]]
+Noir.Libraries.Events.ConnectionClass = Noir.Libraries.Class:Create("NoirConnection") ---@type NoirConnection
 
-function Events.ConnectionClass:Init(callback)
+function Noir.Libraries.Events.ConnectionClass:Init(callback)
     self.callback = callback
     self.parentEvent = nil
     self.ID = nil
     self.connected = false
 end
 
-function Events.ConnectionClass:Connect(event)
+function Noir.Libraries.Events.ConnectionClass:Connect(event)
     event:Connect(self)
 end
 
-function Events.ConnectionClass:Fire(...)
+function Noir.Libraries.Events.ConnectionClass:Fire(...)
     if not self.connected then
         -- TODO: log
         return
@@ -123,7 +133,7 @@ function Events.ConnectionClass:Fire(...)
     self.callback(...)
 end
 
-function Events.ConnectionClass:Disconnect()
+function Noir.Libraries.Events.ConnectionClass:Disconnect()
     if not self.connected then
         -- TODO: log
         return
@@ -149,33 +159,32 @@ end
 
     MyEvent:Fire() -- "Fired. This won't be printed ever again even if the event is fired again"
 ]]
----@return NoirLib_Event
-function Events:Create()
-    local event = Events.EventClass:New() ---@type NoirLib_Event
+---@return NoirEvent
+function Noir.Libraries.Events:Create()
+    local event = self.EventClass:New() ---@type NoirEvent
     return event
 end
-
-Noir.Libraries.Events = Events
 
 -------------------------------
 -- // Intellisense
 -------------------------------
 
----@class NoirLib_Event: NoirLib_Class
----@field currentID integer
----@field connections table<integer, NoirLib_Connection>
+---@class NoirEvent: NoirLib_Class
+---@field currentID integer The ID that will be passed to new connections. Increments by 1 every connection
+---@field connections table<integer, NoirConnection> The connections that are connected to this event
+---@field hasFiredOnce boolean Whether or not this event has fired atleast once
 ---
----@field Fire fun(self: NoirLib_Event, ...) A method that fires the event
----@field Connect fun(self: NoirLib_Event, callback: fun(...)): NoirLib_Connection A method that connects a callback to the event
----@field Once fun(self: NoirLib_Event, callback: fun(...)): NoirLib_Connection A method that connects a callback to the event that will automatically be disconnected upon the event being fired
----@field Disconnect fun(self: NoirLib_Event, connection: NoirLib_Connection) A method that disconnects a callback from the event
+---@field Fire fun(self: NoirEvent, ...) A method that fires the event
+---@field Connect fun(self: NoirEvent, callback: fun(...)): NoirConnection A method that connects a callback to the event
+---@field Once fun(self: NoirEvent, callback: fun(...)): NoirConnection A method that connects a callback to the event that will automatically be disconnected upon the event being fired
+---@field Disconnect fun(self: NoirEvent, connection: NoirConnection) A method that disconnects a callback from the event
 
----@class NoirLib_Connection: NoirLib_Class
----@field ID integer
----@field callback fun(...)
----@field parentEvent NoirLib_Event
----@field connected boolean
+---@class NoirConnection: NoirLib_Class
+---@field ID integer The ID of this connection
+---@field callback fun(...) The callback that is assigned to this connection
+---@field parentEvent NoirEvent The event that this connection is connected to
+---@field connected boolean Whether or not this connection is connected
 ---
----@field Connect fun(self: NoirLib_Connection, event: NoirLib_Event) A method that connects this connection to an event
----@field Fire fun(self: NoirLib_Connection, ...) A method that fires the callback
----@field Disconnect fun(self: NoirLib_Connection) A method that disconnects the callback
+---@field Connect fun(self: NoirConnection, event: NoirEvent) A method that connects this connection to an event
+---@field Fire fun(self: NoirConnection, ...) A method that fires the callback
+---@field Disconnect fun(self: NoirConnection) A method that disconnects the callback

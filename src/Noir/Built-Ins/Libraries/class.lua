@@ -32,7 +32,7 @@
 -------------------------------
 
 --[[
-    Create a class that objects can be created from.
+    A library that allows you to define classes which you can create objects from.
 
     local MyClass = Class:Create("MyClass")
 
@@ -47,7 +47,7 @@
     local object = MyClass.new("Cuh4")
     object:myName() -- "Cuh4"
 ]]
-local Class = Noir.Libraries:Create("Class")
+Noir.Libraries.Class = Noir.Libraries:Create("NoirClass")
 
 --[[
     Create a class that objects can be created from.
@@ -67,7 +67,7 @@ local Class = Noir.Libraries:Create("Class")
 ]]
 ---@param name string
 ---@param parent NoirLib_Class|nil
-function Class:Create(name, parent)
+function Noir.Libraries.Class:Create(name, parent)
     -- // Class Creation
     -- Create a class
     ---@type NoirLib_Class
@@ -121,8 +121,6 @@ function Class:Create(name, parent)
 
     return class
 end
-
-Noir.Libraries.Class = Class
 
 -------------------------------
 -- // Intellisense
