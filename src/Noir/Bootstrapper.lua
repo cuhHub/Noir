@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Noir
+-- [Noir] Bootstrapper
 --------------------------------------------------------
 
 --[[
@@ -30,19 +30,3 @@
 -------------------------------
 -- // Main
 -------------------------------
-Noir = {}
-
---[[
-    Start the framework
-    This will initalize all services, then upon completion, all services will be started.
-    Use the `Noir.Started` event to safely run your code.
-
-    Noir.Started:Once(function()
-        -- Your code
-    end)
-
-    Noir:Start()
-]]
-function Noir:Start()
-
-end
