@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Logging
+-- [Noir] Libraries - Logging
 --------------------------------------------------------
 
 --[[
@@ -127,15 +127,6 @@ end
 ---@param ... any
 function Noir.Libraries.Logging:Success(title, message, ...)
     Noir.Libraries.Logging:Log("Success", title, message, ...)
-end
-
---[[
-    Converts a table to a string.
-]]
----@param tbl table
----@return string
-function Noir.Libraries.Logging:TableToString(tbl)
-    
 end
 
 -------------------------------
