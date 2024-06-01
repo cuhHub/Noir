@@ -30,10 +30,19 @@
 -------------------------------
 -- // Main
 -------------------------------
-Noir = {}
 
 --[[
-    Start the framework
+    This event is called when the framework is started.<br>
+    Use this event to safely run your code.
+
+    Noir.Started:Once(function()
+        -- Your code
+    end)
+]]
+Noir.Started = Noir.Libraries.Events:Create()
+
+--[[
+    Starts the framework.<br>
     This will initalize all services, then upon completion, all services will be started.
     Use the `Noir.Started` event to safely run your code.
 
@@ -44,5 +53,10 @@ Noir = {}
     Noir:Start()
 ]]
 function Noir:Start()
+    if self.started then
+        -- TODO: error
+        return
+    end
 
+    -- TODO: bootstrapper
 end
