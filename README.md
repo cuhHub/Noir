@@ -51,11 +51,11 @@ function JanitorService:ServiceStart()
 end
 ```
 
-This essentially despawns objects in the `pendingCleanups` tables if too much time passes.
+This essentially despawns objects in the `pendingCleanups` table if too much time passes.
 
 ---
 
-Now, let's add in a custom method to add objects to these tables.
+Now, let's add in a custom method to add objects to `pendingCleanups`.
 
 ```lua
 ---@param object_id integer <-- This is a parameter annotation. This is used for intellisense from the Lua LSP VSCode extension.
@@ -68,7 +68,7 @@ function JanitorService:Clean(object_id, duration)
 end
 ```
 
-Now, we have a fully working service! 🥳 Do note that `Noir.Services:GetService()` will error if the service you are trying to retrieve hasn't initialized yet.
+Now, we have a fully working service! 🥳 Do note that `Noir.Services:GetService()` will error if the service you are trying to retrieve hasn't initialized yet or doesn't exist.
 
 ---
 
