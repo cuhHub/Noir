@@ -61,10 +61,10 @@ Noir.Callbacks.Events = {} ---@type table<string, NoirEvent>
 ---@param name string
 ---@param callback fun(...)
 function Noir.Callbacks:Connect(name, callback)
-    -- get or create event
+    -- Get or create event
     local event = self:InstantiateCallback(name)
 
-    -- connect callback to event
+    -- Connect callback to event
     event:Connect(callback)
 end
 
@@ -78,10 +78,10 @@ end
 ---@param name string
 ---@param callback fun(...)
 function Noir.Callbacks:Once(name, callback)
-    -- get or create event
+    -- Get or create event
     local event = self:InstantiateCallback(name)
 
-    -- connect callback to event
+    -- Connect callback to event
     event:Once(callback)
 end
 
@@ -108,28 +108,36 @@ end
 ---@param name string
 ---@return NoirEvent
 function Noir.Callbacks:InstantiateCallback(name)
-    -- check if Noir has started
+    -- Check if Noir has started
     if not Noir.HasStarted then
         Noir.Libraries.Logging:Warning("Callbacks", "Noir has not started yet. It is not recommended to connect to callbacks before `Noir:Start()` is called and finalized. Please connect to the `Noir.Started` event and attach to game callbacks in that.")
     end
 
-    -- for later
+    -- For later
     local event = Noir.Callbacks.Events[name]
     local doesEventExist = event ~= nil
 
-    -- create event if it doesn't exist
+    -- Create event if it doesn't exist
     if not event then
         event = Noir.Libraries.Events:Create()
         self.Events[name] = event
     end
 
-    -- create function for game callback if it doesn't exist. if the user created the callback themselves, overwrite it
-    if not _ENV[name] or (_ENV[name] and not doesEventExist) then
+    -- Create function for game callback if it doesn't exist. If the user created the callback themselves, overwrite it
+    local goingToOverwrite = _ENV[name] and not doesEventExist
+
+    if not _ENV[name] or goingToOverwrite then
+        -- Inform developer that a function will be overwritten
+        if goingToOverwrite then
+            Noir.Libraries.Logging:Warning("Callbacks", "Your addon has a function for the game callback '%s'. Noir will have to overwrite it. Please use Noir.Callbacks:Connect(\"%s\", function(...) end) instead.", name, name)
+        end
+
+        -- Create/overwrite
         _ENV[name] = function(...)
             event:Fire(...)
         end
     end
 
-    -- return event
+    -- Return event
     return event
 end

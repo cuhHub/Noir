@@ -100,7 +100,7 @@ function Noir:Start()
     local onCreate = self.Callbacks:Get("onCreate")
 
     if not onCreate then
-        self.Callbacks:Once("onCreate", setup) -- setup things when onCreate fires
+        self.Callbacks:Once("onCreate", setup) -- Setup things when onCreate fires
         self.Libraries.Logging:Info("Start", "Waiting for onCreate game event to fire before setting up Noir.")
 
         return
@@ -113,6 +113,6 @@ function Noir:Start()
         return
     end
 
-    self.Callbacks:Once("onCreate", setup) -- setup things when onCreate fires
+    self.Callbacks:Once("onCreate", setup) -- Setup things when onCreate fires
     self.Libraries.Logging:Info("Start", "Waiting for onCreate game event to fire before setting up Noir.")
 end
