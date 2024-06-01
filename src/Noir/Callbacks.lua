@@ -108,6 +108,11 @@ end
 ---@param name string
 ---@return NoirEvent
 function Noir.Callbacks:InstantiateCallback(name)
+    -- check if Noir has started
+    if not Noir.HasStarted then
+        Noir.Libraries.Logging:Warning("Callbacks", "Noir has not started yet. It is not recommended to connect to callbacks before `Noir:Start()` is called and finalized. Please connect to the `Noir.Started` event and attach to game callbacks in that.")
+    end
+
     -- for later
     local event = Noir.Callbacks.Events[name]
     local doesEventExist = event ~= nil

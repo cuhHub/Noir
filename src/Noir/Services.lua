@@ -35,7 +35,16 @@
     A module of Noir that allows you to create organized services.<br>
     These services can be used to hold methods that are all designed for a specific purpose.
 
-    TODO: service example
+    local service = Noir.Services:GetService("MyService")
+    service.initPriority = 1 -- Initialize before any other services
+
+    function service:ServiceInit()
+        -- Do something
+    end
+
+    function service:ServiceStart()
+        -- Do something
+    end
 ]]
 Noir.Services = {}
 
@@ -63,12 +72,12 @@ end
 
 function Noir.Services.ServiceClass:Initialize()
     if self.initialized then
-        -- TODO: error
+        Noir.Libraries.Logging:Error(self.name, "Attempted to initialize this service when it has already initialized.")
         return
     end
 
     if self.started then
-        -- TODO: error
+        Noir.Libraries.Logging:Error(self.name, "Attempted to start this service when it has already started.")
         return
     end
 
@@ -77,7 +86,7 @@ function Noir.Services.ServiceClass:Initialize()
 
     -- call ServiceInit
     if not self.ServiceInit then
-        -- TODO: error
+        Noir.Libraries.Logging:Error(self.name, "This service is missing a ServiceInit method.")
         return
     end
 
@@ -86,12 +95,12 @@ end
 
 function Noir.Services.ServiceClass:Start()
     if self.started then
-        -- TODO: error
+        Noir.Libraries.Logging:Error(self.name, "Attempted to start this service when it has already started.")
         return
     end
 
     if not self.initialized then
-        -- TODO: error
+        Noir.Libraries.Logging:Error(self.name, "Attempted to start this service when it has not initialized yet.")
         return
     end
 
@@ -100,7 +109,7 @@ function Noir.Services.ServiceClass:Start()
 
     -- call ServiceStart
     if not self.ServiceStart then
-        -- TODO: warning
+        Noir.Libraries.Logging:Warning(self.name, "This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.")
         return
     end
 
@@ -128,7 +137,7 @@ end
 function Noir.Services:CreateService(name)
     -- Check if service already exists
     if self.CreatedServices[name] then
-        -- TODO: error
+        Noir.Libraries.Logging:Error(name, "Attempted to create a service that already exists.")
         return
     end
 
@@ -155,7 +164,7 @@ function Noir.Services:GetService(name)
     local service = self.CreatedServices[name]
 
     if not service.initialized then
-        -- TODO: error
+        Noir.Libraries.Logging:Error(name, "Attempted to retrieve a service that hasn't initialized yet.")
         return
     end
 

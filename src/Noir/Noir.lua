@@ -35,6 +35,7 @@
     The version of Noir.
     Version history can be found here: https://github.com/cuhHub/NoirFramework/blob/master/CHANGELOG.md
 ]]
+Noir.Version = "0.0.0" -- TODO
 
 --[[
     This event is called when the framework is started.<br>
@@ -70,12 +71,12 @@ Noir.IsStarting = false
 function Noir:Start()
     -- Checks
     if self.IsStarting then
-        -- TODO: error
+        self.Libraries.Logging:Error("Start", "The addon attempted to start Noir when it is in the process of starting.")
         return
     end
 
     if self.HasStarted then
-        -- TODO: error
+        self.Libraries.Logging:Error("Start", "The addon attempted to start Noir more than once.")
         return
     end
 
@@ -93,18 +94,26 @@ function Noir:Start()
         self.Started:Fire()
     end
 
+    -- Set isStarting
+    self.IsStarting = true
+
     -- Wait for onCreate
     local onCreate = self.Callbacks:Get("onCreate")
 
-    if not onCreate then -- TODO: add info log
+    if not onCreate then
         self.Callbacks:Once("onCreate", setup) -- setup things when onCreate fires
+        self.Libraries.Logging:Info("Start", "Waiting for onCreate game event to fire before setting up Noir.")
+
         return
     end
 
-    if onCreate.hasFiredOnce then -- TODO: add info log
+    if onCreate.hasFiredOnce then
         setup() -- onCreate has fired, so setup now
+        self.Libraries.Logging:Info("Start", "onCreate has already fired earlier, so Noir will set up now.")
+
         return
     end
-    -- TODO: add info log
+
     self.Callbacks:Once("onCreate", setup) -- setup things when onCreate fires
+    self.Libraries.Logging:Info("Start", "Waiting for onCreate game event to fire before setting up Noir.")
 end
