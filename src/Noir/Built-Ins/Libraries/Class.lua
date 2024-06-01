@@ -80,7 +80,7 @@ function Noir.Libraries.Class:Create(name, parent)
 
     function class:New(...)
         -- create Object
-        ---@type NoirClassObject
+        ---@type NoirClass
         local object = {} ---@diagnostic disable-line
         self:__descend(object, {New = true, Init = true, __descend = true})
 
@@ -143,18 +143,13 @@ end
 -------------------------------
 
 ---@class NoirClass
----@field __name string The name of this class
+---@field __name string The name of this class/object
 ---@field __parent NoirClass|nil The parent class that this class inherits from
----@field isObject false
----@field Init fun(self: NoirClassObject, ...) A function that initializes objects created from this class
+---@field isObject boolean
+---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
 ---
----@field New fun(self: NoirClass, ...: any): NoirClassObject A method to create an object from this class
----@field __descend fun(from: NoirClass|NoirClassObject, object: NoirClassObject, exceptions: table<any, boolean>) A helper function that copies important values from the class to an object
----@field IsSameType fun(self: NoirClass, other: NoirClass|NoirClassObject): boolean A method that returns whether an object is identical to this one
-
----@class NoirClassObject An object created from a class
----@field isObject true
----@field __name string The name of the class that created this object
----@field __parent NoirClass|nil The parent class that this object inherits from
----@field InitializeParent fun(self: NoirClassObject, ...: any) A method that initializes the parent class for this object
----@field IsSameType fun(self: NoirClassObject, object: NoirClassObject): boolean A method that returns whether an object is identical to this one
+---@field New fun(self: NoirClass, ...: any): NoirClass A method to create an object from this class
+---@field __descend fun(from: NoirClass, object: NoirClass, exceptions: table<any, boolean>) A helper function that copies important values from the class to an object
+---@field IsSameType fun(self: NoirClass, other: NoirClass): boolean A method that returns whether an object is identical to this one
+---@field InitializeParent fun(self: NoirClass, ...: any) A method that initializes the parent class for this object
+---@field IsSameType fun(self: NoirClass, object: NoirClass): boolean A method that returns whether an object is identical to this one
