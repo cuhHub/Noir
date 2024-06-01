@@ -40,6 +40,12 @@ event:Connect(function(arg1)
     server.announce("connect", arg1)
 end)
 
-event:Connect(function(arg1)
-    
+local connection = event:Connect(function(arg1)
+    server.announce("connect (disconnected)", arg1)
 end)
+
+connection:Disconnect()
+
+for i = 1, 5 do
+    event:Fire(tostring(i))
+end
