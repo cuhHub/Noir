@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Events
+-- [Noir] Libraries - Events
 --------------------------------------------------------
 
 --[[
@@ -120,10 +120,6 @@ function Noir.Libraries.Events.ConnectionClass:Init(callback)
     self.connected = false
 end
 
-function Noir.Libraries.Events.ConnectionClass:Connect(event)
-    event:Connect(self)
-end
-
 function Noir.Libraries.Events.ConnectionClass:Fire(...)
     if not self.connected then
         Noir.Libraries.Logging:Error("Event Connection", "Attempted to fire an event connection when it is not connected.")
@@ -185,6 +181,5 @@ end
 ---@field parentEvent NoirEvent The event that this connection is connected to
 ---@field connected boolean Whether or not this connection is connected
 ---
----@field Connect fun(self: NoirConnection, event: NoirEvent) A method that connects this connection to an event
 ---@field Fire fun(self: NoirConnection, ...) A method that fires the callback
 ---@field Disconnect fun(self: NoirConnection) A method that disconnects the callback
