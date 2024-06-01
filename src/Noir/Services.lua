@@ -61,7 +61,7 @@ Noir.Services.CreatedServices = {} ---@type table<string, NoirService>
 Noir.Services.ServiceClass = Noir.Libraries.Class:Create("NoirService") ---@type NoirService
 
 function Noir.Services.ServiceClass:Init(name)
-    -- create attributes
+    -- Create attributes
     self.name = name
     self.initialized = false
     self.started = false
@@ -71,6 +71,7 @@ function Noir.Services.ServiceClass:Init(name)
 end
 
 function Noir.Services.ServiceClass:Initialize()
+    -- Checks
     if self.initialized then
         Noir.Libraries.Logging:Error(self.name, "Attempted to initialize this service when it has already initialized.")
         return
@@ -81,10 +82,10 @@ function Noir.Services.ServiceClass:Initialize()
         return
     end
 
-    -- set initialized
+    -- Set initialized
     self.initialized = true
 
-    -- call ServiceInit
+    -- Call ServiceInit
     if not self.ServiceInit then
         Noir.Libraries.Logging:Error(self.name, "This service is missing a ServiceInit method.")
         return
@@ -94,6 +95,7 @@ function Noir.Services.ServiceClass:Initialize()
 end
 
 function Noir.Services.ServiceClass:Start()
+    -- Checks
     if self.started then
         Noir.Libraries.Logging:Error(self.name, "Attempted to start this service when it has already started.")
         return
@@ -104,10 +106,10 @@ function Noir.Services.ServiceClass:Start()
         return
     end
 
-    -- set started
+    -- Set started
     self.started = true
 
-    -- call ServiceStart
+    -- Call ServiceStart
     if not self.ServiceStart then
         Noir.Libraries.Logging:Warning(self.name, "This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.")
         return
@@ -137,7 +139,7 @@ end
 function Noir.Services:CreateService(name)
     -- Check if service already exists
     if self.CreatedServices[name] then
-        Noir.Libraries.Logging:Error(name, "Attempted to create a service that already exists.")
+        Noir.Libraries.Logging:Error("Service Creation", "Attempted to create a service that already exists.")
         return
     end
 
@@ -161,10 +163,18 @@ end
 ---@param name string
 ---@return NoirService
 function Noir.Services:GetService(name)
+    -- Get service
     local service = self.CreatedServices[name]
 
+    -- Check if service exists
+    if not service then
+        Noir.Libraries.Logging:Error(name, "Attempted to retrieve a service that doesn't exist ('%s').", name)
+        return
+    end
+
+    -- Check if service has been initialized
     if not service.initialized then
-        Noir.Libraries.Logging:Error(name, "Attempted to retrieve a service that hasn't initialized yet.")
+        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that hasn't initialized yet ('%s').", name)
         return
     end
 
