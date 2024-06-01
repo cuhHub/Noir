@@ -88,5 +88,23 @@ If you would like intellisense, you will need to add some extra bits:
 
 As well as add `---@type JanitorService` there and then.
 
+## 🔨 Installation
+Sorry, installation is complicated, but here's how:
+- 1) Run `git clone https://github.com/cuhHub/Noir`
+- 2) Move `src/Noir` into your addon directory.
+- 3) Extract all files in `tools` and place them into your addon directory.
+- 4) Create a file called `__order.json` and place the following into it:
+```json
+{
+    "order" : [
+        "Noir",
+        "script.lua"
+    ]
+}
+```
+- 5) Run `build.bat` every time you change your addon. This will combine the contents of `Noir` and your addon's `script.lua` file into one file called `build.lua`.
+
+If you are somewhat patient, you can manually add `require()` into each Noir .lua file and use the [Stormworks VSCode extension's](https://marketplace.visualstudio.com/items?itemName=NameousChangey.lifeboatapi) build feature.
+
 ## ✨ Credit
 - [Cuh4](https://github.com/Cuh4)
