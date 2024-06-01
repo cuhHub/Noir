@@ -93,7 +93,7 @@ function Noir:Start()
         self.Started:Fire()
 
         -- Send log
-        self.Libraries.Logging:Success("Start", "Noir (v%s) has started. Bootstrapper has initialized all services.", self.Version)
+        self.Libraries.Logging:Success("Start", "Noir (v%s) has started. Bootstrapper has initialized and started all services.", self.Version)
     end
 
     -- Set isStarting

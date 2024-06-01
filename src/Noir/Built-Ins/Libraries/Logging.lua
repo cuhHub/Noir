@@ -69,7 +69,7 @@ function Noir.Libraries.Logging:Log(logType, title, message, ...)
     local validatedTitle = tostring(title)
     local validatedMessage = type(message) == "table" and Noir.Libraries.Table:TableToString(message) or (... and tostring(message):format(...) or tostring(message))
 
-    local formattedText = ("[%s] %s: %s"):format(validatedLogType, validatedTitle, validatedMessage)
+    local formattedText = ("[%s] (%s): %s"):format(validatedLogType, validatedTitle, validatedMessage)
 
     -- send log
     if self.LoggingMode == "DebugLog" then
