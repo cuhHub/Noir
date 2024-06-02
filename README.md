@@ -96,10 +96,10 @@ As well as add `---@type JanitorService` there and then. Be sure to disable the 
 
 ## 🔨 Installation
 Sorry, installation is complicated, but here's how:
-- Run `git clone https://github.com/cuhHub/Noir`
-- Move `src/Noir` into your addon directory.
-- Extract all files in `tools` and place them into your addon directory.
-- Create a file called `__order.json` and place the following into it:
+1) Run `git clone https://github.com/cuhHub/Noir`
+2) Move `src/Noir` into your addon directory.
+3) Extract all files in `tools` and place them into your addon directory.
+4) Create a file called `__order.json` and place the following into it:
 ```json
 {
     "order" : [
@@ -108,9 +108,16 @@ Sorry, installation is complicated, but here's how:
     ]
 }
 ```
-- Run `build.bat` every time you change your addon. This will combine the contents of `Noir` and your addon's `script.lua` file into one file called `build.lua`. You can copy and paste the contents of `build.lua` into your `script.lua` file, or even create a script that automates that.
+5) Run `build.bat` every time you change your addon. This will combine the contents of `Noir` and your addon's `script.lua` file into one file called `build.lua`. You can copy and paste the contents of `build.lua` into your `script.lua` file, or even create a script that automates that.
 
-If you are somewhat patient, you can manually add `require()` into each Noir .lua file and use the [Stormworks VSCode extension's](https://marketplace.visualstudio.com/items?itemName=NameousChangey.lifeboatapi) build feature.
+---
+
+Alternatively, you can use the [Stormworks Lua Extension's](https://marketplace.visualstudio.com/items?itemName=NameousChangey.lifeboatapi) build feature:
+1) Follow steps 1-2 above.
+2) Place `require("Noir.Init")` into your addon's script.
+3) Use the Stormworks Lua Extension's build feature.
+
+⚠️ | These steps are untested. I personally do not use the extension.
 
 ## ✨ Credit
 - [Cuh4](https://github.com/Cuh4)
