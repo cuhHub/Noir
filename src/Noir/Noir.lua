@@ -57,7 +57,7 @@ Noir.HasStarted = false
 Noir.IsStarting = false
 
 --[[
-    This represents whether or not the addon was: reloaded, loaded via save creation, or loaded via save creation.
+    This represents whether or not the addon was: reloaded, started via save creation, or started via save creation.
 ]]
 Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
 
