@@ -42,9 +42,12 @@ Noir.Bootstrapper = {}
     Do not use this in your code. This is used internally.
 ]]
 function Noir.Bootstrapper:InitializeSavedata()
-    g_savedata = g_savedata or {} ---@diagnostic disable-line: lowercase-global
+    -- Setup g_savedata
     g_savedata.Noir = g_savedata.Noir or {}
+    Noir.Libraries.Logging:Info("Bootstrapper", "'Noir' has been defined in g_savedata.")
+
     g_savedata.Noir.Services = g_savedata.Noir.Services or {}
+    Noir.Libraries.Logging:Info("Bootstrapper", "'Services' has been defined in Noir save data.")
 end
 
 --[[

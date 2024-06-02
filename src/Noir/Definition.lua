@@ -36,3 +36,9 @@
     A framework for making Stormworks addons with ease.
 ]]
 Noir = {}
+
+g_savedata = { ---@diagnostic disable-line: lowercase-global
+    Noir = {
+        Services = {}
+    }
+}
