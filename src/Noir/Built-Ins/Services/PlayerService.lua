@@ -224,6 +224,11 @@ function Noir.Services.PlayerService:ServiceInit()
         -- Get health
         local health = player:GetHealth()
 
+        -- Prevent soft-lock
+        if health <= 0 and amount > 0 then
+            player:Revive()
+        end
+
         -- Heal
         player:SetCharacterData(health + amount, false, false)
     end
