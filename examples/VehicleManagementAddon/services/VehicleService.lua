@@ -34,13 +34,13 @@
 ---@alias PlayerVehicles table<integer, boolean>
 
 ---@class VehicleService: NoirService
----@field vehicles table<integer, PlayerVehicles> A table containing vehicles belonging to a player
----@field onSpawn NoirEvent An event that fires when a vehicle spawns. Args: peer_id, vehicle_id
----@field onDespawn NoirEvent An event that fires when a vehicle despawns. Args: peer_id, vehicle_id
+---@field vehicles table<NoirPlayerServicePlayer, PlayerVehicles> A table containing vehicles belonging to a player
+---@field onSpawn NoirEvent An event that fires when a vehicle spawns. Args: player, vehicle_id
+---@field onDespawn NoirEvent An event that fires when a vehicle despawns. Args: player, vehicle_id
 ---
----@field GetVehicles fun(self: VehicleService, peer_id: integer): table<integer, integer> A method that returns the vehicles belonging to a player
----@field GetPlayer fun(self: VehicleService, vehicle_id: integer): integer|nil A method that returns the peer_id of the player a vehicle belongs to
----@field DespawnVehicles fun(self: VehicleService, peer_id: integer) A method that despawns all vehicles belonging to a player
+---@field GetVehicles fun(self: VehicleService, player: NoirPlayerServicePlayer): table<integer, integer> A method that returns the vehicles belonging to a player
+---@field GetPlayer fun(self: VehicleService, vehicle_id: integer): NoirPlayerServicePlayer|nil A method that returns the the player a vehicle belongs to
+---@field DespawnVehicles fun(self: VehicleService, player: NoirPlayerServicePlayer) A method that despawns all vehicles belonging to a player
 ---@field DespawnVehicle fun(self: VehicleService, vehicle_id: integer) A method that despawns a vehicle
 
 -- Create the service
@@ -58,42 +58,56 @@ end
 function VehicleService:ServiceStart()
     -- Listen for vehicles spawning
     server.listen("onVehicleSpawn", function(vehicle_id, peer_id)
-        if not self.vehicles[peer_id] then
-            self.vehicles[peer_id] = {}
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Info("VehicleService", "Player doesn't exist for a vehicle that was spawned")
+            return
         end
 
-        table.insert(self.vehicles[peer_id], vehicle_id)
-        self.onSpawn:Fire(peer_id, vehicle_id)
+        if not self.vehicles[player] then
+            self.vehicles[player] = {}
+        end
+
+        table.insert(self.vehicles[player], vehicle_id)
+        self.onSpawn:Fire(player, vehicle_id)
     end)
 
     -- Listen for vehicles despawning
     server.listen("onVehicleDespawn", function(vehicle_id, peer_id)
-        if not self.vehicles[peer_id] then
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Info("VehicleService", "Player doesn't exist for a vehicle that was despawned")
             return
         end
 
-        self.vehicles[peer_id][vehicle_id] = nil
-        self.onDespawn:Fire(peer_id, vehicle_id)
+        if not self.vehicles[player] then
+            return
+        end
+
+        self.vehicles[player][vehicle_id] = nil
+        self.onDespawn:Fire(player, vehicle_id)
     end)
 end
 
 -- Get the vehicles belonging to a player
-function VehicleService:GetVehicles(peer_id)
-    return Noir.Libraries.Table:Keys(self.vehicles[peer_id] or {})
+function VehicleService:GetVehicles(player)
+    return Noir.Libraries.Table:Keys(self.vehicles[player] or {})
 end
 
 -- Get the player a vehicle belongs to
 function VehicleService:GetPlayer(vehicle_id)
-    for peer_id, vehicles in pairs(self.vehicles) do
+    for player, vehicles in pairs(self.vehicles) do
         if vehicles[vehicle_id] then
-            return peer_id
+            return player
         end
     end
 end
 
 -- Despawn all vehicles belonging to a player
-function VehicleService:DespawnVehicles(peer_id)
-    for _, vehicle_id in pairs(self:GetVehicles(peer_id)) do
+function VehicleService:DespawnVehicles(player)
+    for _, vehicle_id in pairs(self:GetVehicles(player)) do
         self:DespawnVehicle(vehicle_id)
     end
 end

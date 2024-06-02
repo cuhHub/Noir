@@ -33,18 +33,20 @@
 
 -- Connect to the Noir Started event. It's important we place our code in this event
 Noir.Started:Once(function()
-    -- Get the Welcome Service
+    -- Get the WelcomeService
     local WelcomeService = Noir.Services:GetService("WelcomeService") ---@type WelcomeService
 
     -- Set the welcome and farewell messages
     WelcomeService:SetMessages("Hello, %s!", "Bye, %s!")
 
-    -- Connect to the onPlayerJoin and onPlayerLeave events, and use the Welcome Service
-    Noir.Callbacks:Connect("onPlayerJoin", function(_, _, peer_id)
-        WelcomeService:Greet(peer_id)
+    -- Connect to the PlayerService events, and use the WelcomeService
+    ---@param player NoirPlayerServicePlayer
+    Noir.Services.PlayerService.OnJoin:Connect(function(player)
+        WelcomeService:Greet(player)
     end)
 
-    Noir.Callbacks:Connect("onPlayerLeave", function(_, name)
-        WelcomeService:Farewell(name)
+    ---@param player NoirPlayerServicePlayer
+    Noir.Services.PlayerService.OnLeave("onPlayerLeave", function(player)
+        WelcomeService:Farewell(player)
     end)
 end)

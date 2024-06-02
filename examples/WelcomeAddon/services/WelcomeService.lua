@@ -36,8 +36,8 @@
 ---@field farewellMessage string The farewell message
 ---
 ---@field SetMessages fun(self: WelcomeService, greet: string, farewell: string) A method that sets the greeting and farewell messages
----@field Greet fun(self: WelcomeService, peer_id: integer) A method that greets a player to everyone
----@field Farewell fun(self: WelcomeService, name: string) A method that sends a farewell message to everyone about a player
+---@field Greet fun(self: WelcomeService, player: NoirPlayerServicePlayer) A method that greets a player to everyone
+---@field Farewell fun(self: WelcomeService, player: NoirPlayerServicePlayer) A method that sends a farewell message to everyone about a player
 
 -- Create the service
 local WelcomeService = Noir.Services:CreateService("WelcomeService") ---@type WelcomeService
@@ -59,12 +59,11 @@ function WelcomeService:SetMessages(hello, bye)
 end
 
 -- Greet a player
-function WelcomeService:Greet(peer_id)
-    local name = server.getPlayerName(peer_id)
-    server.announce("Greeting", self.greetingMessage:format(name))
+function WelcomeService:Greet(player)
+    server.announce("Greeting", self.greetingMessage:format(player.name))
 end
 
 -- Farewell a player
-function WelcomeService:Farewell(name)
-    server.announce("Farewell", self.farewellMessage:format(name))
+function WelcomeService:Farewell(player)
+    server.announce("Farewell", self.farewellMessage:format(player.name))
 end

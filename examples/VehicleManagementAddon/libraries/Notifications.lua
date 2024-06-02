@@ -36,35 +36,35 @@ Notifications = Noir.Libraries:Create("Notifications")
 ---@param title string
 ---@param text string
 ---@param notificationType SWNotifiationTypeEnum
----@param peer_id integer|nil
-function Notifications:SendNotification(title, text, notificationType, peer_id)
-    server.notify(peer_id or -1, title, text, notificationType)
+---@param player NoirPlayerServicePlayer|nil
+function Notifications:SendNotification(title, text, notificationType, player)
+    server.notify(player and player.ID or -1, title, text, notificationType)
 end
 
 ---@param title string
 ---@param text string
----@param peer_id integer|nil
-function Notifications:SendErrorNotification(title, text, peer_id)
-    server.notify(peer_id or -1, title, text, 2)
+---@param player NoirPlayerServicePlayer|nil
+function Notifications:SendErrorNotification(title, text, player)
+    server.notify(player and player.ID or -1, title, text, 2)
 end
 
 ---@param title string
 ---@param text string
----@param peer_id integer|nil
-function Notifications:SendSuccessNotification(title, text, peer_id)
-    server.notify(peer_id or -1, title, text, 4)
+---@param player NoirPlayerServicePlayer|nil
+function Notifications:SendSuccessNotification(title, text, player)
+    server.notify(player and player.ID or -1, title, text, 4)
 end
 
 ---@param title string
 ---@param text string
----@param peer_id integer|nil
-function Notifications:SendWarningNotification(title, text, peer_id)
-    server.notify(peer_id or -1, title, text, 8)
+---@param player NoirPlayerServicePlayer|nil
+function Notifications:SendWarningNotification(title, text, player)
+    server.notify(player and player.ID or -1, title, text, 8)
 end
 
 ---@param title string
 ---@param text string
----@param peer_id integer|nil
-function Notifications:SendInfoNotification(title, text, peer_id)
-    server.notify(peer_id or -1, title, text, 11)
+---@param player NoirPlayerServicePlayer|nil
+function Notifications:SendInfoNotification(title, text, player)
+    server.notify(player and player.ID or -1, title, text, 11)
 end

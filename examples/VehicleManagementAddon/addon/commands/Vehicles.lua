@@ -35,10 +35,10 @@
 local CommandService = Noir.Services:GetService("CommandService") ---@type CommandService
 local VehicleService = Noir.Services:GetService("VehicleService") ---@type VehicleService
 
-CommandService:CreateCommand("vehicles", function(peer_id, args)
+CommandService:CreateCommand("vehicles", function(player, args)
     -- Get the player's vehicles
-    local vehicles = VehicleService:GetVehicles(peer_id)
+    local vehicles = VehicleService:GetVehicles(player)
 
     -- Send the player their vehicles
-    Notifications:SendInfoNotification("Vehicles", "IDs:\n"..table.concat(vehicles, "\n"), peer_id)
+    Notifications:SendInfoNotification("Vehicles", "IDs:\n"..table.concat(vehicles, "\n"), player)
 end)

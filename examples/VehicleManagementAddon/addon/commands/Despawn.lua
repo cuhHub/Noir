@@ -35,28 +35,28 @@
 local CommandService = Noir.Services:GetService("CommandService") ---@type CommandService
 local VehicleService = Noir.Services:GetService("VehicleService") ---@type VehicleService
 
-CommandService:CreateCommand("despawn", function(peer_id, args)
+CommandService:CreateCommand("despawn", function(player, args)
     if args[1] then
         -- Get the player's vehicles
-        local vehicles = VehicleService:GetVehicles(peer_id)
+        local vehicles = VehicleService:GetVehicles(player)
 
         -- Get the requested vehicle to despawn
         local vehicle_id = vehicles[tonumber(args[1])]
 
         -- Nil check
         if not vehicle_id then
-            Notifications:SendErrorNotification("Despawn", "Vehicle not found", peer_id)
+            Notifications:SendErrorNotification("Despawn", "Vehicle not found", player)
             return
         end
 
         -- Despawn the vehicle
         VehicleService:DespawnVehicle(vehicle_id)
-        Notifications:SendSuccessNotification("Despawn", "Vehicle despawned", peer_id)
+        Notifications:SendSuccessNotification("Despawn", "Vehicle despawned", player)
     else
         -- Despawn all of the player's vehicles
-        VehicleService:DespawnVehicles(peer_id)
+        VehicleService:DespawnVehicles(player)
 
         -- Send notification
-        Notifications:SendSuccessNotification("Despawn", "All vehicles despawned", peer_id)
+        Notifications:SendSuccessNotification("Despawn", "All vehicles despawned", player)
     end
 end)

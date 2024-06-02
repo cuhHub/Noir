@@ -34,7 +34,7 @@
 ---@class CommandService: NoirService
 ---@field commands table<string, NoirEvent>
 ---
----@field CreateCommand fun(self: CommandService, command: string, callback: fun(peer_id: integer, args: table<integer, string>)) Creates a command
+---@field CreateCommand fun(self: CommandService, command: string, callback: fun(player: NoirPlayerServicePlayer, args: table<integer, string>)) Creates a command
 
 -- Create the service
 local CommandService = Noir.Services:CreateService("CommandService") ---@type CommandService
@@ -47,13 +47,24 @@ end
 -- Called when the service is started and when we can safely get other services. This is to be used for setting up things that may require event connections, etc
 function CommandService:ServiceStart()
     -- Listen for command callback
+    ---@param peer_id integer
+    ---@param command string
     Noir.Callbacks:Connect("onCustomCommand", function(_, peer_id, _, _, command, ...)
-        if not self.commands[command] then
-            Notifications:SendWarningNotification("Commands", "Unrecognized command", peer_id)
+        command = command:lower()
+
+        local player = Noir.Services.PlayerService:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("CommandService", "A player ran a command, but they aren't recognized as a player in the PlayerService")
             return
         end
 
-        self.commands[command]:Fire(peer_id, {...})
+        if not self.commands[command] then
+            Notifications:SendWarningNotification("Commands", "Unrecognized command.", player)
+            return
+        end
+
+        self.commands[command]:Fire(player, {...})
     end)
 end
 
