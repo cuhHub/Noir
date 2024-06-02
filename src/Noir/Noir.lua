@@ -85,6 +85,9 @@ function Noir:Start()
         self.IsStarting = false
         self.HasStarted = true
 
+        -- Initialize g_savedata
+        self.Bootstrapper:InitializeSavedata()
+
         -- Initialize services, then start them
         self.Bootstrapper:InitializeServices()
         self.Bootstrapper:StartServices()

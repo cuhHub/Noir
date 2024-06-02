@@ -38,6 +38,16 @@
 Noir.Bootstrapper = {}
 
 --[[
+    Set up g_savedata.<br>
+    Do not use this in your code. This is used internally.
+]]
+function Noir.Bootstrapper:InitializeSavedata()
+    g_savedata = g_savedata or {} ---@diagnostic disable-line: lowercase-global
+    g_savedata.Noir = g_savedata.Noir or {}
+    g_savedata.Noir.Services = g_savedata.Noir.Services or {}
+end
+
+--[[
     Initialize all services.<br>
     This will order services by their `initPriority` and then initialize them.<br>
     Do not use this in your code. This is used internally.

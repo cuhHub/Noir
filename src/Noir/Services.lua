@@ -118,6 +118,57 @@ function Noir.Services.ServiceClass:Start()
     self:ServiceStart()
 end
 
+function Noir.Services.ServiceClass:CheckSaveData()
+    -- Checks
+    if not g_savedata then
+        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata is nil.")
+        return false
+    end
+
+    if not g_savedata.Noir then
+        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir is nil. Something might have gone wrong with the Noir bootstrapper.")
+        return false
+    end
+
+    if not g_savedata.Noir.Services then
+        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir.Services is nil. Something might have gone wrong with the Noir bootstrapper.")
+        return false
+    end
+
+    -- All good!
+    return true
+end
+
+function Noir.Services.ServiceClass:Save(index, data)
+    -- Check g_savedata
+    if not self:CheckSaveData() then
+        return
+    end
+
+    -- Save
+    g_savedata.Noir.Services[index] = data
+end
+
+function Noir.Services.ServiceClass:Load(index, default)
+    -- Check g_savedata
+    if not self:CheckSaveData() then
+        return
+    end
+
+    -- Load
+    return g_savedata.Noir.Services[index] or default
+end
+
+function Noir.Services.ServiceClass:Remove(index)
+    -- Check g_savedata
+    if not self:CheckSaveData() then
+        return
+    end
+
+    -- Remove
+    g_savedata.Noir.Services[index] = nil
+end
+
 --[[
     Create a service.<br>
     This service will be initialized and started after `Noir:Start()` is called.
@@ -194,5 +245,10 @@ end
 ---
 ---@field Initialize fun(self: NoirService) Initialize this service.<br>Used internally. Do not use this in your code.
 ---@field Start fun(self: NoirService) Start this service.<br>Used internally. Do not use this in your code.
+---
+---@field CheckSaveData fun(self: NoirService): boolean Check if the service can save data.<br>Used internally. You can use this in your code, but there usually isn't a need.
+---@field Save fun(self: NoirService, index: string, data: any) Save data that persists between reloads and in the save.
+---@field Load fun(self: NoirService, index: string, default: any): any Load data that was saved.
+---@field Remove fun(self: NoirService, index: string) Remove data that was saved.
 ---@field ServiceInit fun(self: NoirService) A method that initializes the service
 ---@field ServiceStart fun(self: NoirService)|nil A method that starts the service
