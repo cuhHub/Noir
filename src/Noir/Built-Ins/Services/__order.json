@@ -1,5 +1,6 @@
 {
     "order" : [
-        "Task.lua"
+        "Task.lua",
+        "Player.lua"
     ]
 }
