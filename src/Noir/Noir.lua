@@ -57,6 +57,11 @@ Noir.HasStarted = false
 Noir.IsStarting = false
 
 --[[
+    This represents whether or not the addon was: reloaded, loaded via save creation, or loaded via save creation.
+]]
+Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
+
+--[[
     Starts the framework.<br>
     This will initalize all services, then upon completion, all services will be started.<br>
     Use the `Noir.Started` event to safely run your code.
@@ -80,45 +85,54 @@ function Noir:Start()
     end
 
     -- Function to setup everything
-    local function setup()
-        -- Set started
-        self.IsStarting = false
-        self.HasStarted = true
+    ---@param startTime number
+    ---@param isSaveCreate boolean
+    local function setup(startTime, isSaveCreate)
+        -- Wait until onTick is first called to determine if the addon was reloaded, or if a save with the addon was loaded/created
+        self.Callbacks:Once("onTick", function()
+            -- Get time
+            local took = server.getTimeMillisec() - startTime
 
-        -- Initialize g_savedata
-        self.Bootstrapper:InitializeSavedata()
+            -- Determine addon reason
+            Noir.AddonReason = isSaveCreate and "SaveCreate" or (took < 1000 and "AddonReload" or "SaveLoad")
 
-        -- Initialize services, then start them
-        self.Bootstrapper:InitializeServices()
-        self.Bootstrapper:StartServices()
+            -- Set started
+            self.IsStarting = false
+            self.HasStarted = true
 
-        -- Fire event
-        self.Started:Fire()
+            -- Initialize g_savedata
+            self.Bootstrapper:InitializeSavedata()
 
-        -- Send log
-        self.Libraries.Logging:Success("Start", "Noir (v%s) has started. Bootstrapper has initialized and started all services.", self.Version)
+            -- Initialize services, then start them
+            self.Bootstrapper:InitializeServices()
+            self.Bootstrapper:StartServices()
+
+            -- Fire event
+            self.Started:Fire()
+
+            -- Send log
+            self.Libraries.Logging:Success("Start", "Noir (v%s) has started. Bootstrapper has initialized and started all services.\nTook: %sms | Ready State:", self.Version, took)
+        end, true)
     end
 
     -- Set isStarting
     self.IsStarting = true
 
-    -- Wait for onCreate
-    local onCreate = self.Callbacks:Get("onCreate")
+    -- Wait for onCreate, then setup
+    ---@param isSaveCreate boolean
+    self.Callbacks:Once("onCreate", function(isSaveCreate)
+        setup(server.getTimeMillisec(), isSaveCreate)
+    end, true)
 
-    if not onCreate then
-        self.Callbacks:Once("onCreate", setup) -- Setup things when onCreate fires
-        self.Libraries.Logging:Info("Start", "Waiting for onCreate game event to fire before setting up Noir.")
-
-        return
-    end
-
-    if onCreate.HasFiredOnce then
-        setup() -- onCreate has fired, so setup now
-        self.Libraries.Logging:Info("Start", "onCreate has already fired earlier, so Noir will set up now.")
-
-        return
-    end
-
-    self.Callbacks:Once("onCreate", setup) -- Setup things when onCreate fires
+    -- Send log
     self.Libraries.Logging:Info("Start", "Waiting for onCreate game event to fire before setting up Noir.")
 end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+---@alias NoirAddonReason
+---| "AddonReload"
+---| "SaveCreate"
+---| "SaveLoad"
