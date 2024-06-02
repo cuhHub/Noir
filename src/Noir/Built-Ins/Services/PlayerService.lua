@@ -421,6 +421,10 @@ function Noir.Services.PlayerService:SearchPlayerByName(name)
     end
 end
 
+function Noir.Services.PlayerService:IsSamePlayer(playerA, playerB)
+    return playerA.ID == playerB.ID
+end
+
 -------------------------------
 -- // Intellisense
 -------------------------------
@@ -446,6 +450,7 @@ end
 ---@field GetPlayerBySteam fun(self: NoirPlayerService, steam: string): NoirPlayerServicePlayer|nil A method that gets a player by their Steam ID
 ---@field GetPlayerByName fun(self: NoirPlayerService, name: string): NoirPlayerServicePlayer|nil A method that gets a player by their name
 ---@field SearchPlayerByName fun(self: NoirPlayerService, query: string): NoirPlayerServicePlayer|nil A method that searches for a player. Caps insensitive
+---@field IsSamePlayer fun(self: NoirPlayerService, playerA: NoirPlayerServicePlayer, playerB: NoirPlayerServicePlayer): boolean A method that checks if two players are the same
 
 ---@class NoirPlayerServiceSerializedPlayer
 ---@field name string
