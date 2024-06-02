@@ -73,7 +73,7 @@ end
 ---@return any
 function Noir.Libraries.Table:Random(tbl)
     if #tbl == 0 then
-        Noir.Libraries.Logging:Warning("Table Lib - Random", "The provided table is empty, nil has been returned instead.")
+        Noir.Libraries.Logging:Warning("TableLibrary", ":Random() - The provided table is empty, nil has been returned instead.")
         return
     end
 

@@ -84,7 +84,7 @@ function Noir.Services.PlayerService:ServiceInit()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Warning("PlayerService", "A player just left, but their data couldn't be found (doesn't exist for some reason).")
+            Noir.Libraries.Logging:Error("PlayerService", "A player just left, but their data couldn't be found.")
             return
         end
 
@@ -92,7 +92,7 @@ function Noir.Services.PlayerService:ServiceInit()
         local success = self:RemovePlayerData(player)
 
         if not success then
-            Noir.Libraries.Logging:Warning("PlayerService", "onPlayerLeave player data removal failed.")
+            Noir.Libraries.Logging:Error("PlayerService", "onPlayerLeave player data removal failed.")
             return
         end
 
@@ -110,7 +110,7 @@ function Noir.Services.PlayerService:ServiceInit()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Warning("PlayerService", "A player just died, but they don't have data. This player has been ignored.")
+            Noir.Libraries.Logging:Error("PlayerService", "A player just died, but they don't have data.")
             return
         end
 
@@ -124,7 +124,7 @@ function Noir.Services.PlayerService:ServiceInit()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Warning("PlayerService", "A player just respawned, but they don't have data. This player has been ignored.")
+            Noir.Libraries.Logging:Error("PlayerService", "A player just respawned, but they don't have data.")
             return
         end
 
@@ -323,8 +323,16 @@ function Noir.Services.PlayerService:ServiceStart()
         -- Log
         Noir.Libraries.Logging:Info("PlayerService", "Loading player from save data: %s (%d, %s)", player.Name, player.ID, player.Steam)
 
+        -- Check if already loaded
+        if self:GetPlayer(player.ID) then
+            Noir.Libraries.Logging:Info("PlayerService", "(savedata load) %s already has data. Ignoring.", player.Name)
+            goto continue
+        end
+
         -- Give data
         self:GivePlayerData(player.Steam, player.Name, player.ID, player.Admin, player.Auth)
+
+        ::continue::
     end
 
     -- Load players in game
@@ -339,7 +347,7 @@ function Noir.Services.PlayerService:ServiceStart()
 
         -- Check if already loaded
         if self:GetPlayer(player.id) then
-            Noir.Libraries.Logging:Info("PlayerService", "%s already has data. Ignoring.", player.name)
+            Noir.Libraries.Logging:Info("PlayerService", "(in-game load) %s already has data. Ignoring.", player.name)
             goto continue
         end
 
@@ -357,7 +365,7 @@ end
 function Noir.Services.PlayerService:GivePlayerData(steam_id, name, peer_id, admin, auth)
     -- Check if player already exists
     if self:GetPlayer(peer_id) then
-        Noir.Libraries.Logging:Warning("PlayerService", "Attempted to give player data to an existing player. This player has been ignored.")
+        Noir.Libraries.Logging:Error("PlayerService", "Attempted to give player data to an existing player. This player has been ignored.")
         return
     end
 
@@ -383,7 +391,7 @@ end
 function Noir.Services.PlayerService:RemovePlayerData(player)
     -- Check if player exists in this service
     if not self:GetPlayer(player.ID) then
-        Noir.Libraries.Logging:Warning("PlayerService", "Attempted to remove player data from a non-existent player. This player has been ignored.")
+        Noir.Libraries.Logging:Error("PlayerService", "Attempted to remove player data from a non-existent player.")
         return false
     end
 
