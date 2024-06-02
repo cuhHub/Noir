@@ -267,6 +267,7 @@ function Noir.Services.PlayerService:GivePlayerData(steam_id, name, peer_id, adm
     -- Save player
     self.players[peer_id] = player
     self:GetSavedPlayers()[peer_id] = player:Serialize()
+    self:Save("players", self:GetSavedPlayers())
 
     -- Return
     return player
