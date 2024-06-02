@@ -45,7 +45,7 @@ Noir.Libraries.Logging = Noir.Libraries:Create("NoirLogging")
 Noir.Libraries.Logging.LoggingMode = "DebugLog"
 
 --[[
-    An event called when a log is sent.
+    An event called when a log is sent.<br>
     Arguments: (log: string)
 ]]
 Noir.Libraries.Logging.OnLog = Noir.Libraries.Events:Create()
@@ -70,12 +70,8 @@ end
 ---@param message string
 ---@param ... any
 function Noir.Libraries.Logging:Log(logType, title, message, ...)
-    -- validate args
-    local validatedLogType = tostring(logType):upper()
-    local validatedTitle = tostring(title)
-    local validatedMessage = type(message) == "table" and Noir.Libraries.Table:TableToString(message) or (... and tostring(message):format(...) or tostring(message))
-
-    local formattedText = ("[%s] (%s): %s"):format(validatedLogType, validatedTitle, validatedMessage)
+    -- format
+    local formattedText = self:FormatLog(logType, title, message, ...)
 
     -- send log
     if self.LoggingMode == "DebugLog" then
@@ -88,6 +84,30 @@ function Noir.Libraries.Logging:Log(logType, title, message, ...)
 
     -- send event
     self.OnLog:Fire(formattedText)
+end
+
+--[[
+    Format a log.<br>
+    Used internally.
+]]
+---@param logType string
+---@param title string
+---@param message string
+---@param ... any
+function Noir.Libraries.Logging:FormatLog(logType, title, message, ...)
+    -- validate args
+    local validatedLogType = tostring(logType):upper()
+    local validatedTitle = tostring(title)
+    local validatedMessage = type(message) == "table" and Noir.Libraries.Table:TableToString(message) or (... and tostring(message):format(...) or tostring(message))
+
+    -- layout
+    local layout = "[%s] (%s): "
+
+    -- format text
+    local formattedMessage = (layout:format(validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..layout:format(validatedLogType, validatedTitle))
+
+    -- return
+    return formattedMessage
 end
 
 --[[
