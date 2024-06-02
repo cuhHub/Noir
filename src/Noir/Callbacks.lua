@@ -60,10 +60,11 @@ Noir.Callbacks.Events = {} ---@type table<string, NoirEvent>
 ]]
 ---@param name string
 ---@param callback function
+---@param hideStartWarning boolean|nil
 ---@return NoirConnection
-function Noir.Callbacks:Connect(name, callback)
+function Noir.Callbacks:Connect(name, callback, hideStartWarning)
     -- Get or create event
-    local event = self:InstantiateCallback(name)
+    local event = self:InstantiateCallback(name, hideStartWarning or false)
 
     -- Connect callback to event
     return event:Connect(callback)
@@ -78,10 +79,11 @@ end
 ]]
 ---@param name string
 ---@param callback function
+---@param hideStartWarning boolean|nil
 ---@return NoirConnection
-function Noir.Callbacks:Once(name, callback)
+function Noir.Callbacks:Once(name, callback, hideStartWarning)
     -- Get or create event
-    local event = self:InstantiateCallback(name)
+    local event = self:InstantiateCallback(name, hideStartWarning or false)
 
     -- Connect callback to event
     return event:Once(callback)
@@ -108,10 +110,11 @@ end
     Used internally, do not use this in your addon.
 ]]
 ---@param name string
+---@param hideStartWarning boolean
 ---@return NoirEvent
-function Noir.Callbacks:InstantiateCallback(name)
+function Noir.Callbacks:InstantiateCallback(name, hideStartWarning)
     -- Check if Noir has started
-    if not Noir.HasStarted then
+    if not Noir.HasStarted and not hideStartWarning then
         Noir.Libraries.Logging:Warning("Callbacks", "Noir has not started yet. It is not recommended to connect to callbacks before `Noir:Start()` is called and finalized. Please connect to the `Noir.Started` event and attach to game callbacks in that.")
     end
 
