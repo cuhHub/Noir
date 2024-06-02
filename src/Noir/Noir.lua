@@ -111,7 +111,7 @@ function Noir:Start()
             self.Started:Fire()
 
             -- Send log
-            self.Libraries.Logging:Success("Start", "Noir (v%s) has started. Bootstrapper has initialized and started all services.\nTook: %sms | Ready State:", self.Version, took)
+            self.Libraries.Logging:Success("Start", "Noir (v%s) has started. Bootstrapper has initialized and started all services.\nTook: %sms | Addon Reason: %s", self.Version, took, Noir.AddonReason)
         end, true)
     end
 
