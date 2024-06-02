@@ -284,3 +284,22 @@ function Noir.Libraries.Table:ForceMerge(tbl, other)
 
     return new
 end
+
+--[[
+    Find a value in a table. Returns the index, or nil if not found.
+
+    local myTbl = {["hello"] = true}
+
+    local index = Noir.Libraries.Table:Find(myTbl, true)
+    print(index) -- "hello"
+]]
+---@param tbl table
+---@param value any
+---@return any|nil
+function Noir.Libraries.Table:Find(tbl, value)
+    for index, iterValue in pairs(tbl) do
+        if iterValue == value then
+            return index
+        end
+    end
+end
