@@ -39,7 +39,7 @@
     player:Teleport(matrix.translation(10, 0, 10))
 
     ---@param player NoirPlayerServicePlayer
-    Noir.Services.PlayerService.onJoin:Once(function(player) -- Ban the first player who joins
+    Noir.Services.PlayerService.OnJoin:Once(function(player) -- Ban the first player who joins
         player:Ban()
     end)
 ]]
@@ -49,10 +49,10 @@ Noir.Services.PlayerService.startPriority = 2
 
 function Noir.Services.PlayerService:ServiceInit()
     -- Create attributes
-    self.onJoin = Noir.Libraries.Events:Create()
-    self.onLeave = Noir.Libraries.Events:Create()
-    self.onDie = Noir.Libraries.Events:Create()
-    self.onRespawn = Noir.Libraries.Events:Create()
+    self.OnJoin = Noir.Libraries.Events:Create()
+    self.OnLeave = Noir.Libraries.Events:Create()
+    self.OnDie = Noir.Libraries.Events:Create()
+    self.OnRespawn = Noir.Libraries.Events:Create()
 
     self.players = {}
 
@@ -71,7 +71,7 @@ function Noir.Services.PlayerService:ServiceInit()
         end
 
         -- Call join event
-        self.onJoin:Fire(player)
+        self.OnJoin:Fire(player)
     end)
 
     ---@param steam_id string
@@ -97,7 +97,7 @@ function Noir.Services.PlayerService:ServiceInit()
         end
 
         -- Call leave event
-        self.onLeave:Fire(player)
+        self.OnLeave:Fire(player)
     end)
 
     ---@param steam_id string
@@ -115,7 +115,7 @@ function Noir.Services.PlayerService:ServiceInit()
         end
 
         -- Call die event
-        self.onDie:Fire(player)
+        self.OnDie:Fire(player)
     end)
 
     ---@param peer_id integer
@@ -129,7 +129,7 @@ function Noir.Services.PlayerService:ServiceInit()
         end
 
         -- Call respawn event
-        self.onRespawn:Fire(player)
+        self.OnRespawn:Fire(player)
     end)
 
     -- Create player class
@@ -317,16 +317,16 @@ end
 
 ---@class NoirPlayerService: NoirService
 ---@field PlayerClass NoirPlayerServicePlayer The class that represents a task. Used internally
----@field onJoin NoirEvent player | Fired when a player joins the server
----@field onLeave NoirEvent player | Fired when a player leaves the server
----@field onDie NoirEvent player | Fired when a player dies
----@field onRespawn NoirEvent player | Fired when a player respawns
+---@field OnJoin NoirEvent player | Fired when a player joins the server
+---@field OnLeave NoirEvent player | Fired when a player leaves the server
+---@field OnDie NoirEvent player | Fired when a player dies
+---@field OnRespawn NoirEvent player | Fired when a player respawns
 ---@field players table<integer, NoirPlayerServicePlayer>
 ---
----@field joinCallback NoirConnection A connection to the onJoin event
----@field leaveCallback NoirConnection A connection to the onLeave event
----@field dieCallback NoirConnection A connection to the onDie event
----@field respawnCallback NoirConnection A connection to the onRespawn event
+---@field joinCallback NoirConnection A connection to the OnJoin event
+---@field leaveCallback NoirConnection A connection to the OnLeave event
+---@field dieCallback NoirConnection A connection to the OnDie event
+---@field respawnCallback NoirConnection A connection to the OnRespawn event
 ---
 ---@field GetSavedPlayers fun(self: NoirPlayerService): table<integer, NoirPlayerServiceSerializedPlayer>
 ---@field GivePlayerData fun(self: NoirPlayerService, steam_id: string, name: string, peer_id: integer, admin: boolean, auth: boolean): NoirPlayerServicePlayer|nil A method that gives a player data
