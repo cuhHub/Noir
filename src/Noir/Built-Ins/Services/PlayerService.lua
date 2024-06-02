@@ -321,6 +321,13 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnRespawn:Fire(player)
     end)
 
+    -- Remove all players when the world exists
+    self.DestroyCallback = Noir.Callbacks:Connect("onDestroy", function()
+        for _, player in pairs(self:GetPlayers()) do
+            self.LeaveCallback:Fire(nil, nil, player.ID) -- TODO: probably add service methods that handles onPlayerJoin and onPlayerLeave, that way we can trigger the onPlayerLeave handler code cleanly here
+        end
+    end)
+
     -- Load players from save data
     local savedPlayers = Noir.AddonReason ~= "AddonReload" and {} or self:GetSavedPlayers()
     --  To explain the above:
@@ -459,10 +466,11 @@ end
 ---@field OnRespawn NoirEvent player | Fired when a player respawns
 ---@field Players table<integer, NoirPlayerServicePlayer>
 ---
----@field JoinCallback NoirConnection A connection to the OnJoin event
----@field LeaveCallback NoirConnection A connection to the OnLeave event
----@field DieCallback NoirConnection A connection to the OnDie event
----@field RespawnCallback NoirConnection A connection to the OnRespawn event
+---@field JoinCallback NoirConnection A connection to the onPlayerDie event
+---@field LeaveCallback NoirConnection A connection to the onPlayerLeave event
+---@field DieCallback NoirConnection A connection to the onPlayerDie event
+---@field RespawnCallback NoirConnection A connection to the onPlayerRespawn event
+---@field DestroyCallback NoirConnection A connection to the onDestroy event
 ---
 ---@field GetSavedPlayers fun(self: NoirPlayerService): table<integer, NoirPlayerServiceSerializedPlayer>
 ---@field GivePlayerData fun(self: NoirPlayerService, steam_id: string, name: string, peer_id: integer, admin: boolean, auth: boolean): NoirPlayerServicePlayer|nil A method that gives a player data
