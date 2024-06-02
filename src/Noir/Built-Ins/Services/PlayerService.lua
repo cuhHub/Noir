@@ -328,28 +328,29 @@ function Noir.Services.PlayerService:ServiceStart()
         end
     end)
 
+    -- REMOVED: No need for this. I remembered about the onDestroy callback, and that callback makes the code below useless.
     -- Load players from save data
-    local savedPlayers = Noir.AddonReason ~= "AddonReload" and {} or self:GetSavedPlayers()
+    -- local savedPlayers = Noir.AddonReason ~= "AddonReload" and {} or self:GetSavedPlayers()
     --  To explain the above:
     --      If a server was to stop with players in it, these players would be re-added when the server starts back up due to save data.
     --      This is bad, because if the players were to join back, their data wouldn't be added because it already exists.
     --      This is why we make this table empty.
 
-    for _, player in pairs(savedPlayers) do
-        -- Log
-        Noir.Libraries.Logging:Info("PlayerService", "Loading player from save data: %s (%d, %s)", player.Name, player.ID, player.Steam)
+    -- for _, player in pairs(savedPlayers) do
+    --     -- Log
+    --     Noir.Libraries.Logging:Info("PlayerService", "Loading player from save data: %s (%d, %s)", player.Name, player.ID, player.Steam)
 
-        -- Check if already loaded
-        if self:GetPlayer(player.ID) then
-            Noir.Libraries.Logging:Info("PlayerService", "(savedata load) %s already has data. Ignoring.", player.Name)
-            goto continue
-        end
+    --     -- Check if already loaded
+    --     if self:GetPlayer(player.ID) then
+    --         Noir.Libraries.Logging:Info("PlayerService", "(savedata load) %s already has data. Ignoring.", player.Name)
+    --         goto continue
+    --     end
 
-        -- Give data
-        self:GivePlayerData(player.Steam, player.Name, player.ID, player.Admin, player.Auth)
+    --     -- Give data
+    --     self:GivePlayerData(player.Steam, player.Name, player.ID, player.Admin, player.Auth)
 
-        ::continue::
-    end
+    --     ::continue::
+    -- end
 
     -- Load players in game
     for _, player in pairs(server.getPlayers()) do
