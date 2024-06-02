@@ -60,6 +60,7 @@ Noir.Services.CreatedServices = {} ---@type table<string, NoirService>
 ]]
 Noir.Services.ServiceClass = Noir.Libraries.Class:Create("NoirService") ---@type NoirService
 
+---@param name string
 function Noir.Services.ServiceClass:Init(name)
     -- Create attributes
     self.Name = name
@@ -237,11 +238,11 @@ end
 -------------------------------
 
 ---@class NoirService: NoirClass
----@field Name string
----@field Initialized boolean
----@field Started boolean
----@field InitPriority integer
----@field StartPriority integer
+---@field Name string The name of this service
+---@field Initialized boolean Whether or not this service has been initialized
+---@field Started boolean Whether or not this service has been started
+---@field InitPriority integer The priority of this service when it is initialized
+---@field StartPriority integer The priority of this service when it is started
 ---
 ---@field Initialize fun(self: NoirService) Initialize this service.<br>Used internally. Do not use this in your code.
 ---@field Start fun(self: NoirService) Start this service.<br>Used internally. Do not use this in your code.
