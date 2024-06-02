@@ -47,7 +47,7 @@ function Noir.Bootstrapper:InitializeSavedata()
     Noir.Libraries.Logging:Info("Bootstrapper", "'Noir' has been defined in g_savedata.")
 
     g_savedata.Noir.Services = g_savedata.Noir.Services or {}
-    Noir.Libraries.Logging:Info("Bootstrapper", "'Services' has been defined in Noir save data.")
+    Noir.Libraries.Logging:Info("Bootstrapper", "'Services' has been defined in Noir savedata.")
 end
 
 --[[
