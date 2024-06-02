@@ -214,7 +214,7 @@ function Noir.Services.PlayerService:ServiceStart()
 
     for _, player in pairs(players) do
         -- Log
-        Noir.Libraries.Logging:Info("PlayerService", "Loading player from save data: %s (%d)", player.name, player.ID)
+        Noir.Libraries.Logging:Info("PlayerService", "Loading player from save data: %s (%d, %s)", player.name, player.ID, player.steam)
 
         -- Give data
         self:GivePlayerData(player.steam, player.name, player.ID, player.admin, player.auth)
@@ -222,8 +222,13 @@ function Noir.Services.PlayerService:ServiceStart()
 
     -- Load players in game
     for _, player in pairs(server.getPlayers()) do
+        -- Check if unnamed client
+        if player.steam_id == 0 then
+            goto continue
+        end
+
         -- Log
-        Noir.Libraries.Logging:Info("PlayerService", "Loading player in game: %s (%d)", player.name, player.id)
+        Noir.Libraries.Logging:Info("PlayerService", "Loading player in game: %s (%d, %s)", player.name, player.id, player.steam_id)
 
         -- Check if already loaded
         if self:GetPlayer(player.id) then
