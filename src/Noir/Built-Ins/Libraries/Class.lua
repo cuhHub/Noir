@@ -76,7 +76,7 @@ function Noir.Libraries.Class:Create(name, parent)
     local class = {} ---@diagnostic disable-line
     class.__name = name
     class.__parent = parent
-    class.isObject = false
+    class.__isObject = false
 
     function class:New(...)
         -- create Object
@@ -84,7 +84,7 @@ function Noir.Libraries.Class:Create(name, parent)
         local object = {} ---@diagnostic disable-line
         self:__descend(object, {New = true, Init = true, __descend = true})
 
-        object.isObject = true
+        object.__isObject = true
 
         -- Call init of object. This init function will provide the needed attributes to the object
         if self.Init then
@@ -113,7 +113,7 @@ function Noir.Libraries.Class:Create(name, parent)
 
     function class:InitializeParent(...)
         -- Check if this was called from an object
-        if not self.isObject then
+        if not self.__isObject then
             Noir.Libraries.Logging:Error(self.__name, "Attempted to call :InitializeParent() when 'self' is a class and not an object.")
             return
         end
@@ -145,7 +145,7 @@ end
 ---@class NoirClass
 ---@field __name string The name of this class/object
 ---@field __parent NoirClass|nil The parent class that this class inherits from
----@field isObject boolean
+---@field __isObject boolean
 ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
 ---
 ---@field New fun(self: NoirClass, ...: any): NoirClass A method to create an object from this class
