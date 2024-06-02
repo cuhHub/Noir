@@ -56,86 +56,6 @@ function Noir.Services.PlayerService:ServiceInit()
 
     self.Players = {}
 
-    -- Create callbacks
-    ---@param steam_id string
-    ---@param name string
-    ---@param peer_id integer
-    ---@param admin boolean
-    ---@param auth boolean
-    self.JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
-        -- Give data
-        local player = self:GivePlayerData(steam_id, name, peer_id, admin, auth)
-
-        if self:GetPlayer(peer_id) then
-            return
-        end
-
-        if not player then
-            return
-        end
-
-        -- Call join event
-        self.OnJoin:Fire(player)
-    end)
-
-    ---@param steam_id string
-    ---@param name string
-    ---@param peer_id integer
-    ---@param admin boolean
-    ---@param auth boolean
-    self.LeaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
-        -- Get player
-        local player = self:GetPlayer(peer_id)
-
-        if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just left, but their data couldn't be found.")
-            return
-        end
-
-        -- Remove player
-        local success = self:RemovePlayerData(player)
-
-        if not success then
-            Noir.Libraries.Logging:Error("PlayerService", "onPlayerLeave player data removal failed.")
-            return
-        end
-
-        -- Call leave event
-        self.OnLeave:Fire(player)
-    end)
-
-    ---@param steam_id string
-    ---@param name string
-    ---@param peer_id integer
-    ---@param admin boolean
-    ---@param auth boolean
-    self.DieCallback = Noir.Callbacks:Connect("onPlayerDie", function(steam_id, name, peer_id, admin, auth)
-        -- Get player
-        local player = self:GetPlayer(peer_id)
-
-        if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just died, but they don't have data.")
-            return
-        end
-
-        -- Call die event
-        self.OnDie:Fire(player)
-    end)
-
-    ---@param peer_id integer
-    self.RespawnCallback = Noir.Callbacks:Connect("onPlayerRespawn", function(peer_id)
-        -- Get player
-        local player = self:GetPlayer(peer_id)
-
-        if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just respawned, but they don't have data.")
-            return
-        end
-
-        -- Call respawn event
-        self.OnRespawn:Fire(player)
-    end)
-
     -- Create player class
     self.PlayerClass = Noir.Libraries.Class:Create("NoirPlayerServicePlayer") ---@type NoirPlayerServicePlayer
 
@@ -320,6 +240,86 @@ function Noir.Services.PlayerService:ServiceInit()
 end
 
 function Noir.Services.PlayerService:ServiceStart()
+    -- Create callbacks
+    ---@param steam_id string
+    ---@param name string
+    ---@param peer_id integer
+    ---@param admin boolean
+    ---@param auth boolean
+    self.JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
+        -- Give data
+        local player = self:GivePlayerData(steam_id, name, peer_id, admin, auth)
+
+        if self:GetPlayer(peer_id) then
+            return
+        end
+
+        if not player then
+            return
+        end
+
+        -- Call join event
+        self.OnJoin:Fire(player)
+    end)
+
+    ---@param steam_id string
+    ---@param name string
+    ---@param peer_id integer
+    ---@param admin boolean
+    ---@param auth boolean
+    self.LeaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
+        -- Get player
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just left, but their data couldn't be found.")
+            return
+        end
+
+        -- Remove player
+        local success = self:RemovePlayerData(player)
+
+        if not success then
+            Noir.Libraries.Logging:Error("PlayerService", "onPlayerLeave player data removal failed.")
+            return
+        end
+
+        -- Call leave event
+        self.OnLeave:Fire(player)
+    end)
+
+    ---@param steam_id string
+    ---@param name string
+    ---@param peer_id integer
+    ---@param admin boolean
+    ---@param auth boolean
+    self.DieCallback = Noir.Callbacks:Connect("onPlayerDie", function(steam_id, name, peer_id, admin, auth)
+        -- Get player
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just died, but they don't have data.")
+            return
+        end
+
+        -- Call die event
+        self.OnDie:Fire(player)
+    end)
+
+    ---@param peer_id integer
+    self.RespawnCallback = Noir.Callbacks:Connect("onPlayerRespawn", function(peer_id)
+        -- Get player
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just respawned, but they don't have data.")
+            return
+        end
+
+        -- Call respawn event
+        self.OnRespawn:Fire(player)
+    end)
+
     -- Load players from save data
     local savedPlayers = Noir.AddonReason ~= "AddonReload" and {} or self:GetSavedPlayers()
     --  To explain the above:
