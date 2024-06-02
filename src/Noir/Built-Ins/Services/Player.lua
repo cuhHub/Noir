@@ -133,7 +133,7 @@ function Noir.Services.PlayerService:ServiceInit()
     end)
 
     -- Create player class
-    self.PlayerClass = Noir.Libraries.Class:Create("NoirPlayerServicePlayer")
+    self.PlayerClass = Noir.Libraries.Class:Create("NoirPlayerServicePlayer") ---@type NoirPlayerServicePlayer
 
     ---@param player NoirPlayerServicePlayer
     ---@param name string
