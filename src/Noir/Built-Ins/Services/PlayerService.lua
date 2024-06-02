@@ -247,12 +247,13 @@ function Noir.Services.PlayerService:ServiceStart()
     ---@param admin boolean
     ---@param auth boolean
     self.JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
-        -- Give data
-        local player = self:GivePlayerData(steam_id, name, peer_id, admin, auth)
-
+        -- Check if player was loaded via save data. This happens because onPlayerJoin runs for the host after Noir fully starts
         if self:GetPlayer(peer_id) then
             return
         end
+
+        -- Give data
+        local player = self:GivePlayerData(steam_id, name, peer_id, admin, auth)
 
         if not player then
             return
