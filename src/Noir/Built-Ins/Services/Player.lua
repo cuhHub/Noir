@@ -217,6 +217,23 @@ function Noir.Services.PlayerService:ServiceStart()
         -- Give data
         self:GivePlayerData(player.steam, player.name, player.ID, player.admin, player.auth)
     end
+
+    -- Load players in game
+    for _, player in pairs(server.getPlayers()) do
+        -- Log
+        Noir.Libraries.Logging:Info("PlayerService", "Loading player in game: %s (%d)", player.name, player.id)
+
+        -- Check if already loaded
+        if self:GetPlayer(player.id) then
+            Noir.Libraries.Logging:Info("PlayerService", "%s already has data. Ignoring.", player.name)
+            goto continue
+        end
+
+        -- Give data
+        self:GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
+
+        ::continue::
+    end
 end
 
 function Noir.Services.PlayerService:GetSavedPlayers()
@@ -235,7 +252,7 @@ function Noir.Services.PlayerService:GivePlayerData(steam_id, name, peer_id, adm
     local player = self.PlayerClass:New(
         name,
         peer_id,
-        steam_id,
+        tostring(steam_id),
         admin,
         auth
     )
