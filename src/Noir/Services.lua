@@ -62,32 +62,32 @@ Noir.Services.ServiceClass = Noir.Libraries.Class:Create("NoirService") ---@type
 
 function Noir.Services.ServiceClass:Init(name)
     -- Create attributes
-    self.name = name
-    self.initialized = false
-    self.started = false
+    self.Name = name
+    self.Initialized = false
+    self.Started = false
 
-    self.initPriority = nil
-    self.startPriority = nil
+    self.InitPriority = nil
+    self.StartPriority = nil
 end
 
 function Noir.Services.ServiceClass:Initialize()
     -- Checks
-    if self.initialized then
-        Noir.Libraries.Logging:Error(self.name, "Attempted to initialize this service when it has already initialized.")
+    if self.Initialized then
+        Noir.Libraries.Logging:Error(self.Name, "Attempted to initialize this service when it has already initialized.")
         return
     end
 
-    if self.started then
-        Noir.Libraries.Logging:Error(self.name, "Attempted to start this service when it has already started.")
+    if self.Started then
+        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.")
         return
     end
 
     -- Set initialized
-    self.initialized = true
+    self.Initialized = true
 
     -- Call ServiceInit
     if not self.ServiceInit then
-        Noir.Libraries.Logging:Error(self.name, "This service is missing a ServiceInit method.")
+        Noir.Libraries.Logging:Error(self.Name, "This service is missing a ServiceInit method.")
         return
     end
 
@@ -96,22 +96,22 @@ end
 
 function Noir.Services.ServiceClass:Start()
     -- Checks
-    if self.started then
-        Noir.Libraries.Logging:Error(self.name, "Attempted to start this service when it has already started.")
+    if self.Started then
+        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.")
         return
     end
 
-    if not self.initialized then
-        Noir.Libraries.Logging:Error(self.name, "Attempted to start this service when it has not initialized yet.")
+    if not self.Initialized then
+        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has not initialized yet.")
         return
     end
 
     -- Set started
-    self.started = true
+    self.Started = true
 
     -- Call ServiceStart
     if not self.ServiceStart then
-        Noir.Libraries.Logging:Warning(self.name, "This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.")
+        Noir.Libraries.Logging:Warning(self.Name, "This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.")
         return
     end
 
@@ -224,7 +224,7 @@ function Noir.Services:GetService(name)
     end
 
     -- Check if service has been initialized
-    if not service.initialized then
+    if not service.Initialized then
         Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that hasn't initialized yet ('%s').", name)
         return
     end
@@ -237,11 +237,11 @@ end
 -------------------------------
 
 ---@class NoirService: NoirClass
----@field name string
----@field initialized boolean
----@field started boolean
----@field initPriority integer
----@field startPriority integer
+---@field Name string
+---@field Initialized boolean
+---@field Started boolean
+---@field InitPriority integer
+---@field StartPriority integer
 ---
 ---@field Initialize fun(self: NoirService) Initialize this service.<br>Used internally. Do not use this in your code.
 ---@field Start fun(self: NoirService) Start this service.<br>Used internally. Do not use this in your code.

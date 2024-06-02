@@ -74,17 +74,17 @@ function Noir.Libraries.Class:Create(name, parent)
     -- Create a class
     ---@type NoirClass
     local class = {} ---@diagnostic disable-line
-    class.__name = name
-    class.__parent = parent
-    class.__isObject = false
+    class.__Name = name
+    class.__Parent = parent
+    class.__IsObject = false
 
     function class:New(...)
         -- create Object
         ---@type NoirClass
         local object = {} ---@diagnostic disable-line
-        self:__descend(object, {New = true, Init = true, __descend = true})
+        self:__Descend(object, {New = true, Init = true, __Descend = true})
 
-        object.__isObject = true
+        object.__IsObject = true
 
         -- Call init of object. This init function will provide the needed attributes to the object
         if self.Init then
@@ -95,7 +95,7 @@ function Noir.Libraries.Class:Create(name, parent)
         return object
     end
 
-    function class.__descend(from, object, exceptions)
+    function class.__Descend(from, object, exceptions)
         for index, value in pairs(from) do
             if exceptions[index] then
                 goto continue
@@ -113,26 +113,26 @@ function Noir.Libraries.Class:Create(name, parent)
 
     function class:InitializeParent(...)
         -- Check if this was called from an object
-        if not self.__isObject then
-            Noir.Libraries.Logging:Error(self.__name, "Attempted to call :InitializeParent() when 'self' is a class and not an object.")
+        if not self.IsSameType then
+            Noir.Libraries.Logging:Error(self.__Name, "Attempted to call :InitializeParent() when 'self' is a class and not an object.")
             return
         end
 
         -- Check if there is a parent
-        if not self.__parent then
-            Noir.Libraries.Logging:Error(self.__name, "Attempted to call :InitializeParent() when 'self' has no parent.")
+        if not self.__IsObject then
+            Noir.Libraries.Logging:Error(self.__Name, "Attempted to call :InitializeParent() when 'self' has no parent.")
             return
         end
 
         -- Create an object from the parent class
-        local object = self.__parent:New(...)
+        local object = self.__Parent:New(...)
 
         -- Copy and bring new attributes and methods down from the new parent object to this object
-        self.__descend(object, self, {New = true, Init = true, __descend = true})
+        self.__Descend(object, self, {New = true, Init = true, __Descend = true})
     end
 
     function class:IsSameType(other)
-        return other.__name ~= nil and self.__name == other.__name
+        return other.__Name ~= nil and self.__Name == other.__Name
     end
 
     return class
@@ -143,12 +143,12 @@ end
 -------------------------------
 
 ---@class NoirClass
----@field __name string The name of this class/object
----@field __parent NoirClass|nil The parent class that this class inherits from
----@field __isObject boolean
+---@field __Name string The name of this class/object
+---@field __Parent NoirClass|nil The parent class that this class inherits from
+---@field __IsObject boolean
 ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
 ---
 ---@field New fun(self: NoirClass, ...: any): NoirClass A method to create an object from this class
----@field __descend fun(from: NoirClass, object: NoirClass, exceptions: table<any, boolean>) A helper function that copies important values from the class to an object
+---@field __Descend fun(from: NoirClass, object: NoirClass, exceptions: table<any, boolean>) A helper function that copies important values from the class to an object
 ---@field IsSameType fun(self: NoirClass, other: NoirClass): boolean A method that returns whether an object is identical to this one
 ---@field InitializeParent fun(self: NoirClass, ...: any) A method that initializes the parent class for this object

@@ -73,7 +73,7 @@ end
 ---@return any
 function Noir.Libraries.Table:Random(tbl)
     if #tbl == 0 then
-        Noir.Libraries.Logging:Warning("Random", "The provided table is empty, nil has been returned instead.")
+        Noir.Libraries.Logging:Warning("Table Lib - Random", "The provided table is empty, nil has been returned instead.")
         return
     end
 
@@ -143,14 +143,14 @@ end
     Converts a table to a string by iterating deep through the table.
 
     local myTbl = {1, 2, {}, "foo"}
-    local string = Noir.Libraries.Table:TableToString(myTbl)
+    local string = Noir.Libraries.Table:ToString(myTbl)
     print(string) -- 1: 1\n2: 2\n3: {}\n4: "foo"
     
 ]]
 ---@param tbl table
 ---@param indent integer|nil
 ---@return string
-function Noir.Libraries.Table:TableToString(tbl, indent)
+function Noir.Libraries.Table:ToString(tbl, indent)
     -- Set default indent
     if not indent then
         indent = 0
@@ -173,7 +173,7 @@ function Noir.Libraries.Table:TableToString(tbl, indent)
         if valueType == "table" then
             -- Format table
             local nextIndent = indent + 2
-            local formattedValue = Noir.Libraries.Table:TableToString(value, nextIndent)
+            local formattedValue = Noir.Libraries.Table:ToString(value, nextIndent)
 
             -- Check if empty table
             if formattedValue == "" then

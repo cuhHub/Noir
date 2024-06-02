@@ -112,7 +112,7 @@ function Noir:Start()
         return
     end
 
-    if onCreate.hasFiredOnce then
+    if onCreate.HasFiredOnce then
         setup() -- onCreate has fired, so setup now
         self.Libraries.Logging:Info("Start", "onCreate has already fired earlier, so Noir will set up now.")
 

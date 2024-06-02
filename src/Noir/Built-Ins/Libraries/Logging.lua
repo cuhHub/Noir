@@ -98,7 +98,7 @@ function Noir.Libraries.Logging:FormatLog(logType, title, message, ...)
     -- validate args
     local validatedLogType = tostring(logType):upper()
     local validatedTitle = tostring(title)
-    local validatedMessage = type(message) == "table" and Noir.Libraries.Table:TableToString(message) or (... and tostring(message):format(...) or tostring(message))
+    local validatedMessage = type(message) == "table" and Noir.Libraries.Table:ToString(message) or (... and tostring(message):format(...) or tostring(message))
 
     -- layout
     local layout = "[%s] (%s): "

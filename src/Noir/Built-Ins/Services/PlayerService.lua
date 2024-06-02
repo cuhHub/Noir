@@ -44,8 +44,8 @@
     end)
 ]]
 Noir.Services.PlayerService = Noir.Services:CreateService("PlayerService") ---@type NoirPlayerService
-Noir.Services.PlayerService.initPriority = 2
-Noir.Services.PlayerService.startPriority = 2
+Noir.Services.PlayerService.InitPriority = 2
+Noir.Services.PlayerService.StartPriority = 2
 
 function Noir.Services.PlayerService:ServiceInit()
     -- Create attributes
@@ -54,7 +54,7 @@ function Noir.Services.PlayerService:ServiceInit()
     self.OnDie = Noir.Libraries.Events:Create()
     self.OnRespawn = Noir.Libraries.Events:Create()
 
-    self.players = {}
+    self.Players = {}
 
     -- Create callbacks
     ---@param steam_id string
@@ -62,7 +62,7 @@ function Noir.Services.PlayerService:ServiceInit()
     ---@param peer_id integer
     ---@param admin boolean
     ---@param auth boolean
-    self.joinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
+    self.JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
         -- Give data
         local player = self:GivePlayerData(steam_id, name, peer_id, admin, auth)
 
@@ -79,7 +79,7 @@ function Noir.Services.PlayerService:ServiceInit()
     ---@param peer_id integer
     ---@param admin boolean
     ---@param auth boolean
-    self.leaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
+    self.LeaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
         -- Get player
         local player = self:GetPlayer(peer_id)
 
@@ -105,7 +105,7 @@ function Noir.Services.PlayerService:ServiceInit()
     ---@param peer_id integer
     ---@param admin boolean
     ---@param auth boolean
-    self.dieCallback = Noir.Callbacks:Connect("onPlayerDie", function(steam_id, name, peer_id, admin, auth)
+    self.DieCallback = Noir.Callbacks:Connect("onPlayerDie", function(steam_id, name, peer_id, admin, auth)
         -- Get player
         local player = self:GetPlayer(peer_id)
 
@@ -119,7 +119,7 @@ function Noir.Services.PlayerService:ServiceInit()
     end)
 
     ---@param peer_id integer
-    self.respawnCallback = Noir.Callbacks:Connect("onPlayerRespawn", function(peer_id)
+    self.RespawnCallback = Noir.Callbacks:Connect("onPlayerRespawn", function(peer_id)
         -- Get player
         local player = self:GetPlayer(peer_id)
 
@@ -142,30 +142,30 @@ function Noir.Services.PlayerService:ServiceInit()
     ---@param admin boolean
     ---@param auth boolean
     function self.PlayerClass.Init(player, name, ID, steam, admin, auth)
-        player.name = name
+        player.Name = name
         player.ID = ID
-        player.steam = steam
-        player.admin = admin
-        player.auth = auth
+        player.Steam = steam
+        player.Admin = admin
+        player.Auth = auth
     end
 
     function self.PlayerClass.Serialize(player)
         return {
-            name = player.name,
+            Name = player.Name,
             ID = player.ID,
-            steam = player.steam,
-            admin = player.admin,
-            auth = player.auth
+            Steam = player.Steam,
+            Admin = player.Admin,
+            Auth = player.Auth
         }
     end
 
     function self.PlayerClass.Deserialize(serializedPlayer)
         local player = self.PlayerClass:New( ---@type NoirPlayerServicePlayer
-            serializedPlayer.name,
+            serializedPlayer.Name,
             serializedPlayer.ID,
-            serializedPlayer.steam,
-            serializedPlayer.admin,
-            serializedPlayer.auth
+            serializedPlayer.Steam,
+            serializedPlayer.Admin,
+            serializedPlayer.Auth
         )
 
         return player
@@ -178,7 +178,7 @@ function Noir.Services.PlayerService:ServiceInit()
             server.removeAuth(player.ID)
         end
 
-        player.auth = auth
+        player.Auth = auth
     end
 
     function self.PlayerClass.SetAdmin(player, admin)
@@ -188,7 +188,7 @@ function Noir.Services.PlayerService:ServiceInit()
             server.removeAdmin(player.ID)
         end
 
-        player.admin = admin
+        player.Admin = admin
     end
 
     function self.PlayerClass.Kick(player)
@@ -207,17 +207,17 @@ function Noir.Services.PlayerService:ServiceInit()
         return (server.getPlayerPos(player.ID)) or matrix.translation(0, 0, 0)
     end
 
-    function self.PlayerClass.SetCharacterData(player, hp, interactable, AI)
+    function self.PlayerClass.SetCharacterData(player, health, interactable, AI)
         -- Get the character
         local character = player:GetCharacter()
 
         if not character then
-            Noir.Libraries.Logging:Error("PlayerService", ":SetCharacterData() failed for player %s (%d, %s) due to character being nil", player.name, player.ID, player.steam)
+            Noir.Libraries.Logging:Error("PlayerService", ":SetCharacterData() failed for player %s (%d, %s) due to character being nil", player.Name, player.ID, player.Steam)
             return
         end
 
         -- Set the data
-        server.setCharacterData(character, hp, interactable, AI)
+        server.setCharacterData(character, health, interactable, AI)
     end
 
     function self.PlayerClass.Heal(player, amount)
@@ -241,7 +241,7 @@ function Noir.Services.PlayerService:ServiceInit()
         local character = server.getPlayerCharacterID(player.ID)
 
         if not character then
-            Noir.Libraries.Logging:Error("PlayerService", ":GetCharacter() failed for player %s (%d, %s)", player.name, player.ID, player.steam)
+            Noir.Libraries.Logging:Error("PlayerService", ":GetCharacter() failed for player %s (%d, %s)", player.Name, player.ID, player.Steam)
             return
         end
 
@@ -254,7 +254,7 @@ function Noir.Services.PlayerService:ServiceInit()
         local character = player:GetCharacter()
 
         if not character then
-            Noir.Libraries.Logging:Error("PlayerService", ":Revive() failed for player %s (%d, %s) due to character being nil", player.name, player.ID, player.steam)
+            Noir.Libraries.Logging:Error("PlayerService", ":Revive() failed for player %s (%d, %s) due to character being nil", player.Name, player.ID, player.Steam)
             return
         end
 
@@ -267,7 +267,7 @@ function Noir.Services.PlayerService:ServiceInit()
         local character = player:GetCharacter()
 
         if not character then
-            Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s) due to character being nil", player.name, player.ID, player.steam)
+            Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s) due to character being nil", player.Name, player.ID, player.Steam)
             return
         end
 
@@ -275,7 +275,7 @@ function Noir.Services.PlayerService:ServiceInit()
         local data = server.getCharacterData(character)
 
         if not data then
-            Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s). Data is nil", player.name, player.ID, player.steam)
+            Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s). Data is nil", player.Name, player.ID, player.Steam)
             return
         end
 
@@ -288,7 +288,7 @@ function Noir.Services.PlayerService:ServiceInit()
         local data = player:GetCharacterData()
 
         if not data then
-            Noir.Libraries.Logging:Error("PlayerService", ":GetHealth() failed for player %s (%d, %s) due to data being nil. Returning 100 instead", player.name, player.ID, player.steam)
+            Noir.Libraries.Logging:Error("PlayerService", ":GetHealth() failed for player %s (%d, %s) due to data being nil. Returning 100 instead", player.Name, player.ID, player.Steam)
             return 100
         end
 
@@ -301,7 +301,7 @@ function Noir.Services.PlayerService:ServiceInit()
         local data = player:GetCharacterData()
 
         if not data then
-            Noir.Libraries.Logging:Error("PlayerService", ":IsDowned() failed for player %s (%d, %s) due to data being nil. Returning false instead", player.name, player.ID, player.steam)
+            Noir.Libraries.Logging:Error("PlayerService", ":IsDowned() failed for player %s (%d, %s) due to data being nil. Returning false instead", player.Name, player.ID, player.Steam)
             return false
         end
 
@@ -316,10 +316,10 @@ function Noir.Services.PlayerService:ServiceStart()
 
     for _, player in pairs(players) do
         -- Log
-        Noir.Libraries.Logging:Info("PlayerService", "Loading player from save data: %s (%d, %s)", player.name, player.ID, player.steam)
+        Noir.Libraries.Logging:Info("PlayerService", "Loading player from save data: %s (%d, %s)", player.Name, player.ID, player.Steam)
 
         -- Give data
-        self:GivePlayerData(player.steam, player.name, player.ID, player.admin, player.auth)
+        self:GivePlayerData(player.Steam, player.Name, player.ID, player.Admin, player.Auth)
     end
 
     -- Load players in game
@@ -367,7 +367,7 @@ function Noir.Services.PlayerService:GivePlayerData(steam_id, name, peer_id, adm
     )
 
     -- Save player
-    self.players[peer_id] = player
+    self.Players[peer_id] = player
     self:GetSavedPlayers()[peer_id] = player:Serialize()
     self:Save("players", self:GetSavedPlayers())
 
@@ -383,23 +383,23 @@ function Noir.Services.PlayerService:RemovePlayerData(player)
     end
 
     -- Remove player
-    self.players[player.ID] = nil
+    self.Players[player.ID] = nil
     self:GetSavedPlayers()[player.ID] = nil
 
     return true
 end
 
 function Noir.Services.PlayerService:GetPlayers()
-    return self.players
+    return self.Players
 end
 
 function Noir.Services.PlayerService:GetPlayer(ID)
-    return self.players[ID]
+    return self:GetPlayers()[ID]
 end
 
 function Noir.Services.PlayerService:GetPlayerBySteam(steam)
     for _, player in pairs(self:GetPlayers()) do
-        if player.steam == steam then
+        if player.Steam == steam then
             return player
         end
     end
@@ -407,7 +407,7 @@ end
 
 function Noir.Services.PlayerService:GetPlayerByName(name)
     for _, player in pairs(self:GetPlayers()) do
-        if player.name == name then
+        if player.Name == name then
             return player
         end
     end
@@ -415,7 +415,7 @@ end
 
 function Noir.Services.PlayerService:SearchPlayerByName(name)
     for _, player in pairs(self:GetPlayers()) do
-        if player.name:lower():gsub(" ", ""):find(name:lower():gsub(" ", "")) then
+        if player.Name:lower():gsub(" ", ""):find(name:lower():gsub(" ", "")) then
             return player
         end
     end
@@ -435,12 +435,12 @@ end
 ---@field OnLeave NoirEvent player | Fired when a player leaves the server
 ---@field OnDie NoirEvent player | Fired when a player dies
 ---@field OnRespawn NoirEvent player | Fired when a player respawns
----@field players table<integer, NoirPlayerServicePlayer>
+---@field Players table<integer, NoirPlayerServicePlayer>
 ---
----@field joinCallback NoirConnection A connection to the OnJoin event
----@field leaveCallback NoirConnection A connection to the OnLeave event
----@field dieCallback NoirConnection A connection to the OnDie event
----@field respawnCallback NoirConnection A connection to the OnRespawn event
+---@field JoinCallback NoirConnection A connection to the OnJoin event
+---@field LeaveCallback NoirConnection A connection to the OnLeave event
+---@field DieCallback NoirConnection A connection to the OnDie event
+---@field RespawnCallback NoirConnection A connection to the OnRespawn event
 ---
 ---@field GetSavedPlayers fun(self: NoirPlayerService): table<integer, NoirPlayerServiceSerializedPlayer>
 ---@field GivePlayerData fun(self: NoirPlayerService, steam_id: string, name: string, peer_id: integer, admin: boolean, auth: boolean): NoirPlayerServicePlayer|nil A method that gives a player data
@@ -453,18 +453,18 @@ end
 ---@field IsSamePlayer fun(self: NoirPlayerService, playerA: NoirPlayerServicePlayer, playerB: NoirPlayerServicePlayer): boolean A method that checks if two players are the same
 
 ---@class NoirPlayerServiceSerializedPlayer
----@field name string
+---@field Name string
 ---@field ID integer
----@field steam string
----@field admin boolean
----@field auth boolean
+---@field Steam string
+---@field Admin boolean
+---@field Auth boolean
 
 ---@class NoirPlayerServicePlayer: NoirClass
----@field name string The name of this player
+---@field Name string The name of this player
 ---@field ID integer The ID of this player
----@field steam string The Steam ID of this player
----@field admin boolean Whether or not this player is an admin
----@field auth boolean Whether or not this player is authed
+---@field Steam string The Steam ID of this player
+---@field Admin boolean Whether or not this player is an admin
+---@field Auth boolean Whether or not this player is authed
 ---
 ---@field Serialize fun(selF: NoirPlayerServicePlayer): NoirPlayerServiceSerializedPlayer A method that serializes this player into a g_savedata appropriate format
 ---@field Deserialize fun(serializedPlayer: NoirPlayerServiceSerializedPlayer): NoirPlayerServicePlayer A method that deserializes the serialized player into a player object 
@@ -474,7 +474,7 @@ end
 ---@field Ban fun(self: NoirPlayerServicePlayer) A method that bans this player
 ---@field Teleport fun(self: NoirPlayerServicePlayer, pos: SWMatrix) A method that teleports this player
 ---@field GetPosition fun(self: NoirPlayerServicePlayer): SWMatrix A method that returns the position of this player
----@field SetCharacterData fun(self: NoirPlayerServicePlayer, hp: number, interactable: boolean, AI: boolean)
+---@field SetCharacterData fun(self: NoirPlayerServicePlayer, health: number, interactable: boolean, AI: boolean)
 ---@field Heal fun(self: NoirPlayerServicePlayer, amount: number) Heal this player by a certain amount
 ---@field Damage fun(self: NoirPlayerServicePlayer, amount: number) Damages this player by a certain amount
 ---@field GetCharacter fun(self: NoirPlayerServicePlayer): integer|nil A method that returns the character of this player
