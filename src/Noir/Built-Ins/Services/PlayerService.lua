@@ -66,6 +66,10 @@ function Noir.Services.PlayerService:ServiceInit()
         -- Give data
         local player = self:GivePlayerData(steam_id, name, peer_id, admin, auth)
 
+        if self:GetPlayer(peer_id) then
+            return
+        end
+
         if not player then
             return
         end
@@ -316,10 +320,14 @@ function Noir.Services.PlayerService:ServiceInit()
 end
 
 function Noir.Services.PlayerService:ServiceStart()
-    -- Load players from save
-    local players = self:GetSavedPlayers()
+    -- Load players from save data
+    local savedPlayers = Noir.AddonReason ~= "AddonReload" and {} or self:GetSavedPlayers()
+    --  To explain the above:
+    --      If a server was to stop with players in it, these players would be re-added when the server starts back up due to save data.
+    --      This is bad, because if the players were to join back, their data wouldn't be added because it already exists.
+    --      This is why we make this table empty.
 
-    for _, player in pairs(players) do
+    for _, player in pairs(savedPlayers) do
         -- Log
         Noir.Libraries.Logging:Info("PlayerService", "Loading player from save data: %s (%d, %s)", player.Name, player.ID, player.Steam)
 
