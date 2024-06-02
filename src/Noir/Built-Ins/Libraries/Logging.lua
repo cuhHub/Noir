@@ -45,6 +45,12 @@ Noir.Libraries.Logging = Noir.Libraries:Create("NoirLogging")
 Noir.Libraries.Logging.LoggingMode = "DebugLog"
 
 --[[
+    An event called when a log is sent.
+    Arguments: (log: string)
+]]
+Noir.Libraries.Logging.OnLog = Noir.Libraries.Events:Create()
+
+--[[
     Set the logging mode.
 
     Noir.Libraries.Logging:SetMode("DebugLog")
@@ -79,6 +85,9 @@ function Noir.Libraries.Logging:Log(logType, title, message, ...)
     else
         self:Error("Invalid logging mode: %s", "'%s' is not a valid logging mode.", tostring(Noir.Libraries.LoggingMode))
     end
+
+    -- send event
+    self.OnLog:Fire(formattedText)
 end
 
 --[[
