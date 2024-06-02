@@ -3,6 +3,8 @@
         "Class.lua",
         "Events.lua",
         "Logging.lua",
-        "Table.lua"
+        "Table.lua",
+        "Number.lua",
+        "String.lua"
     ]
 }
