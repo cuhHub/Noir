@@ -63,7 +63,7 @@ print(rob.name) -- "[Worker] Rob"
 ```
 {% endcode %}
 
-## Events
+### Events
 
 {% code lineNumbers="true" %}
 ```lua
