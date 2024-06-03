@@ -39,7 +39,7 @@
 ---@field CurrentID integer The ID that will be passed to new connections. Increments by 1 every connection
 ---@field Connections table<integer, NoirConnection> The connections that are connected to this event
 ---@field HasFiredOnce boolean Whether or not this event has fired atleast once
-Noir.Classes.EventClass = Noir.Libraries.Class:Create("NoirEvent")
+Noir.Classes.EventClass = Noir.Class("NoirEvent")
 
 --[[
     Initializes event  class objects.

@@ -39,7 +39,7 @@
 ---@field IsRepeating boolean Whether or not this task is repeating
 ---@field Arguments table<integer, any> The arguments that will be passed to this task upon completion
 ---@field OnCompletion NoirEvent The event that will be fired when this task is completed
-Noir.Classes.TaskClass = Noir.Libraries.Class:Create("NoirTask")
+Noir.Classes.TaskClass = Noir.Class("NoirTask")
 
 --[[
     Initializes task class objects.

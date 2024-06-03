@@ -1,6 +1,5 @@
 {
     "order" : [
-        "Class.lua",
         "Events.lua",
         "Logging.lua",
         "Table.lua",

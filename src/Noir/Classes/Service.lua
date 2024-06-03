@@ -44,7 +44,7 @@
 ---
 ---@field ServiceInit fun(self: NoirService) A method that is called when the service is initialized
 ---@field ServiceStart fun(self: NoirService) A method that is called when the service is started
-Noir.Classes.ServiceClass = Noir.Libraries.Class:Create("NoirService")
+Noir.Classes.ServiceClass = Noir.Class("NoirService")
 
 --[[
     Initializes service class objects.

@@ -39,7 +39,7 @@ require("Noir.Definition")
 
 require("Noir.Libraries")
 
-require("Noir.Built-Ins.Libraries.Class")
+require("Noir.Class")
 
 require("Noir.Classes.init")
 require("Noir.Classes.Connection")
@@ -51,6 +51,8 @@ require("Noir.Classes.Task")
 require("Noir.Built-Ins.Libraries.Events")
 require("Noir.Built-Ins.Libraries.Logging")
 require("Noir.Built-Ins.Libraries.Table")
+require("Noir.Built-Ins.Libraries.String")
+require("Noir.Built-Ins.Libraries.Number")
 
 require("Noir.Services")
 

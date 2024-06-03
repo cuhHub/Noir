@@ -34,32 +34,7 @@ Services on the other hand can return values, but they also **manage things** an
 
 Just like with services, Noir comes with built-in libraries. They can be found under `Noir.Libraries`.
 
-Notable libraries are `Noir.Libraries.Class` and `Noir.Libraries.Events`.
-
-### Class
-
-{% code lineNumbers="true" %}
-```lua
-local Person = Noir.Libraries.Class:Create("Person")
-
-function Person:Init(name)
-    self.name = name
-end
-
-local bob = Person:New("Bob")
-print(bob.name) -- "Bob"
-
--- supports inheritance too!
-local Worker = Noir.Libraries.Class:Create("Worker", Person)
-
-function Worker:Init(name)
-    self:InitializeParent("[Worker] "..name)
-end
-
-local rob = Worker:New("Rob")
-print(rob.name) -- "[Worker] Rob"
-```
-{% endcode %}
+A notable library is `Noir.Libraries.Events`.
 
 ### Events
 

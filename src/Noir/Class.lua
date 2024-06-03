@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Libraries - Class
+-- [Noir] Class
 --------------------------------------------------------
 
 --[[
@@ -32,32 +32,12 @@
 -------------------------------
 
 --[[
-    A library that allows you to define classes which you can create objects from.<br>
-    Note that classes can inherit from other classes.<br>
-    Adapted from [this repo.](https://github.com/Cuh4/LuaClasses)
-
-    local MyClass = Class:Create("MyClass")
-
-    function MyClass:init(name) -- This is called when MyClass.new() is called
-        self.name = name
-    end
-
-    function MyClass:myName()
-        print(self.name)
-    end
-
-    local object = MyClass.new("Cuh4")
-    object:myName() -- "Cuh4"
-]]
-Noir.Libraries.Class = Noir.Libraries:Create("NoirClass")
-
---[[
     Create a class that objects can be created from.<br>
     Note that classes can inherit from other classes.
 
-    local MyClass = Class:Create("MyClass")
+    local MyClass = Noir.Class:Create("MyClass")
 
-    function MyClass:init(name) -- This is called when MyClass.new() is called
+    function MyClass:Init(name) -- This is called when MyClass:New() is called
         self.name = name
     end
 
@@ -65,14 +45,29 @@ Noir.Libraries.Class = Noir.Libraries:Create("NoirClass")
         print(self.name)
     end
 
-    local object = MyClass.new("Cuh4")
+    local object = MyClass:New("Cuh4")
     object:myName() -- "Cuh4"
 ]]
 ---@param name string
 ---@param parent NoirClass|nil
-function Noir.Libraries.Class:Create(name, parent)
-    -- Create a class
-    ---@type NoirClass
+function Noir.Class(name, parent)
+    --[[
+        A class that objects can be created from.
+
+        local MyClass = Class:Create("MyClass")
+
+        function MyClass:Init(name) -- This is called when MyClass.new() is called
+            self.something = true
+        end
+
+        local object = MyClass:new("Cuh4")
+        print(object.something) -- true
+    ]]
+    ---@class NoirClass
+    ---@field __Name string The name of this class/object
+    ---@field __Parent NoirClass|nil The parent class that this class inherits from
+    ---@field __IsObject boolean
+    ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
     local class = {} ---@diagnostic disable-line
     class.__Name = name
     class.__Parent = parent
@@ -95,6 +90,13 @@ function Noir.Libraries.Class:Create(name, parent)
         return object
     end
 
+    --[[
+        Copies attributes and methods from one object to another.<br>
+        Used internally. Do not use in your code.
+    ]]
+    ---@param from NoirClass
+    ---@param object NoirClass
+    ---@param exceptions table<integer, string>
     function class.__Descend(from, object, exceptions)
         for index, value in pairs(from) do
             if exceptions[index] then
@@ -111,6 +113,11 @@ function Noir.Libraries.Class:Create(name, parent)
         end
     end
 
+    --[[
+        Creates an object from the parent class and copies it to this object.<br>
+        Use this in the :Init() method of a class that inherits from a parent class.<br>
+        Any args provided will be passed to the :Init()
+    ]]
     function class:InitializeParent(...)
         -- Check if this was called from an object
         if not self.IsSameType then
@@ -131,24 +138,14 @@ function Noir.Libraries.Class:Create(name, parent)
         self.__Descend(object, self, {New = true, Init = true, __Descend = true})
     end
 
+    --[[
+        Returns if a class/object is the same type as another.
+    ]]
+    ---@param other NoirClass
+    ---@return boolean
     function class:IsSameType(other)
         return other.__Name ~= nil and self.__Name == other.__Name
     end
 
     return class
 end
-
--------------------------------
--- // Intellisense
--------------------------------
-
----@class NoirClass
----@field __Name string The name of this class/object
----@field __Parent NoirClass|nil The parent class that this class inherits from
----@field __IsObject boolean
----@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
----
----@field New fun(self: NoirClass, ...: any): NoirClass A method to create an object from this class
----@field __Descend fun(from: NoirClass, object: NoirClass, exceptions: table<any, boolean>) A helper function that copies important values from the class to an object
----@field IsSameType fun(self: NoirClass, other: NoirClass): boolean A method that returns whether an object is identical to this one
----@field InitializeParent fun(self: NoirClass, ...: any) A method that initializes the parent class for this object

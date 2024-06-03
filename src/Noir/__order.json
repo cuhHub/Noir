@@ -1,6 +1,7 @@
 {
     "order" : [
         "Definition.lua",
+        "Class.lua",
         "Libraries.lua",
         "Built-Ins/Libraries",
         "Classes",

@@ -41,7 +41,7 @@
 ---@field Steam string The Steam ID of this player
 ---@field Admin boolean Whether or not this player is an admin
 ---@field Auth boolean Whether or not this player is authed
-Noir.Classes.PlayerClass = Noir.Libraries.Class:Create("NoirPlayer")
+Noir.Classes.PlayerClass = Noir.Class("NoirPlayer")
 
 --[[
     Initializes player class objects.

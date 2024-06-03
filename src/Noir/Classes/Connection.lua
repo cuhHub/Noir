@@ -40,7 +40,7 @@
 ---@field Callback function The callback that is assigned to this connection
 ---@field ParentEvent NoirEvent The event that this connection is connected to
 ---@field Connected boolean Whether or not this connection is connected
-Noir.Classes.ConnectionClass = Noir.Libraries.Class:Create("NoirConnection")
+Noir.Classes.ConnectionClass = Noir.Class("NoirConnection")
 
 --[[
     Initializes new connection class objects.
