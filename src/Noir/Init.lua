@@ -41,7 +41,7 @@ require("Libraries")
 
 require("Built-Ins.Libraries.Class")
 
-require("Classes.Init")
+require("Classes.init")
 require("Classes.Connection")
 require("Classes.Event")
 require("Classes.Service")
