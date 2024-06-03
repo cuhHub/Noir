@@ -60,10 +60,10 @@ end
 
 -- Greet a player
 function WelcomeService:Greet(player)
-    server.announce("Greeting", self.greetingMessage:format(player.name))
+    server.announce("Greeting", self.greetingMessage:format(player.Name))
 end
 
 -- Farewell a player
 function WelcomeService:Farewell(player)
-    server.announce("Farewell", self.farewellMessage:format(player.name))
+    server.announce("Farewell", self.farewellMessage:format(player.Name))
 end
