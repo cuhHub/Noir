@@ -49,7 +49,6 @@
 ---@field OnDie NoirEvent player | Fired when a player dies
 ---@field OnRespawn NoirEvent player | Fired when a player respawns
 ---@field Players table<integer, NoirPlayer>
----
 ---@field JoinCallback NoirConnection A connection to the onPlayerDie event
 ---@field LeaveCallback NoirConnection A connection to the onPlayerLeave event
 ---@field DieCallback NoirConnection A connection to the onPlayerDie event
