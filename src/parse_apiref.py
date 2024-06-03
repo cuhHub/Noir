@@ -129,14 +129,14 @@ class Parser():
         for line in reversed(self.content[:point].split("\n")):
             line = self.deindent(line)
             
-            if line.find("]]") != --1:
+            if line.find("]]") != -1:
                 break
 
             if line.find("---@param") != -1:
                 param = line.split("---@param ")[1]
                 split = param.split(" ")
                 
-                if len(split) >= 2 and split[1].startswith(","): # table<integer*,* etc> annotation
+                if len(split) >= 2 and split[1].endswith(","): # table<integer*,* etc> annotation
                     type = split[0] + " " + split[1]
                     name = split[2] if len(split) >= 3 else None
                     description = " ".join(split[3:])
@@ -154,7 +154,7 @@ class Parser():
                 ))
                 
         # return
-        return params
+        return reversed(params)
         
     def getReturns(self, point: int) -> list[ReturnValue]:
         # search backwards for ---@return
@@ -170,7 +170,7 @@ class Parser():
                 returnValue = line.split("---@return ")[1]
                 split = returnValue.split(" ")
 
-                if len(split) >= 2 and split[1].startswith(","): # table<integer*,* etc> annotation
+                if len(split) >= 2 and split[1].startswith("table<"): # table<integer*,* etc> annotation
                     type = split[0] + " " + split[1]
                     name = split[2] if len(split) >= 3 else None
                     description = " ".join(split[3:])
@@ -188,7 +188,7 @@ class Parser():
                 ))
                 
         # return
-        return returns
+        return reversed(returns)
     
     def getIsDeprecated(self, point: int) -> bool:
         line = self.getLine(point)
@@ -318,7 +318,6 @@ class Parser():
             
         # return
         return values
-        
                 
 if len(sys.argv) < 2:
     raise Exception("Provide path")
@@ -335,3 +334,9 @@ for value in values:
 
     # print(f"{value.name} of type {value.type} {"(DEPRECATED)" if value.deprecated else ""}\n\nparams:\n{paramsFormatted}\n\nreturns:\n{returnsFormatted}\n\n{value.description}")
     # print("-----------------------")
+    
+# bugs:
+"""
+table<integer, string> being split because of the gap of space in getParameters and getReturns
+ServiceStart and ServiceInit being parsed despite isServiceMethod check
+"""
