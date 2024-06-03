@@ -17,6 +17,14 @@ Noir also contains default services which can be found in `Noir.Services` or fet
 
 Finally, examples can be found in the `examples` directory. You can see a quick example below however.
 
+## 📜 Documentation
+Documentation can be found [here](https://cuhhub.gitbook.io/noir/).
+
+At the moment, the documentation only contains tutorials as well as an installation guide. More things will be added to the documentation in the future.
+
+## 🔨 Installation
+For learning how to install and use Noir in your framework, please check out the [documentation.](https://cuhhub.gitbook.io/noir/)
+
 ## ❔ Example
 Let's say your addon needs to spawn objects then despawn them after some time, you can create something called a `Service` that handles this.
 
@@ -93,34 +101,6 @@ If you would like intellisense, you will need to add some extra bits:
 ```
 
 As well as add `---@type JanitorService` there and then. Be sure to disable the `assign-type-mismatch` diagnostic too.
-
-## 🔨 Installation
-Sorry, installation is complicated, but here's how:
-1) Run `git clone https://github.com/cuhHub/Noir`
-2) Move `src/Noir` into your addon directory.
-   
-**⚠️ | The following steps require Python >3.12.**
-
-4) Extract all files in `tools` and place them into your addon directory.
-5) Create a file called `__order.json` and place the following into it:
-```json
-{
-    "order" : [
-        "Noir",
-        "script.lua"
-    ]
-}
-```
-6) Run `build.bat` every time you change your addon. This will combine the contents of `Noir` and your addon's `script.lua` file into one file called `build.lua`. You can copy and paste the contents of `build.lua` into your `script.lua` file, or even create a script that automates that.
-
----
-
-Alternatively, you can use the [Stormworks Lua Extension's](https://marketplace.visualstudio.com/items?itemName=NameousChangey.lifeboatapi) build feature:
-1) Follow steps 1-2 above.
-2) Place `require("Noir.Init")` into your addon's script.
-3) Use the Stormworks Lua Extension's build feature.
-
-⚠️ | These steps are untested. I personally do not use the extension.
 
 ## ✨ Credit
 - [Cuh4](https://github.com/Cuh4)
