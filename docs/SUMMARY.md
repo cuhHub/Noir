@@ -1,7 +1,6 @@
 # Table of contents
 
 * [🚶‍♂️ Intro](README.md)
-* [📚 Examples](examples.md)
 
 ## 📂 Tutorials
 
@@ -9,6 +8,10 @@
 * [🖥️ Services](tutorials/services.md)
 * [📖 Libraries](tutorials/libraries.md)
 * [💬 Callbacks](tutorials/callbacks.md)
+
+***
+
+* [📚 Examples](examples.md)
 
 ## ☄️ API Reference
 
