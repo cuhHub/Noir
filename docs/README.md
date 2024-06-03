@@ -1,5 +1,5 @@
 ---
-description: This page will teach you how to setup your first addon with Noir.
+description: This page will teach you how to setup an addon with Noir.
 cover: .gitbook/assets/github.png
 coverY: 0
 layout:
@@ -98,7 +98,7 @@ You can now remove the `/Noir` directory you created earlier from `git clone`.
 
 ## Congratulations!
 
-You've set up your first addon with Noir. Head to the Tutorials section to figure out:
+You've set up your addon with Noir. Head to the Tutorials section to figure out:
 
 * How to start Noir
 * Services
