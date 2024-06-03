@@ -1,5 +1,5 @@
 ---
-description: Noir's Libraries system allows you to format code neatly.
+description: Libraries allows you to organize functions that perform similar actions.
 cover: ../.gitbook/assets/25.png
 coverY: 0
 layout:
@@ -26,7 +26,7 @@ Libraries are simply tables containing helper methods. These methods can then be
 
 ## Libraries VS Services
 
-The main distinction between libraries and services is that libraries do not need to listen for game callbacks. They simply return values and **do not manage anything**.&#x20;
+The main distinction between libraries and services is that libraries do not need to listen for game callbacks. They simply return values and **do not manage anything**.
 
 Services on the other hand can return values, but they also **manage things** and listen for callbacks, etc.
 
@@ -35,8 +35,6 @@ Services on the other hand can return values, but they also **manage things** an
 Just like with services, Noir comes with built-in libraries. They can be found under `Noir.Libraries`.
 
 Notable libraries are `Noir.Libraries.Class` and `Noir.Libraries.Events`.
-
-
 
 ### Class
 
@@ -105,7 +103,7 @@ connection:Fire()
 
 ## Creating A Library
 
-Unlike services-ish, libraries are very simple to setup.
+Unlike services-ish, libraries are very simple to setup. Libraries are also fully intellisense supported and don't require any funky `---@class` definitions as the Lua VSCode extension can infer what is going on.
 
 First, give your library a name. For this example, we'll call your library `Matrix`, and we'll have the library provide helper methods relating to SW matrices.
 
@@ -142,7 +140,7 @@ print(myMatrix) -- 0, 3, 0
 ```
 {% endcode %}
 
-Uh oh! `myMatrix` also got changed from the `:Offset` method. We only want it to provide a new matrix to prevent issues. We could just use `matrix.translation`, but that would get rid of the rotational values. Instead, we can use a built-in library to copy the contents of `pos` (parameter of `:Offset()`)  into a new table, and modify that new table instead. We can use a built-in library for this!
+Uh oh! `myMatrix` also got changed from the `:Offset` method. We only want it to provide a new matrix to prevent issues. We could just use `matrix.translation`, but that would get rid of the rotational values. Instead, we can use a built-in library to copy the contents of `pos` (parameter of `:Offset()`) into a new table, and modify that new table instead. We can use a built-in library for this!
 
 {% hint style="info" %}
 Matrices in Stormworks are actually tables.

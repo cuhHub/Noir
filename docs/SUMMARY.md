@@ -1,6 +1,6 @@
 # Table of contents
 
-* [🚶‍♂️ Getting Started](README.md)
+* [🚶‍♂️ Intro](README.md)
 * [📚 Examples](examples.md)
 
 ## 📂 Tutorials

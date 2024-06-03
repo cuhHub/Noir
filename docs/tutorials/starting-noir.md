@@ -1,6 +1,6 @@
 ---
 description: A simple tutorial going over how to start Noir.
-cover: ../.gitbook/assets/19.png
+cover: ../.gitbook/assets/19 (1).png
 coverY: 0
 layout:
   cover:
@@ -26,8 +26,6 @@ Starting Noir will tell Noir's bootstrapper to initialize and start all services
 
 This is important for Noir to function, so the below will teach you how to start Noir. It's very simple!
 
-
-
 ## Starting Noir
 
 At the very bottom of your code, simply add:
@@ -52,7 +50,7 @@ Noir:Start()
 server.announce("Server", "Noir hasn't started yet!")
 ```
 
-That solves the problem we went over earlier.&#x20;
+That solves the problem we went over earlier.
 
 ## Noir.AddonReason Attribute
 
