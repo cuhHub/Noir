@@ -38,6 +38,10 @@
 ---@class NoirEvent: NoirClass
 ---@field CurrentID integer The ID that will be passed to new connections. Increments by 1 every connection
 ---@field Connections table<integer, NoirConnection> The connections that are connected to this event
+---@field ConnectionsOrder integer[] Array of connection IDs into Connections table
+---@field ConnectionsToRemove NoirConnection[]? Array of connections to remove after the firing of the event
+---@field ConnectionsToAdd NoirConnection[]? Array of connections to add after the firing of the event
+---@field IsFiring boolean Weather or not this event is currently calling connection callbacks
 ---@field HasFiredOnce boolean Whether or not this event has fired atleast once
 Noir.Classes.EventClass = Noir.Class("NoirEvent")
 
@@ -47,6 +51,11 @@ Noir.Classes.EventClass = Noir.Class("NoirEvent")
 function Noir.Classes.EventClass:Init()
     self.CurrentID = 0
     self.Connections = {}
+    self.ConnectionsOrder = {}
+    self.ConnectionsToRemove = {}  -- Only used when IsFiring is true, should remain empty otherwise.
+    self.ConnectionsToAdd = {}  -- Only used when IsFiring is true, should remain empty otherwise.
+    self.ConnectionsToAddMap = {}  -- Only used when IsFiring is true, should remain empty otherwise.
+    self.IsFiring = false
     self.HasFiredOnce = false
 end
 
@@ -58,8 +67,22 @@ end
 ]]
 function Noir.Classes.EventClass:Fire(...)
     -- Iterate through all connections and fire them
-    for _, connection in pairs(self.Connections) do
-        connection:Fire(...)
+    self.IsFiring = true
+    for _, connection_id in ipairs(self.ConnectionsOrder) do
+        self.Connections[connection_id]:Fire(...)
+    end
+    self.IsFiring = false
+
+    -- Reverse iteration is more performant, as we have on book-keeping stuff we already plan to remove
+    for i=#self.ConnectionsToRemove,1,-1 do
+        self:_DisconnectImmidiate(self.ConnectionsToRemove[i])
+        self.ConnectionsToRemove[i] = nil
+    end
+
+    -- Add connections which were connected during iteration, so they get called next time
+    for i=1,#self.ConnectionsToAdd do
+        self:_ConnectFinalize(self.ConnectionsToAdd[i])
+        self.ConnectionsToAdd[i] = nil
     end
 
     -- Set hasFiredOnce
@@ -67,7 +90,8 @@ function Noir.Classes.EventClass:Fire(...)
 end
 
 --[[
-    Connects a function to the event. A connection is automatically made for the function.
+    Connects a function to the event. A connection is automatically made for the function.  
+    If connecting to an event that is currently being handled, it will be added afterwards and run the next time the event is fired.  
 
     local event = Noir.Libraries.Events:Create()
 
@@ -89,14 +113,33 @@ function Noir.Classes.EventClass:Connect(callback)
 
     connection.ParentEvent = self
     connection.ID = self.CurrentID
-    connection.Connected = true
+    connection.Index = -1
+    connection.Connected = false
+
+    -- If we are currently iterating over the events, finalize it later, otherwise do it now
+    if self.IsFiring then
+        table.insert(self.ConnectionsToAdd, connection)
+    else
+        self:_ConnectFinalize(connection)
+    end
 
     -- Return the connection
     return connection
 end
+--[[
+    **Should only be used internally.**  
+    Finalizes the connection to the event, allowing it to be run.  
+]]
+---@param connection NoirConnection
+function Noir.Classes.EventClass:_ConnectFinalize(connection)
+    table.insert(self.ConnectionsOrder, connection.ID)
+    connection.Index = #self.ConnectionsOrder
+    connection.Connected = true
+end
 
 --[[
-    Connects a callback to the event that will automatically be disconnected upon the event being fired.
+    Connects a callback to the event that will automatically be disconnected upon the event being fired.  
+    If connecting to an event that is currently being handled, it will be added afterwards and run the next time the event is fired.  
 ]]
 ---@param callback function
 ---@return NoirConnection
@@ -114,13 +157,33 @@ function Noir.Classes.EventClass:Once(callback)
 end
 
 --[[
-    Disconnects the provided connection from the event.
+    Disconnects the provided connection from the event.  
+    The disconnection may be delayed if done while handling the event.  
 ]]
 ---@param connection NoirConnection
 function Noir.Classes.EventClass:Disconnect(connection)
+    -- If we are currently iterating over the events, disconnect it later, otherwise do it now
+    if self.IsFiring then
+        table.insert(self.ConnectionsToRemove, connection)
+    else
+        self:_DisconnectImmidiate(connection)
+    end
+end
+--[[
+    **Should only be used internally.**  
+    Disconnects the provided connection from the event immidiately.  
+]]
+---@param connection NoirConnection
+function Noir.Classes.EventClass:_DisconnectImmidiate(connection)
     self.Connections[connection.ID] = nil
+    table.remove(self.ConnectionsOrder, connection.Index)
+    for i=connection.Index,#self.ConnectionsOrder do
+        local _connection = self.Connections[self.ConnectionsOrder[i]]
+        _connection.Index = _connection.Index - 1
+    end
 
     connection.Connected = false
     connection.ParentEvent = nil
     connection.ID = nil
+    connection.Index = nil
 end
