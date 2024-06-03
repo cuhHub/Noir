@@ -1,6 +1,6 @@
 ---
 description: A simple tutorial going over how to start Noir.
-cover: ../.gitbook/assets/19 (1).png
+cover: ../.gitbook/assets/19.png
 coverY: 0
 layout:
   cover:
@@ -81,3 +81,9 @@ end)
 Noir:Start()
 ```
 {% endcode %}
+
+## Noir.Version Attribute
+
+Finally, Noir has an attribute called `Version` which represents the current version of Noir.
+
+This version is logged to DebugView (default) or chat depending on `Noir.Libraries.Logging.LoggingMode` when Noir starts, along with other information.
