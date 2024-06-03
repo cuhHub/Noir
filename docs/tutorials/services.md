@@ -204,7 +204,7 @@ You would add:
 Then you can add:
 
 ```lua
-local service = Noir.Services:GetService("MyService") ---@type MyService
+local MyService = Noir.Services:GetService("MyService") ---@type MyService
 ```
 
 It's also recommended to add `---@type MyService` just after `:CreateService("MyService")`
