@@ -1,0 +1,10 @@
+{
+    "order" : [
+        "Init.lua",
+        "Connection.lua",
+        "Event.lua",
+        "Service.lua",
+        "Player.lua",
+        "Task.lua"
+    ]
+}

@@ -86,21 +86,17 @@ Now, we have a fully working service! 🥳 Do note that `Noir.Services:GetServic
 
 ---
 
-If you would like intellisense, you will need to add some extra bits:
+If you would like intellisense, you will need to add the following directly above `:CreateService("JanitorService")`.
 
 ```lua
----@class JanitorService: NoirService
----@field pendingCleanups table<integer, JanitorServiceTimer>
----@field onTick NoirConnection
----
----@field Clean fun(self: JanitorService, object_id: integer, duration: number)
-
 ---@class JanitorServiceTimer
 ---@field duration integer
 ---@field startedAt integer
-```
 
-As well as add `---@type JanitorService` there and then. Be sure to disable the `assign-type-mismatch` diagnostic too.
+---@class JanitorService: NoirService
+---@field pendingCleanups table<integer, JanitorServiceTimer>
+---@field onTick NoirConnection
+```
 
 ## ✨ Credit
 - [Cuh4](https://github.com/Cuh4)

@@ -40,7 +40,12 @@
 
     task:SetDuration(10) -- Duration changes from 5 to 10
 ]]
-Noir.Services.TaskService = Noir.Services:CreateService("TaskService") ---@type NoirTaskService
+---@class NoirTaskService: NoirService
+---@field TaskClass NoirTask The class that represents a task. Used internally
+---@field IncrementalID integer The ID of the next task
+---@field Tasks table<integer, NoirTask> A table containing active tasks
+---@field OnTickConnection NoirConnection Represents the connection to the onTick game callback
+Noir.Services.TaskService = Noir.Services:CreateService("TaskService")
 Noir.Services.TaskService.InitPriority = 1
 Noir.Services.TaskService.StartPriority = 1
 
@@ -48,38 +53,6 @@ function Noir.Services.TaskService:ServiceInit()
     -- Create attributes
     self.IncrementalID = 0
     self.Tasks = {}
-
-    -- Create task class
-    self.TaskClass = Noir.Libraries.Class:Create("NoirTaskServiceTask") ---@type NoirTaskServiceTask
-
-    ---@param task NoirTaskServiceTask
-    ---@param ID integer
-    ---@param duration number
-    ---@param isRepeating boolean
-    ---@param arguments table
-    function self.TaskClass.Init(task, ID, duration, isRepeating, arguments)
-        task.ID = ID
-        task.StartedAt = self:GetTimeSeconds()
-
-        task:SetDuration(duration)
-        task:SetRepeating(isRepeating)
-        task:SetArguments(arguments)
-
-        task.OnCompletion = Noir.Libraries.Events:Create()
-    end
-
-    function self.TaskClass.SetRepeating(task, isRepeating)
-        task.IsRepeating = isRepeating
-    end
-
-    function self.TaskClass.SetDuration(task, duration)
-        task.Duration = duration
-        task.StopsAt = task.StartedAt + duration
-    end
-
-    function self.TaskClass.SetArguments(task, arguments)
-        task.Arguments = arguments
-    end
 end
 
 function Noir.Services.TaskService:ServiceStart()
@@ -107,10 +80,29 @@ function Noir.Services.TaskService:ServiceStart()
     end)
 end
 
+--[[
+    Returns the current time in seconds.
+]]
+---@return number
 function Noir.Services.TaskService:GetTimeSeconds()
     return server.getTimeMillisec() / 1000
 end
 
+--[[
+    Creates and adds a task to the TaskService.
+
+    local task = Noir.Services.TaskService:AddTask(function(toSay)
+        server.announce("Server", toSay)
+    end, 5, {"Hello World!"}, true) -- This task is repeating due to isRepeating being true (final argument)
+
+    local anotherTask = Noir.Services.TaskService:AddTask(server.announce, 5, {"Server", "Hello World!"}, true) -- This does the same as above
+    Noir.Services.TaskService:RemoveTask(anotherTask) -- Removes the task
+]]
+---@param callback function
+---@param duration number
+---@param arguments table|nil
+---@param isRepeating boolean|nil
+---@return NoirTask
 function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepeating)
     -- Defaults
     arguments = arguments or {}
@@ -120,7 +112,7 @@ function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepe
     self.IncrementalID = self.IncrementalID + 1
 
     -- Create task
-    local task = self.TaskClass:New(self.IncrementalID, duration, isRepeating, arguments) ---@type NoirTaskServiceTask
+    local task = self.TaskClass:New(self.IncrementalID, duration, isRepeating, arguments) ---@type NoirTask
     task.OnCompletion:Connect(callback)
 
     self.Tasks[task.ID] = task
@@ -129,33 +121,10 @@ function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepe
     return task
 end
 
+--[[
+    Removes a task.
+]]
+---@param task NoirTask
 function Noir.Services.TaskService:RemoveTask(task)
     self.Tasks[task.ID] = nil
 end
-
--------------------------------
--- // Intellisense
--------------------------------
-
----@class NoirTaskService: NoirService
----@field TaskClass NoirTaskServiceTask The class that represents a task. Used internally
----@field IncrementalID integer The ID of the next task
----@field Tasks table<integer, NoirTaskServiceTask> A table containing active tasks
----@field OnTickConnection NoirConnection Represents the connection to the onTick game callback
----
----@field GetTimeSeconds fun(self: NoirTaskService): number Returns the current time in seconds
----@field RemoveTask fun(self: NoirTaskService, task: NoirTaskServiceTask) Removes a task
----@field AddTask fun(self: NoirTaskService, callback: function, duration: number, arguments: table<any, any>|nil, isRepeating: boolean|nil): NoirTaskServiceTask Adds a task
-
----@class NoirTaskServiceTask: NoirClass
----@field ID integer The ID of this task
----@field StartedAt integer The time that this task started at
----@field Duration integer The duration of this task
----@field StopsAt integer The time that this task will stop at if it is not repeating
----@field IsRepeating boolean Whether or not this task is repeating
----@field Arguments table<integer, any> The arguments that will be passed to this task upon completion
----@field OnCompletion NoirEvent The event that will be fired when this task is completed
----
----@field SetRepeating fun(self: NoirTaskServiceTask, isRepeating: boolean) Sets whether this task is repeating or not
----@field SetDuration fun(self: NoirTaskServiceTask, duration: number) Sets the duration of this task
----@field SetArguments fun(self: NoirTaskServiceTask, arguments: table<any, any>) Sets the arguments that will be passed to this task upon completion

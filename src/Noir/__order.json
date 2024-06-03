@@ -3,6 +3,7 @@
         "Definition.lua",
         "Libraries.lua",
         "Built-Ins/Libraries",
+        "Classes",
         "Services.lua",
         "Built-Ins/Services",
         "Callbacks.lua",

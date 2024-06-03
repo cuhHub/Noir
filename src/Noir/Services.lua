@@ -55,122 +55,6 @@ Noir.Services = {}
 Noir.Services.CreatedServices = {} ---@type table<string, NoirService>
 
 --[[
-    A class that represents a service.<br>
-    Do not use this in your code.
-]]
-Noir.Services.ServiceClass = Noir.Libraries.Class:Create("NoirService") ---@type NoirService
-
----@param name string
-function Noir.Services.ServiceClass:Init(name)
-    -- Create attributes
-    self.Name = name
-    self.Initialized = false
-    self.Started = false
-
-    self.InitPriority = nil
-    self.StartPriority = nil
-end
-
-function Noir.Services.ServiceClass:Initialize()
-    -- Checks
-    if self.Initialized then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to initialize this service when it has already initialized.")
-        return
-    end
-
-    if self.Started then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.")
-        return
-    end
-
-    -- Set initialized
-    self.Initialized = true
-
-    -- Call ServiceInit
-    if not self.ServiceInit then
-        Noir.Libraries.Logging:Error(self.Name, "This service is missing a ServiceInit method.")
-        return
-    end
-
-    self:ServiceInit()
-end
-
-function Noir.Services.ServiceClass:Start()
-    -- Checks
-    if self.Started then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.")
-        return
-    end
-
-    if not self.Initialized then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has not initialized yet.")
-        return
-    end
-
-    -- Set started
-    self.Started = true
-
-    -- Call ServiceStart
-    if not self.ServiceStart then
-        Noir.Libraries.Logging:Warning(self.Name, "This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.")
-        return
-    end
-
-    self:ServiceStart()
-end
-
-function Noir.Services.ServiceClass:CheckSaveData()
-    -- Checks
-    if not g_savedata then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata is nil.")
-        return false
-    end
-
-    if not g_savedata.Noir then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir is nil. Something might have gone wrong with the Noir bootstrapper.")
-        return false
-    end
-
-    if not g_savedata.Noir.Services then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir.Services is nil. Something might have gone wrong with the Noir bootstrapper.")
-        return false
-    end
-
-    -- All good!
-    return true
-end
-
-function Noir.Services.ServiceClass:Save(index, data)
-    -- Check g_savedata
-    if not self:CheckSaveData() then
-        return
-    end
-
-    -- Save
-    g_savedata.Noir.Services[index] = data
-end
-
-function Noir.Services.ServiceClass:Load(index, default)
-    -- Check g_savedata
-    if not self:CheckSaveData() then
-        return
-    end
-
-    -- Load
-    return g_savedata.Noir.Services[index] or default
-end
-
-function Noir.Services.ServiceClass:Remove(index)
-    -- Check g_savedata
-    if not self:CheckSaveData() then
-        return
-    end
-
-    -- Remove
-    g_savedata.Noir.Services[index] = nil
-end
-
---[[
     Create a service.<br>
     This service will be initialized and started after `Noir:Start()` is called.
 
@@ -196,7 +80,7 @@ function Noir.Services:CreateService(name)
     end
 
     -- Create service
-    local service = self.ServiceClass:New(name) ---@type NoirService
+    local service = Noir.Classes.ServiceClass:New(name) ---@type NoirService
 
     -- Register service internally
     self.CreatedServices[name] = service
@@ -232,24 +116,3 @@ function Noir.Services:GetService(name)
 
     return service
 end
-
--------------------------------
--- // Intellisense
--------------------------------
-
----@class NoirService: NoirClass
----@field Name string The name of this service
----@field Initialized boolean Whether or not this service has been initialized
----@field Started boolean Whether or not this service has been started
----@field InitPriority integer The priority of this service when it is initialized
----@field StartPriority integer The priority of this service when it is started
----
----@field Initialize fun(self: NoirService) Initialize this service.<br>Used internally. Do not use this in your code.
----@field Start fun(self: NoirService) Start this service.<br>Used internally. Do not use this in your code.
----
----@field CheckSaveData fun(self: NoirService): boolean Check if the service can save data.<br>Used internally. You can use this in your code, but there usually isn't a need.
----@field Save fun(self: NoirService, index: string, data: any) Save data that persists between reloads and in the save.
----@field Load fun(self: NoirService, index: string, default: any): any Load data that was saved.
----@field Remove fun(self: NoirService, index: string) Remove data that was saved.
----@field ServiceInit fun(self: NoirService) A method that initializes the service
----@field ServiceStart fun(self: NoirService)|nil A method that starts the service

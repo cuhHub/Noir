@@ -36,8 +36,8 @@
 ---@field farewellMessage string The farewell message
 ---
 ---@field SetMessages fun(self: WelcomeService, greet: string, farewell: string) A method that sets the greeting and farewell messages
----@field Greet fun(self: WelcomeService, player: NoirPlayerServicePlayer) A method that greets a player to everyone
----@field Farewell fun(self: WelcomeService, player: NoirPlayerServicePlayer) A method that sends a farewell message to everyone about a player
+---@field Greet fun(self: WelcomeService, player: NoirPlayer) A method that greets a player to everyone
+---@field Farewell fun(self: WelcomeService, player: NoirPlayer) A method that sends a farewell message to everyone about a player
 
 -- Create the service
 local WelcomeService = Noir.Services:CreateService("WelcomeService") ---@type WelcomeService

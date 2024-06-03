@@ -34,13 +34,13 @@
 ---@alias PlayerVehicles table<integer, boolean>
 
 ---@class VehicleService: NoirService
----@field vehicles table<NoirPlayerServicePlayer, PlayerVehicles> A table containing vehicles belonging to a player
+---@field vehicles table<NoirPlayer, PlayerVehicles> A table containing vehicles belonging to a player
 ---@field onSpawn NoirEvent An event that fires when a vehicle spawns. Args: player, vehicle_id
 ---@field onDespawn NoirEvent An event that fires when a vehicle despawns. Args: player, vehicle_id
 ---
----@field GetVehicles fun(self: VehicleService, player: NoirPlayerServicePlayer): table<integer, integer> A method that returns the vehicles belonging to a player
----@field GetPlayer fun(self: VehicleService, vehicle_id: integer): NoirPlayerServicePlayer|nil A method that returns the the player a vehicle belongs to
----@field DespawnVehicles fun(self: VehicleService, player: NoirPlayerServicePlayer) A method that despawns all vehicles belonging to a player
+---@field GetVehicles fun(self: VehicleService, player: NoirPlayer): table<integer, integer> A method that returns the vehicles belonging to a player
+---@field GetPlayer fun(self: VehicleService, vehicle_id: integer): NoirPlayer|nil A method that returns the the player a vehicle belongs to
+---@field DespawnVehicles fun(self: VehicleService, player: NoirPlayer) A method that despawns all vehicles belonging to a player
 ---@field DespawnVehicle fun(self: VehicleService, vehicle_id: integer) A method that despawns a vehicle
 
 -- Create the service

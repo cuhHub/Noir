@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Example - Welcome Addon
+-- [Noir] Classes
 --------------------------------------------------------
 
 --[[
@@ -31,22 +31,7 @@
 -- // Main
 -------------------------------
 
--- Connect to the Noir Started event. It's important we place our code in this event
-Noir.Started:Once(function()
-    -- Get the WelcomeService
-    local WelcomeService = Noir.Services:GetService("WelcomeService") ---@type WelcomeService
-
-    -- Set the welcome and farewell messages
-    WelcomeService:SetMessages("Hello, %s!", "Bye, %s!")
-
-    -- Connect to the PlayerService events, and use the WelcomeService
-    ---@param player NoirPlayer
-    Noir.Services.PlayerService.OnJoin:Connect(function(player)
-        WelcomeService:Greet(player)
-    end)
-
-    ---@param player NoirPlayer
-    Noir.Services.PlayerService.OnLeave("onPlayerLeave", function(player)
-        WelcomeService:Farewell(player)
-    end)
-end)
+--[[
+    A table containing classes used through Noir.
+]]
+Noir.Classes = {}
