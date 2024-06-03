@@ -90,9 +90,8 @@ Your addon directory should now look like:
 
 This assumes you have the [Stormworks Lua VSCode Extension.](https://marketplace.visualstudio.com/items?itemName=NameousChangey.lifeboatapi)
 
-1. Using the [Stormworks Lua VSCode extension's](https://marketplace.visualstudio.com/items?itemName=NameousChangey.lifeboatapi) build feature.
-   1. Add `require("Noir.Init")` into your `script.lua` file.
-   2. Use the build keybind, or search "Build" in the VSCode command palette.
+1. Add `require("Noir.Init")` into your `script.lua` file.
+2. Use the build keybind, or search "Build" in the VSCode command palette.
 
 You can now remove the `/Noir` directory you created earlier from `git clone`.
 
