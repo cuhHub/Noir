@@ -101,7 +101,7 @@ function Noir.Libraries.Logging:FormatLog(logType, title, message, ...)
     local validatedMessage = type(message) == "table" and Noir.Libraries.Table:ToString(message) or (... and tostring(message):format(...) or tostring(message))
 
     -- layout
-    local layout = "[%s] (%s): "
+    local layout = "[Noir] [%s] (%s): "
 
     -- format text
     local formattedMessage = (layout:format(validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..layout:format(validatedLogType, validatedTitle))
