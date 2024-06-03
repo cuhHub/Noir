@@ -68,11 +68,14 @@ function Noir.Services.TaskService:ServiceStart()
                     -- Repeat the task
                     task.StartedAt = time
                     task.StopsAt = time + task.Duration
+
+                    -- Fire OnCompletion
+                    task.OnCompletion:Fire(table.unpack(task.Arguments))
                 else
                     -- Stop the task
                     self:RemoveTask(task)
 
-                    -- Fire onCompletion
+                    -- Fire OnCompletion
                     task.OnCompletion:Fire(table.unpack(task.Arguments))
                 end
             end
