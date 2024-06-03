@@ -35,30 +35,30 @@
 -------------------------------
 -- // Main
 -------------------------------
-require("Definition")
+require("Noir.Definition")
 
-require("Libraries")
+require("Noir.Libraries")
 
-require("Built-Ins.Libraries.Class")
+require("Noir.Built-Ins.Libraries.Class")
 
-require("Classes.init")
-require("Classes.Connection")
-require("Classes.Event")
-require("Classes.Service")
-require("Classes.Player")
-require("Classes.Task")
+require("Noir.Classes.init")
+require("Noir.Classes.Connection")
+require("Noir.Classes.Event")
+require("Noir.Classes.Service")
+require("Noir.Classes.Player")
+require("Noir.Classes.Task")
 
-require("Built-Ins.Libraries.Events")
-require("Built-Ins.Libraries.Logging")
-require("Built-Ins.Libraries.Table")
+require("Noir.Built-Ins.Libraries.Events")
+require("Noir.Built-Ins.Libraries.Logging")
+require("Noir.Built-Ins.Libraries.Table")
 
-require("Services")
+require("Noir.Services")
 
-require("Built-Ins.Services.TaskService")
-require("Built-Ins.Services.PlayerService")
+require("Noir.Built-Ins.Services.TaskService")
+require("Noir.Built-Ins.Services.PlayerService")
 
-require("Callbacks")
+require("Noir.Callbacks")
 
-require("Bootstrapper")
+require("Noir.Bootstrapper")
 
-require("Noir")
+require("Noir.Noir")
