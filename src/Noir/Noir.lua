@@ -34,7 +34,7 @@
 --[[
     The version of Noir.
 ]]
-Noir.Version = "1.1.1"
+Noir.Version = "1.1.2"
 
 --[[
     This event is called when the framework is started.<br>
