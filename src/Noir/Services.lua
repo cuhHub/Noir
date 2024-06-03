@@ -178,7 +178,7 @@ end
     service.initPriority = 1 -- Initialize before any other services
 
     function service:ServiceInit()
-        Noir.Services:GetService("MyOtherService") -- This will error since the other service hasn't started yet
+        Noir.Services:GetService("MyOtherService") -- This will likely error if the other service hasn't initialized yet. Use :GetService() in :ServiceStart() always!
         self.saveSomething = "something"
     end
 
@@ -187,12 +187,12 @@ end
     end
 ]]
 ---@param name string
----@return NoirService|nil
+---@return NoirService
 function Noir.Services:CreateService(name)
     -- Check if service already exists
     if self.CreatedServices[name] then
-        Noir.Libraries.Logging:Error("Service Creation", "Attempted to create a service that already exists.")
-        return
+        Noir.Libraries.Logging:Error("Service Creation", "Attempted to create a service that already exists. The already existing service has been returned instead.")
+        return self.CreatedServices[name]
     end
 
     -- Create service
