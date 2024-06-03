@@ -57,7 +57,7 @@ end
 -- Called when the service is started and when we can safely get other services. This is to be used for setting up things that may require event connections, etc
 function VehicleService:ServiceStart()
     -- Listen for vehicles spawning
-    server.listen("onVehicleSpawn", function(vehicle_id, peer_id)
+    Noir.Callbacks:Connect("onVehicleSpawn", function(vehicle_id, peer_id)
         local player = self:GetPlayer(peer_id)
 
         if not player then
@@ -74,7 +74,7 @@ function VehicleService:ServiceStart()
     end)
 
     -- Listen for vehicles despawning
-    server.listen("onVehicleDespawn", function(vehicle_id, peer_id)
+    Noir.Callbacks:Connect("onVehicleDespawn", function(vehicle_id, peer_id)
         local player = self:GetPlayer(peer_id)
 
         if not player then
