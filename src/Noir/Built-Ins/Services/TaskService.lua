@@ -64,7 +64,7 @@ function Noir.Services.TaskService:ServiceStart()
 
             -- Check if the task should be stopped
             if time >= task.StopsAt then
-                if not task.IsRepeating then
+                if task.IsRepeating then
                     -- Repeat the task
                     task.StartedAt = time
                     task.StopsAt = time + task.Duration
@@ -112,7 +112,7 @@ function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepe
     self.IncrementalID = self.IncrementalID + 1
 
     -- Create task
-    local task = self.TaskClass:New(self.IncrementalID, duration, isRepeating, arguments) ---@type NoirTask
+    local task = Noir.Classes.TaskClass:New(self.IncrementalID, duration, isRepeating, arguments) ---@type NoirTask
     task.OnCompletion:Connect(callback)
 
     self.Tasks[task.ID] = task
