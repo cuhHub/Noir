@@ -8,6 +8,7 @@
 * [🖥️ Services](tutorials/services.md)
 * [📖 Libraries](tutorials/libraries.md)
 * [💬 Callbacks](tutorials/callbacks.md)
+* [💥 Classes](tutorials/callbacks-1.md)
 
 ***
 
