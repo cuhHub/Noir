@@ -1,3 +1,0 @@
-# Noir.Services
-
-TODO

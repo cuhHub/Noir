@@ -1,3 +1,0 @@
-# Noir.Libraries
-
-TODO
