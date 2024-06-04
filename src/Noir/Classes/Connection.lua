@@ -37,6 +37,7 @@
 ]]
 ---@class NoirConnection: NoirClass
 ---@field ID integer The ID of this connection
+---@field Index integer The index of this connection in ParentEvent.ConnectionsOrder
 ---@field Callback function The callback that is assigned to this connection
 ---@field ParentEvent NoirEvent The event that this connection is connected to
 ---@field Connected boolean Whether or not this connection is connected
