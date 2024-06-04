@@ -84,7 +84,8 @@ function Noir.Services.TaskService:ServiceStart()
 end
 
 --[[
-    Returns the current time in seconds.
+    Returns the current time in seconds.<br>
+    Equivalent to: server.getTimeMillisec() / 1000
 ]]
 ---@return number
 function Noir.Services.TaskService:GetTimeSeconds()
