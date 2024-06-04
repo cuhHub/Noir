@@ -128,7 +128,7 @@ function Noir.Libraries.Logging:Error(title, message, triggerError, ...)
     self:Log("Error", title, message, ...)
 
     if triggerError then
-        _ENV[self:_FormatLog("Error", title, message, ...)]()
+        _ENV["Noir: An error was triggered. See logs for details."]()
     end
 end
 
