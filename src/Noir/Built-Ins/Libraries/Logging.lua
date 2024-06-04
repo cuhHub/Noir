@@ -51,6 +51,12 @@ Noir.Libraries.Logging.LoggingMode = "DebugLog"
 Noir.Libraries.Logging.OnLog = Noir.Libraries.Events:Create()
 
 --[[
+    Represents the logging layout.<br>
+    Requires two '%s' in the layout. First %s is the log type, the second %s is the log title. The message is then added after the layout.
+]]
+Noir.Libraries.Logging.Layout = "[%s] [%s]: "
+
+--[[
     Set the logging mode.
 
     Noir.Libraries.Logging:SetMode("DebugLog")
@@ -70,20 +76,20 @@ end
 ---@param message string
 ---@param ... any
 function Noir.Libraries.Logging:Log(logType, title, message, ...)
-    -- format
-    local formattedText = self:FormatLog(logType, title, message, ...)
+    -- Format
+    local formattedText = self:_FormatLog(logType, title, message, ...)
 
-    -- send log
-    if self.LoggingMode == "Chat" then
+    -- Send log
+    if self.LoggingMode == "DebugLog" then
+        debug.log(formattedText)
+    elseif self.LoggingMode == "Chat" then
         debug.log(formattedText)
         server.announce("Noir", formattedText)
-    elseif self.LoggingMode == "DebugLog" then
-        debug.log(formattedText)
     else
         self:Error("Invalid logging mode: %s", "'%s' is not a valid logging mode.", tostring(Noir.Libraries.LoggingMode))
     end
 
-    -- send event
+    -- Send event
     self.OnLog:Fire(formattedText)
 end
 
@@ -95,68 +101,65 @@ end
 ---@param title string
 ---@param message string
 ---@param ... any
-function Noir.Libraries.Logging:FormatLog(logType, title, message, ...)
-    -- validate args
+function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
+    -- Validate args
     local validatedLogType = tostring(logType):upper()
     local validatedTitle = tostring(title)
     local validatedMessage = type(message) == "table" and Noir.Libraries.Table:ToString(message) or (... and tostring(message):format(...) or tostring(message))
 
-    -- layout
-    local layout = "[Noir] [%s] (%s): "
+    -- Format text
+    local formattedMessage = (self.Layout:format(validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..self.Layout:format(validatedLogType, validatedTitle))
 
-    -- format text
-    local formattedMessage = (layout:format(validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..layout:format(validatedLogType, validatedTitle))
-
-    -- return
+    -- Return
     return formattedMessage
 end
 
 --[[
     Sends an error log.
 
-    Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", "something.")
+    Noir.Libraries.Logging:Error("Something went wrong relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
 ---@param ... any
 function Noir.Libraries.Logging:Error(title, message, ...)
-    Noir.Libraries.Logging:Log("Error", title, message, ...)
+    self:Log("Error", title, message, ...)
 end
 
 --[[
     Sends a warning log.
 
-    Noir.Libraries.Logging:Warning("Title", "Something went unexpected relating to %s", "something.")
+    Noir.Libraries.Logging:Warning("Something went unexpected relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
 ---@param ... any
 function Noir.Libraries.Logging:Warning(title, message, ...)
-    Noir.Libraries.Logging:Log("Warning", title, message, ...)
+    self:Log("Warning", title, message, ...)
 end
 
 --[[
     Sends an info log.
 
-    Noir.Libraries.Logging:Info("Title", "Something went okay relating to %s", "something.")
+    Noir.Libraries.Logging:Info("Something went okay relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
 ---@param ... any
 function Noir.Libraries.Logging:Info(title, message, ...)
-    Noir.Libraries.Logging:Log("Info", title, message, ...)
+    self:Log("Info", title, message, ...)
 end
 
 --[[
     Sends a success log.
 
-    Noir.Libraries.Logging:Success("Title", "Something went right relating to %s", "something.")
+    Noir.Libraries.Logging:Success("Something went right relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
 ---@param ... any
 function Noir.Libraries.Logging:Success(title, message, ...)
-    Noir.Libraries.Logging:Log("Success", title, message, ...)
+    self:Log("Success", title, message, ...)
 end
 
 -------------------------------
@@ -164,5 +167,5 @@ end
 -------------------------------
 
 ---@alias NoirLoggingMode
----| "Chat" Logs will be sent via debug.log and server.announce
----| "DebugLog" Logs will only be sent via debug.log
+---| "Chat" Sends via server.announce and via debug.log
+---| "DebugLog" Sends only via debug.log
