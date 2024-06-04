@@ -32,9 +32,10 @@
 -------------------------------
 
 --[[
-    The version of Noir.
+    The version of Noir.<br>
+    Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.1.2"
+Noir.Version = "1.2.2"
 
 --[[
     This event is called when the framework is started.<br>
@@ -128,6 +129,6 @@ end
 -------------------------------
 
 ---@alias NoirAddonReason
----| "AddonReload" The addon was reloaded
----| "SaveCreate" A save was created with this addon
----| "SaveLoad" A save was loaded into with this addon
+---| "AddonReload"
+---| "SaveCreate"
+---| "SaveLoad"
