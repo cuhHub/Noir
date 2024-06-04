@@ -31,6 +31,9 @@
 -- // Main
 -------------------------------
 
+--[[
+    Represents a task for the TaskService.
+]]
 ---@class NoirTask: NoirClass
 ---@field ID integer The ID of this task
 ---@field StartedAt integer The time that this task started at
