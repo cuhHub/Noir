@@ -64,7 +64,7 @@ Noir.Callbacks.Events = {} ---@type table<string, NoirEvent>
 ---@return NoirConnection
 function Noir.Callbacks:Connect(name, callback, hideStartWarning)
     -- Get or create event
-    local event = self:InstantiateCallback(name, hideStartWarning or false)
+    local event = self:_InstantiateCallback(name, hideStartWarning or false)
 
     -- Connect callback to event
     return event:Connect(callback)
@@ -83,7 +83,7 @@ end
 ---@return NoirConnection
 function Noir.Callbacks:Once(name, callback, hideStartWarning)
     -- Get or create event
-    local event = self:InstantiateCallback(name, hideStartWarning or false)
+    local event = self:_InstantiateCallback(name, hideStartWarning or false)
 
     -- Connect callback to event
     return event:Once(callback)
@@ -112,7 +112,7 @@ end
 ---@param name string
 ---@param hideStartWarning boolean
 ---@return NoirEvent
-function Noir.Callbacks:InstantiateCallback(name, hideStartWarning)
+function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
     -- Check if Noir has started
     if not Noir.HasStarted and not hideStartWarning then
         Noir.Libraries.Logging:Warning("Callbacks", "Noir has not started yet. It is not recommended to connect to callbacks before `Noir:Start()` is called and finalized. Please connect to the `Noir.Started` event and attach to game callbacks in that.")
