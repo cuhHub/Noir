@@ -74,10 +74,11 @@ function Noir.Libraries.Logging:Log(logType, title, message, ...)
     local formattedText = self:FormatLog(logType, title, message, ...)
 
     -- send log
-    if self.LoggingMode == "DebugLog" then
+    if self.LoggingMode == "Chat" then
         debug.log(formattedText)
-    elseif self.LoggingMode == "Chat" then
         server.announce("Noir", formattedText)
+    elseif self.LoggingMode == "DebugLog" then
+        debug.log(formattedText)
     else
         self:Error("Invalid logging mode: %s", "'%s' is not a valid logging mode.", tostring(Noir.Libraries.LoggingMode))
     end
@@ -113,7 +114,7 @@ end
 --[[
     Sends an error log.
 
-    Noir.Libraries.Logging:Error("Something went wrong relating to %s", "something.")
+    Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
@@ -125,7 +126,7 @@ end
 --[[
     Sends a warning log.
 
-    Noir.Libraries.Logging:Warning("Something went unexpected relating to %s", "something.")
+    Noir.Libraries.Logging:Warning("Title", "Something went unexpected relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
@@ -137,7 +138,7 @@ end
 --[[
     Sends an info log.
 
-    Noir.Libraries.Logging:Info("Something went okay relating to %s", "something.")
+    Noir.Libraries.Logging:Info("Title", "Something went okay relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
@@ -149,7 +150,7 @@ end
 --[[
     Sends a success log.
 
-    Noir.Libraries.Logging:Success("Something went right relating to %s", "something.")
+    Noir.Libraries.Logging:Success("Title", "Something went right relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
@@ -163,5 +164,5 @@ end
 -------------------------------
 
 ---@alias NoirLoggingMode
----| "Chat"
----| "DebugLog"
+---| "Chat" Logs will be sent via debug.log and server.announce
+---| "DebugLog" Logs will only be sent via debug.log
