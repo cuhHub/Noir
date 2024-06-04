@@ -77,7 +77,7 @@ function Noir.Class(name, parent)
         -- create Object
         ---@type NoirClass
         local object = {} ---@diagnostic disable-line
-        self:__Descend(object, {New = true, Init = true, __Descend = true})
+        self:_Descend(object, {New = true, Init = true, _Descend = true})
 
         object.__IsObject = true
 
@@ -97,7 +97,7 @@ function Noir.Class(name, parent)
     ---@param from NoirClass
     ---@param object NoirClass
     ---@param exceptions table<integer, string>
-    function class.__Descend(from, object, exceptions)
+    function class._Descend(from, object, exceptions)
         for index, value in pairs(from) do
             if exceptions[index] then
                 goto continue
@@ -135,7 +135,7 @@ function Noir.Class(name, parent)
         local object = self.__Parent:New(...)
 
         -- Copy and bring new attributes and methods down from the new parent object to this object
-        self.__Descend(object, self, {New = true, Init = true, __Descend = true})
+        self._Descend(object, self, {New = true, Init = true, _Descend = true})
     end
 
     --[[
