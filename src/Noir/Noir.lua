@@ -76,12 +76,12 @@ Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
 function Noir:Start()
     -- Checks
     if self.IsStarting then
-        self.Libraries.Logging:Error("Start", "The addon attempted to start Noir when it is in the process of starting.")
+        self.Libraries.Logging:Error("Start", "The addon attempted to start Noir when it is in the process of starting.", true)
         return
     end
 
     if self.HasStarted then
-        self.Libraries.Logging:Error("Start", "The addon attempted to start Noir more than once.")
+        self.Libraries.Logging:Error("Start", "The addon attempted to start Noir more than once.", true)
         return
     end
 

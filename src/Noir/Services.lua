@@ -75,7 +75,7 @@ Noir.Services.CreatedServices = {} ---@type table<string, NoirService>
 function Noir.Services:CreateService(name)
     -- Check if service already exists
     if self.CreatedServices[name] then
-        Noir.Libraries.Logging:Error("Service Creation", "Attempted to create a service that already exists. The already existing service has been returned instead.")
+        Noir.Libraries.Logging:Error("Service Creation", "Attempted to create a service that already exists. The already existing service has been returned instead.", false)
         return self.CreatedServices[name]
     end
 
@@ -104,13 +104,13 @@ function Noir.Services:GetService(name)
 
     -- Check if service exists
     if not service then
-        Noir.Libraries.Logging:Error(name, "Attempted to retrieve a service that doesn't exist ('%s').", name)
+        Noir.Libraries.Logging:Error(name, "Attempted to retrieve a service that doesn't exist ('%s').", true)
         return
     end
 
     -- Check if service has been initialized
     if not service.Initialized then
-        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that hasn't initialized yet ('%s').", name)
+        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that hasn't initialized yet ('%s').", false)
         return
     end
 

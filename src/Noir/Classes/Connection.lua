@@ -60,7 +60,7 @@ end
 ---@param ... any
 function Noir.Classes.ConnectionClass:Fire(...)
     if not self.Connected then
-        Noir.Libraries.Logging:Error("Event Connection", "Attempted to fire an event connection when it is not connected.")
+        Noir.Libraries.Logging:Error("Event Connection", "Attempted to fire an event connection when it is not connected.", true)
         return
     end
 
@@ -72,7 +72,7 @@ end
 ]]
 function Noir.Classes.ConnectionClass:Disconnect()
     if not self.Connected then
-        Noir.Libraries.Logging:Error("Event Connection", "Attempted to disconnect an event connection when it is not connected.")
+        Noir.Libraries.Logging:Error("Event Connection", "Attempted to disconnect an event connection when it is not connected.", true)
         return
     end
 

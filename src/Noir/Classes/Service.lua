@@ -66,12 +66,12 @@ end
 function Noir.Classes.ServiceClass:_Initialize()
     -- Checks
     if self.Initialized then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to initialize this service when it has already initialized.")
+        Noir.Libraries.Logging:Error(self.Name, "Attempted to initialize this service when it has already initialized.", true)
         return
     end
 
     if self.Started then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.")
+        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.", true)
         return
     end
 
@@ -80,7 +80,7 @@ function Noir.Classes.ServiceClass:_Initialize()
 
     -- Call ServiceInit
     if not self.ServiceInit then
-        Noir.Libraries.Logging:Error(self.Name, "This service is missing a ServiceInit method.")
+        Noir.Libraries.Logging:Error(self.Name, "This service is missing a ServiceInit method.", true)
         return
     end
 
@@ -94,12 +94,12 @@ end
 function Noir.Classes.ServiceClass:_Start()
     -- Checks
     if self.Started then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.")
+        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.", true)
         return
     end
 
     if not self.Initialized then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has not initialized yet.")
+        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has not initialized yet.", true)
         return
     end
 
@@ -123,17 +123,17 @@ end
 function Noir.Classes.ServiceClass:_CheckSaveData()
     -- Checks
     if not g_savedata then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata is nil.")
+        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata is nil.", true)
         return false
     end
 
     if not g_savedata.Noir then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir is nil. Something might have gone wrong with the Noir bootstrapper.")
+        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir is nil. Something might have gone wrong with the Noir bootstrapper.", true)
         return false
     end
 
     if not g_savedata.Noir.Services then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir.Services is nil. Something might have gone wrong with the Noir bootstrapper.")
+        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir.Services is nil. Something might have gone wrong with the Noir bootstrapper.", true)
         return false
     end
 

@@ -86,7 +86,7 @@ function Noir.Libraries.Logging:Log(logType, title, message, ...)
         debug.log(formattedText)
         server.announce("Noir", formattedText)
     else
-        self:Error("Invalid logging mode: %s", "'%s' is not a valid logging mode.", tostring(Noir.Libraries.LoggingMode))
+        self:Error("Invalid logging mode: %s", "'%s' is not a valid logging mode.", true, tostring(Noir.Libraries.LoggingMode))
     end
 
     -- Send event
@@ -115,21 +115,27 @@ function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
 end
 
 --[[
-    Sends an error log.
+    Sends an error log.<br>
+    Passing true to the third argument will intentionally cause an addon error to be thrown.
 
-    Noir.Libraries.Logging:Error("Something went wrong relating to %s", "something.")
+    Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", true, "something.")
 ]]
 ---@param title string
 ---@param message string
+---@param triggerError boolean
 ---@param ... any
-function Noir.Libraries.Logging:Error(title, message, ...)
+function Noir.Libraries.Logging:Error(title, message, triggerError, ...)
     self:Log("Error", title, message, ...)
+
+    if triggerError then
+        _ENV[self:_FormatLog("Error", title, message, ...)]()
+    end
 end
 
 --[[
     Sends a warning log.
 
-    Noir.Libraries.Logging:Warning("Something went unexpected relating to %s", "something.")
+    Noir.Libraries.Logging:Warning("Title", "Something went unexpected relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
@@ -141,7 +147,7 @@ end
 --[[
     Sends an info log.
 
-    Noir.Libraries.Logging:Info("Something went okay relating to %s", "something.")
+    Noir.Libraries.Logging:Info("Title", "Something went okay relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
@@ -153,7 +159,7 @@ end
 --[[
     Sends a success log.
 
-    Noir.Libraries.Logging:Success("Something went right relating to %s", "something.")
+    Noir.Libraries.Logging:Success("Title", "Something went right relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message string
