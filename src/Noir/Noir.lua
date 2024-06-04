@@ -108,7 +108,13 @@ function Noir:Start()
             self.Started:Fire()
 
             -- Send log
-            self.Libraries.Logging:Success("Start", "Noir (v%s) has started. Bootstrapper has initialized and started all services.\nTook: %sms | Addon Reason: %s", self.Version, took, Noir.AddonReason)
+            self.Libraries.Logging:Success("Start", "Noir v%s has started. Bootstrapper has initialized and started all services.\nTook: %sms | Addon Reason: %s", self.Version, took, Noir.AddonReason)
+
+            -- Send log on addon stop
+            self.Callbacks:Once("onDestroy", function()
+                local addonData = server.getAddonData((server.getAddonIndex()))
+                self.Libraries.Logging:Info("Stop", "%s, using Noir v%s, has stopped.", addonData.name, self.Version)
+            end)
         end, true)
     end
 
