@@ -182,25 +182,27 @@ function Noir.Services.PlayerService:ServiceStart()
     -- end
 
     -- Load players in game
-    for _, player in pairs(server.getPlayers()) do
-        -- Check if unnamed client
-        if player.steam_id == 0 then
-            goto continue
+    if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
+        for _, player in pairs(server.getPlayers()) do
+            -- Check if unnamed client
+            if player.steam_id == 0 then
+                goto continue
+            end
+
+            -- Log
+            Noir.Libraries.Logging:Info("PlayerService", "Loading player in game: %s (%d, %s)", player.name, player.id, player.steam_id)
+
+            -- Check if already loaded
+            if self:GetPlayer(player.id) then
+                Noir.Libraries.Logging:Info("PlayerService", "(in-game load) %s already has data. Ignoring.", player.name)
+                goto continue
+            end
+
+            -- Give data
+            self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
+
+            ::continue::
         end
-
-        -- Log
-        Noir.Libraries.Logging:Info("PlayerService", "Loading player in game: %s (%d, %s)", player.name, player.id, player.steam_id)
-
-        -- Check if already loaded
-        if self:GetPlayer(player.id) then
-            Noir.Libraries.Logging:Info("PlayerService", "(in-game load) %s already has data. Ignoring.", player.name)
-            goto continue
-        end
-
-        -- Give data
-        self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
-
-        ::continue::
     end
 end
 
