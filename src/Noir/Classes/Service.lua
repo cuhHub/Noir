@@ -32,8 +32,7 @@
 -------------------------------
 
 --[[
-    A class that represents a service.<br>
-    Do not use this in your code.
+    A class that represents a service.
 ]]
 ---@class NoirService: NoirClass
 ---@field Name string The name of this service
@@ -64,7 +63,7 @@ end
     Start this service.<br>
     Used internally.
 ]]
-function Noir.Classes.ServiceClass:Initialize()
+function Noir.Classes.ServiceClass:_Initialize()
     -- Checks
     if self.Initialized then
         Noir.Libraries.Logging:Error(self.Name, "Attempted to initialize this service when it has already initialized.")
@@ -92,7 +91,7 @@ end
     Start this service.<br>
     Used internally.
 ]]
-function Noir.Classes.ServiceClass:Start()
+function Noir.Classes.ServiceClass:_Start()
     -- Checks
     if self.Started then
         Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.")
@@ -121,7 +120,7 @@ end
     Used internally.
 ]]
 ---@return boolean
-function Noir.Classes.ServiceClass:CheckSaveData()
+function Noir.Classes.ServiceClass:_CheckSaveData()
     -- Checks
     if not g_savedata then
         Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata is nil.")
@@ -159,7 +158,7 @@ end
 ---@param data any
 function Noir.Classes.ServiceClass:Save(index, data)
     -- Check g_savedata
-    if not self:CheckSaveData() then
+    if not self:_CheckSaveData() then
         return
     end
 
@@ -181,7 +180,7 @@ end
 ---@return any
 function Noir.Classes.ServiceClass:Load(index, default)
     -- Check g_savedata
-    if not self:CheckSaveData() then
+    if not self:_CheckSaveData() then
         return
     end
 
@@ -201,7 +200,7 @@ end
 ---@param index string
 function Noir.Classes.ServiceClass:Remove(index)
     -- Check g_savedata
-    if not self:CheckSaveData() then
+    if not self:_CheckSaveData() then
         return
     end
 

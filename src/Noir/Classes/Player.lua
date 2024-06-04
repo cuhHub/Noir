@@ -32,8 +32,7 @@
 -------------------------------
 
 --[[
-    A class that represents a player for the built-in PlayerService.<br>
-    Do not use this in your code. This is used internally.
+    A class that represents a player for the built-in PlayerService.
 ]]
 ---@class NoirPlayer: NoirClass
 ---@field Name string The name of this player
@@ -63,7 +62,7 @@ end
     Serializes this player for g_savedata.
 ]]
 ---@deprecated
-function Noir.Classes.PlayerClass:Serialize()
+function Noir.Classes.PlayerClass:_Serialize()
     return {
         Name = self.Name,
         ID = self.ID,
@@ -79,7 +78,7 @@ end
 ---@deprecated
 ---@param serializedPlayer NoirSerializedPlayer
 ---@return NoirPlayer
-function Noir.Classes.PlayerClass.Deserialize(serializedPlayer)
+function Noir.Classes.PlayerClass._Deserialize(serializedPlayer)
     local player = Noir.Classes.PlayerClass:New( ---@type NoirPlayer
         serializedPlayer.Name,
         serializedPlayer.ID,

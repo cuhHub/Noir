@@ -82,7 +82,7 @@ function Noir.Services.PlayerService:ServiceStart()
         end
 
         -- Give data
-        local player = self:GivePlayerData(steam_id, name, peer_id, admin, auth)
+        local player = self:_GivePlayerData(steam_id, name, peer_id, admin, auth)
 
         if not player then
             return
@@ -107,7 +107,7 @@ function Noir.Services.PlayerService:ServiceStart()
         end
 
         -- Remove player
-        local success = self:RemovePlayerData(player)
+        local success = self:_RemovePlayerData(player)
 
         if not success then
             Noir.Libraries.Logging:Error("PlayerService", "onPlayerLeave player data removal failed.")
@@ -159,7 +159,7 @@ function Noir.Services.PlayerService:ServiceStart()
 
     -- REMOVED: No need for this. I remembered about the onDestroy callback, and that callback makes the code below useless.
     -- Load players from save data
-    -- local savedPlayers = Noir.AddonReason ~= "AddonReload" and {} or self:GetSavedPlayers()
+    -- local savedPlayers = Noir.AddonReason ~= "AddonReload" and {} or self:_GetSavedPlayers()
     --  To explain the above:
     --      If a server was to stop with players in it, these players would be re-added when the server starts back up due to save data.
     --      This is bad, because if the players were to join back, their data wouldn't be added because it already exists.
@@ -176,7 +176,7 @@ function Noir.Services.PlayerService:ServiceStart()
     --     end
 
     --     -- Give data
-    --     self:GivePlayerData(player.Steam, player.Name, player.ID, player.Admin, player.Auth)
+    --     self:_GivePlayerData(player.Steam, player.Name, player.ID, player.Admin, player.Auth)
 
     --     ::continue::
     -- end
@@ -198,7 +198,7 @@ function Noir.Services.PlayerService:ServiceStart()
         end
 
         -- Give data
-        self:GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
+        self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
 
         ::continue::
     end
@@ -210,7 +210,7 @@ end
 ]]
 ---@deprecated
 ---@return table<integer, NoirSerializedPlayer>
-function Noir.Services.PlayerService:GetSavedPlayers()
+function Noir.Services.PlayerService:_GetSavedPlayers()
     return self:Load("players", {})
 end
 
@@ -224,7 +224,7 @@ end
 ---@param admin boolean
 ---@param auth boolean
 ---@return NoirPlayer|nil
-function Noir.Services.PlayerService:GivePlayerData(steam_id, name, peer_id, admin, auth)
+function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, admin, auth)
     -- Check if player already exists
     if self:GetPlayer(peer_id) then
         Noir.Libraries.Logging:Error("PlayerService", "Attempted to give player data to an existing player. This player has been ignored.")
@@ -243,8 +243,8 @@ function Noir.Services.PlayerService:GivePlayerData(steam_id, name, peer_id, adm
 
     -- Save player
     self.Players[peer_id] = player
-    -- self:GetSavedPlayers()[peer_id] = player:Serialize()
-    -- self:Save("players", self:GetSavedPlayers())
+    -- self:_GetSavedPlayers()[peer_id] = player:Serialize()
+    -- self:Save("players", self:_GetSavedPlayers())
 
     -- Return
     return player
@@ -256,7 +256,7 @@ end
 ]]
 ---@param player NoirPlayer
 ---@return boolean success Whether or not the operation was successful
-function Noir.Services.PlayerService:RemovePlayerData(player)
+function Noir.Services.PlayerService:_RemovePlayerData(player)
     -- Check if player exists in this service
     if not self:GetPlayer(player.ID) then
         Noir.Libraries.Logging:Error("PlayerService", "Attempted to remove player data from a non-existent player.")
@@ -265,7 +265,7 @@ function Noir.Services.PlayerService:RemovePlayerData(player)
 
     -- Remove player
     self.Players[player.ID] = nil
-    -- self:GetSavedPlayers()[player.ID] = nil
+    -- self:_GetSavedPlayers()[player.ID] = nil
 
     return true
 end
