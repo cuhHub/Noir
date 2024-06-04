@@ -32,15 +32,14 @@
 -------------------------------
 
 --[[
-    A class for event connections.<br>
-    Do not use this, but instead use `Event:Connect()`.
+    A class for event connections.
 ]]
 ---@class NoirConnection: NoirClass
 ---@field ID integer The ID of this connection
----@field Index integer The index of this connection in ParentEvent.ConnectionsOrder
 ---@field Callback function The callback that is assigned to this connection
 ---@field ParentEvent NoirEvent The event that this connection is connected to
 ---@field Connected boolean Whether or not this connection is connected
+---@field Index integer The index of this connection in ParentEvent.ConnectionsOrder
 Noir.Classes.ConnectionClass = Noir.Class("NoirConnection")
 
 --[[
@@ -52,6 +51,7 @@ function Noir.Classes.ConnectionClass:Init(callback)
     self.ParentEvent = nil
     self.ID = nil
     self.Connected = false
+    self.Index = -1
 end
 
 --[[
