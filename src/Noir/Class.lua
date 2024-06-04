@@ -64,12 +64,12 @@ function Noir.Class(name, parent)
         print(object.something) -- true
     ]]
     ---@class NoirClass
-    ---@field _Name string The name of this class/object
+    ---@field ClassName string The name of this class/object
     ---@field _Parent NoirClass|nil The parent class that this class inherits from
     ---@field _IsObject boolean
     ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
     local class = {} ---@diagnostic disable-line
-    class._Name = name
+    class.ClassName = name
     class._Parent = parent
     class._IsObject = false
 
@@ -85,7 +85,7 @@ function Noir.Class(name, parent)
         if self.Init then
             self.Init(object, ...)
         else
-            Noir.Libraries.Logging:Error("Class", "'%s' is missing an :Init() method. This method is required for classes. See the documentation for info.", self._Name)
+            Noir.Libraries.Logging:Error("Class", "'%s' is missing an :Init() method. This method is required for classes. See the documentation for info.", true, self.ClassName)
         end
 
         -- Return the object
@@ -123,13 +123,13 @@ function Noir.Class(name, parent)
     function class:InitializeParent(...)
         -- Check if this was called from an object
         if not self.IsSameType then
-            Noir.Libraries.Logging:Error(self._Name, "Attempted to call :InitializeParent() when 'self' is a class and not an object.")
+            Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' is a class and not an object.", true)
             return
         end
 
         -- Check if there is a parent
         if not self._IsObject then
-            Noir.Libraries.Logging:Error(self._Name, "Attempted to call :InitializeParent() when 'self' has no parent.")
+            Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' has no parent.", true)
             return
         end
 
@@ -146,7 +146,7 @@ function Noir.Class(name, parent)
     ---@param other NoirClass
     ---@return boolean
     function class:IsSameType(other)
-        return other._Name ~= nil and self._Name == other._Name
+        return other.ClassName ~= nil and self.ClassName == other.ClassName
     end
 
     return class
