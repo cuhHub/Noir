@@ -21,7 +21,7 @@ Finally, examples can be found in the `examples` directory. You can see a quick 
 Documentation can be found [here](https://cuhhub.gitbook.io/noir/).
 
 ## 🔨 Installation
-For learning how to install and use Noir in your framework, please check out the [documentation.](https://cuhhub.gitbook.io/noir/)
+For learning how to install and use Noir in your addon, please check out the [documentation.](https://cuhhub.gitbook.io/noir/)
 
 ## ✨ Credit
 - [Cuh4](https://github.com/Cuh4)
