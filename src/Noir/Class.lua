@@ -64,14 +64,14 @@ function Noir.Class(name, parent)
         print(object.something) -- true
     ]]
     ---@class NoirClass
-    ---@field __Name string The name of this class/object
-    ---@field __Parent NoirClass|nil The parent class that this class inherits from
-    ---@field __IsObject boolean
+    ---@field _Name string The name of this class/object
+    ---@field _Parent NoirClass|nil The parent class that this class inherits from
+    ---@field _IsObject boolean
     ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
     local class = {} ---@diagnostic disable-line
-    class.__Name = name
-    class.__Parent = parent
-    class.__IsObject = false
+    class._Name = name
+    class._Parent = parent
+    class._IsObject = false
 
     function class:New(...)
         -- create Object
@@ -79,11 +79,13 @@ function Noir.Class(name, parent)
         local object = {} ---@diagnostic disable-line
         self:_Descend(object, {New = true, Init = true, _Descend = true})
 
-        object.__IsObject = true
+        object._IsObject = true
 
         -- Call init of object. This init function will provide the needed attributes to the object
         if self.Init then
             self.Init(object, ...)
+        else
+            Noir.Libraries.Logging:Error("Class", "'%s' is missing an :Init() method. This method is required for classes. See the documentation for info.", self._Name)
         end
 
         -- Return the object
@@ -121,18 +123,18 @@ function Noir.Class(name, parent)
     function class:InitializeParent(...)
         -- Check if this was called from an object
         if not self.IsSameType then
-            Noir.Libraries.Logging:Error(self.__Name, "Attempted to call :InitializeParent() when 'self' is a class and not an object.")
+            Noir.Libraries.Logging:Error(self._Name, "Attempted to call :InitializeParent() when 'self' is a class and not an object.")
             return
         end
 
         -- Check if there is a parent
-        if not self.__IsObject then
-            Noir.Libraries.Logging:Error(self.__Name, "Attempted to call :InitializeParent() when 'self' has no parent.")
+        if not self._IsObject then
+            Noir.Libraries.Logging:Error(self._Name, "Attempted to call :InitializeParent() when 'self' has no parent.")
             return
         end
 
         -- Create an object from the parent class
-        local object = self.__Parent:New(...)
+        local object = self._Parent:New(...)
 
         -- Copy and bring new attributes and methods down from the new parent object to this object
         self._Descend(object, self, {New = true, Init = true, _Descend = true})
@@ -144,7 +146,7 @@ function Noir.Class(name, parent)
     ---@param other NoirClass
     ---@return boolean
     function class:IsSameType(other)
-        return other.__Name ~= nil and self.__Name == other.__Name
+        return other._Name ~= nil and self._Name == other._Name
     end
 
     return class
