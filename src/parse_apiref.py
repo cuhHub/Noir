@@ -368,7 +368,7 @@ if not os.path.isdir(path):
         
 for file in os.listdir(path):
     if file.endswith(".lua"):
-        parser = Parser()
+        parser = Parser(os.path.join(path, file))
         values = parser.parse()
 
         markdown = ""
