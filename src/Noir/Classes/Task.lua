@@ -50,7 +50,7 @@ Noir.Classes.TaskClass = Noir.Class("NoirTask")
 ---@param ID integer
 ---@param duration number
 ---@param isRepeating boolean
----@param arguments table
+---@param arguments table<integer, any>
 function Noir.Classes.TaskClass:Init(ID, duration, isRepeating, arguments)
     self.ID = ID
     self.StartedAt = Noir.Services.TaskService:GetTimeSeconds()
