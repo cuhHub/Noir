@@ -286,6 +286,22 @@ function Noir.Classes.PlayerClass:IsDowned()
     return data.dead or data.incapacitated or data.hp <= 0
 end
 
+--[[
+    Returns this player's look direction.
+]]
+---@return number LookX
+---@return number LookY
+---@return number LookZ
+function Noir.Classes.PlayerClass:GetLook()
+    local x, y, z, success = server.getPlayerLookDirection(self.ID)
+
+    if not success then
+        return 0, 0, 0
+    end
+
+    return x, y, z
+end
+
 -------------------------------
 -- // Intellisense
 -------------------------------
