@@ -1,4 +1,9 @@
-# sorry. this is super ugly and rushed. but it works. this isn't used in noir anyway and is only used to generate api reference docs
+"""
+read!!
+
+this is super rushed and ugly. i know! i would make this better, but this is only to be used by me, so quality wasn't a priority
+i do not know regex, nor can i really be bothered to learn it, hence why .split() is used a lot
+"""
 
 from __future__ import annotations
 import re
