@@ -38,7 +38,8 @@ class Parser():
         self.content = None
         
         self.customTypes = {
-            "Noir.Libraries.Events:Create()" : "NoirEvent"
+            "Noir.Libraries.Events:Create()" : "NoirEvent",
+            "Noir.Class" : "NoirClass"
         }
         
     def updateContent(self):
@@ -64,18 +65,18 @@ class Parser():
         if value.startswith("function"):
             return "function"
         
-        if value in self.customTypes:
-            return self.customTypes[value]
-        
         if value.startswith(r"{") and value.endswith(r"}"):
             return "table"
         
-        print(f"got unknown type: {value}")
+        for custom, valueType in self.customTypes.items():
+            if value.find(custom) != -1:
+                return valueType
+        
         return "unknown"
     
     def getDescription(self, point: int) -> str:
         description = ""
-        lines = []
+        lines: list[str] = []
         
         # go backwards til start of command
         for line in reversed(self.content[:point].split("\n")):
@@ -85,30 +86,29 @@ class Parser():
             if line.find("]]") != -1:
                 continue
             
-            if line.find("---@") != -1:
+            if line.find("---") != -1:
                 continue
             
             lines.append(line)
             
         # make description
         lines = [line for line in reversed(lines)]
-        beginRemoval = False
-        
-        for line in lines:
-            # check if this line is empty. if it is, code will likely proceed
-            if line == "":
-                beginRemoval = True
-            
-            # remove
-            if beginRemoval:
-                lines.remove(line)
-            
+
         # remove last line if its empty
         if lines[-1] == "":
             lines.pop()
+            
+        # remove code
+        newLines = []
+
+        for line in lines:
+            if line != "":
+                newLines.append(line)
+            else:
+                break
         
         # join lines
-        description = "\n".join(lines)
+        description = "\n".join(newLines)
         
         # deindent
         description = self.deindent(description)
@@ -116,7 +116,7 @@ class Parser():
         # remove line breaks
         description = description.replace("<br>", "")
         
-        # make new lines trly a new line in markdown
+        # make new lines truly a new line in markdown
         description = description.replace("\\n", "\n")
           
         # return
@@ -125,14 +125,20 @@ class Parser():
     def getParameters(self, point: int) -> list[Param]:
         # search backwards for ---@param
         params: list[Param] = []
+        found = False
         
         for line in reversed(self.content[:point].split("\n")):
             line = self.deindent(line)
             
             if line.find("]]") != -1:
-                break
+                if found:
+                    break
+                else:
+                    return []
 
             if line.find("---@param") != -1:
+                found = True
+                
                 param = line.split("---@param ")[1]
                 split = param.split(" ")
                 
@@ -159,10 +165,12 @@ class Parser():
     def getReturns(self, point: int) -> list[ReturnValue]:
         # search backwards for ---@return
         returns = []
+        count = 0
         
         for line in reversed(self.content[:point].split("\n")):
             line = self.deindent(line)
-            
+            count += 1
+
             if line.find("]]") != -1:
                 break
             
@@ -186,6 +194,8 @@ class Parser():
                     type = type,
                     description = description
                 ))
+            else:
+                return []
                 
         # return
         return reversed(returns)
@@ -314,8 +324,6 @@ class Parser():
                 deprecated = self.getIsDeprecated(point)
             ))
             
-            print(line)
-            
         # return
         return values
                 
@@ -332,8 +340,8 @@ for value in values:
     returnsFormatted = "\n".join([f"{returnVal.type}: {returnVal.name} - {returnVal.description}" for returnVal in value.returns] if value.returns else ["N/A"])
     returnsFormatted = textwrap.indent(returnsFormatted, "    ")
 
-    # print(f"{value.name} of type {value.type} {"(DEPRECATED)" if value.deprecated else ""}\n\nparams:\n{paramsFormatted}\n\nreturns:\n{returnsFormatted}\n\n{value.description}")
-    # print("-----------------------")
+    print(f"{value.name} of type {value.type} {"(DEPRECATED)" if value.deprecated else ""}\n\nparams:\n{paramsFormatted}\n\nreturns:\n{returnsFormatted}\n\n{value.description}")
+    print("-----------------------")
     
 # bugs:
 """
