@@ -157,7 +157,7 @@ function Noir.Classes.PlayerClass:SetCharacterData(health, interactable, AI)
     local character = self:GetCharacter()
 
     if not character then
-        Noir.Libraries.Logging:Error("PlayerService", ":SetCharacterData() failed for player %s (%d, %s) due to character being nil", self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("PlayerService", ":SetCharacterData() failed for player %s (%d, %s) due to character being nil", false, self.Name, self.ID, self.Steam)
         return
     end
 
@@ -203,7 +203,7 @@ function Noir.Classes.PlayerClass:GetCharacter()
     local character = server.getPlayerCharacterID(self.ID)
 
     if not character then
-        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacter() failed for player %s (%d, %s)", self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacter() failed for player %s (%d, %s)", false, self.Name, self.ID, self.Steam)
         return
     end
 
@@ -219,7 +219,7 @@ function Noir.Classes.PlayerClass:Revive()
     local character = self:GetCharacter()
 
     if not character then
-        Noir.Libraries.Logging:Error("PlayerService", ":Revive() failed for player %s (%d, %s) due to character being nil", self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("PlayerService", ":Revive() failed for player %s (%d, %s) due to character being nil", false, self.Name, self.ID, self.Steam)
         return
     end
 
@@ -236,7 +236,7 @@ function Noir.Classes.PlayerClass:GetCharacterData()
     local character = self:GetCharacter()
 
     if not character then
-        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s) due to character being nil", self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s) due to character being nil", false, self.Name, self.ID, self.Steam)
         return
     end
 
@@ -244,7 +244,7 @@ function Noir.Classes.PlayerClass:GetCharacterData()
     local data = server.getCharacterData(character)
 
     if not data then
-        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s). Data is nil", self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s). Data is nil", false, self.Name, self.ID, self.Steam)
         return
     end
 
@@ -261,7 +261,7 @@ function Noir.Classes.PlayerClass:GetHealth()
     local data = self:GetCharacterData()
 
     if not data then
-        Noir.Libraries.Logging:Error("PlayerService", ":GetHealth() failed for player %s (%d, %s) due to data being nil. Returning 100 instead", self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("PlayerService", ":GetHealth() failed for player %s (%d, %s) due to data being nil. Returning 100 instead", false, self.Name, self.ID, self.Steam)
         return 100
     end
 
@@ -278,7 +278,7 @@ function Noir.Classes.PlayerClass:IsDowned()
     local data = self:GetCharacterData()
 
     if not data then
-        Noir.Libraries.Logging:Error("PlayerService", ":IsDowned() failed for player %s (%d, %s) due to data being nil. Returning false instead", self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("PlayerService", ":IsDowned() failed for player %s (%d, %s) due to data being nil. Returning false instead", false, self.Name, self.ID, self.Steam)
         return false
     end
 
