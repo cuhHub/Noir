@@ -29,6 +29,7 @@ jobs:
           fi
 
       - name: Create GitHub Release
+        id: create_release
         if: steps.extract_version.outputs.version != ''
         uses: actions/create-release@v1
         env:
@@ -44,4 +45,15 @@ jobs:
             Check out the [documentation](https://cuhhub.gitbook.io/noir) for information on how to install and use Noir in your addon.
           draft: false
           prerelease: false
-          files: _build/Noir.lua
+
+      - name: Upload release asset
+        id: upload_release_asset
+        if: steps.extract_version.outputs.version != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: _build/Noir.lua
+          asset_name: Noir.lua
+          asset_content_type: application/octet-stream
