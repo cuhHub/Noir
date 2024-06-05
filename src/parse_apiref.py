@@ -357,44 +357,53 @@ class Parser():
                 
 if len(sys.argv) < 2:
     raise Exception("Provide path")
-        
-parser = Parser(sys.argv[1])
-values = parser.parse()
 
-markdown = ""
+path = sys.argv[1]
 
-for value in values:
-    # get value stuffs
-    name = value.name
-    valueType = value.type
-    description = value.description or "N/A"
-    deprecated = value.deprecated
-    deprecatedFormatted = "**⚠️ | Deprecated. Do not use.**\n\n" if deprecated else ""
-    
-    # show value name, type, and description
-    markdown += f"```lua\n{name}\n```" if valueType == "function" else f"**{name}**: `{valueType}`"
-    markdown += f"\n\n{deprecatedFormatted}{description}\n"
-    
-    # if function, show params and returns
-    if valueType == "function":
-        if len(value.params) > 0:
-            markdown += "\n### Parameters\n"
+if not os.path.exists(path):
+    raise Exception("Path does not exist")
+
+if not os.path.isdir(path):
+    raise Exception("Path is not a directory")
         
-            for param in value.params:
-                paramDescription = f" - {param.description}" if param.description else ""
-                markdown += f"- `{param.name}`: {param.type}{paramDescription}\n"
+for file in os.listdir(path):
+    if file.endswith(".lua"):
+        parser = Parser()
+        values = parser.parse()
+
+        markdown = ""
+
+        for value in values:
+            # get value stuffs
+            name = value.name
+            valueType = value.type
+            description = value.description or "N/A"
+            deprecated = value.deprecated
+            deprecatedFormatted = "**⚠️ | Deprecated. Do not use.**\n\n" if deprecated else ""
             
-        if len(value.returns) > 0:
-            markdown += "\n### Returns\n"
-        
-            for returnValue in value.returns:
-                returnName = f": {returnValue.name}" if returnValue.name else ""
-                returnDescription = f" - {returnValue.description}" if returnValue.description else ""
-                markdown += f"- `{returnValue.type}`{returnName}{returnDescription}\n"
-    
-    # for next value
-    markdown += "\n---\n\n"
-    
-# write to file
-with open("../apiref.md", "w") as f:
-    f.write(markdown)
+            # show value name, type, and description
+            markdown += f"```lua\n{name}\n```" if valueType == "function" else f"**{name}**: `{valueType}`"
+            markdown += f"\n\n{deprecatedFormatted}{description}\n"
+            
+            # if function, show params and returns
+            if valueType == "function":
+                if len(value.params) > 0:
+                    markdown += "\n### Parameters\n"
+                
+                    for param in value.params:
+                        paramDescription = f" - {param.description}" if param.description else ""
+                        markdown += f"- `{param.name}`: {param.type}{paramDescription}\n"
+                    
+                if len(value.returns) > 0:
+                    markdown += "\n### Returns\n"
+                
+                    for returnValue in value.returns:
+                        returnName = f": {returnValue.name}" if returnValue.name else ""
+                        returnDescription = f" - {returnValue.description}" if returnValue.description else ""
+                        markdown += f"- `{returnValue.type}`{returnName}{returnDescription}\n"
+            
+            # for next value
+            markdown += "\n---\n\n"
+            
+        with open(f"../apiref/{os.path.join(path, file)}.md", "w") as f:
+            f.write(markdown)
