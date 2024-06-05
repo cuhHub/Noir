@@ -74,7 +74,7 @@ function Noir.Class(name, parent)
     class._IsObject = false
 
     function class:New(...)
-        -- create Object
+        -- Create Object
         ---@type NoirClass
         local object = {} ---@diagnostic disable-line
         self:_Descend(object, {New = true, Init = true, _Descend = true})
