@@ -7,7 +7,6 @@ i do not know regex, nor can i really be bothered to learn it, hence why .split(
 
 from __future__ import annotations
 import re
-import sys
 import os
 import textwrap
 from dataclasses import dataclass
@@ -21,6 +20,7 @@ class NoirValue:
     params: list[Param]
     returns: list[ReturnValue]
     deprecated: bool
+    path: str
     
 @dataclass
 class Param:
@@ -349,66 +349,73 @@ class Parser():
                 point = point,
                 params = self.getParameters(point) if value == "function" else [],
                 returns = self.getReturns(point) if value == "function" else [],
-                deprecated = self.getIsDeprecated(point)
+                deprecated = self.getIsDeprecated(point),
+                path = os.path.abspath(self.path)
             ))
             
         # return
         return values
-                
-if len(sys.argv) < 2:
-    raise Exception("Provide path")
-
-path = sys.argv[1]
-
-if not os.path.exists(path):
-    raise Exception("Path does not exist")
-
-if not os.path.isdir(path):
-    raise Exception("Path is not a directory")
+    
+    @staticmethod
+    def parseAll(dir: str) -> list[NoirValue]:
+        values = []
         
-for file in os.listdir(path):
-    if file.endswith(".lua"):
-        parser = Parser(os.path.join(path, file))
-        values = parser.parse()
-
-        markdown = ""
-
-        for value in values:
-            # get value stuffs
-            name = value.name
-            valueType = value.type
-            description = value.description or "N/A"
-            deprecated = value.deprecated
-            deprecatedFormatted = "**⚠️ | Deprecated. Do not use.**\n\n" if deprecated else ""
+        for file in os.listdir(dir):
+            path = os.path.join(dir, file)
             
-            # show value name, type, and description
-            markdown += f"```lua\n{name}\n```" if valueType == "function" else f"**{name}**: `{valueType}`"
-            markdown += f"\n\n{deprecatedFormatted}{description}\n"
-            
-            # if function, show params and returns
-            if valueType == "function":
-                if len(value.params) > 0:
-                    markdown += "\n### Parameters\n"
+            if os.path.isdir(path):
+                values.extend(Parser.parseAll(path))
+            else:
+                parser = Parser(path)
+                values.extend(parser.parse())
                 
-                    for param in value.params:
-                        paramDescription = f" - {param.description}" if param.description else ""
-                        markdown += f"- `{param.name}`: {param.type}{paramDescription}\n"
-                    
-                if len(value.returns) > 0:
-                    markdown += "\n### Returns\n"
-                
-                    for returnValue in value.returns:
-                        returnName = f": {returnValue.name}" if returnValue.name else ""
-                        returnDescription = f" - {returnValue.description}" if returnValue.description else ""
-                        markdown += f"- `{returnValue.type}`{returnName}{returnDescription}\n"
-            
-            # for next value
-            markdown += "\n---\n\n"
-            
-        filePath = f"../apiref/{os.path.join(path, file)}.md"
+        return values
         
-        if not os.path.exists(os.path.dirname(filePath)):
-            os.makedirs(os.path.dirname(filePath), exist_ok = True)
-            
-        with open(filePath, "w", encoding = "utf-8") as f:
-            f.write(markdown)
+values = Parser.parseAll("Noir")
+valuesForFiles: dict[str, str] = {}
+
+for value in values:
+    # get value stuffs
+    markdown = ""
+    name = value.name
+    valueType = value.type
+    description = value.description or "N/A"
+    deprecated = value.deprecated
+    deprecatedFormatted = "**⚠️ | Deprecated. Do not use.**\n\n" if deprecated else ""
+    
+    # show value name, type, and description
+    markdown += f"```lua\n{name}\n```" if valueType == "function" else f"**{name}**: `{valueType}`\n"
+    markdown += f"\n{deprecatedFormatted}{description}\n"
+    
+    # if function, show params and returns
+    if valueType == "function":
+        if len(value.params) > 0:
+            markdown += "\n### Parameters\n"
+            params = []
+        
+            for param in value.params:
+                paramDescription = f" - {param.description}" if param.description else ""
+                params.append(f"- `{param.name}`: {param.type}{paramDescription}")
+                
+            markdown += "\n".join(params)
+         
+        if len(value.returns) > 0:
+            markdown += "\n### Returns\n"
+            returns = []
+        
+            for returnValue in value.returns:
+                returnName = f": {returnValue.name}" if returnValue.name else ""
+                returnDescription = f" - {returnValue.description}" if returnValue.description else ""
+                returns.append(f"- `{returnValue.type}`{returnName}{returnDescription}")
+                
+            markdown += "\n".join(returns)
+    
+    # save
+    if not valuesForFiles.get(value.path):
+        valuesForFiles[value.path] = []
+        
+    valuesForFiles[value.path].append(markdown)
+    
+for path, markdown in valuesForFiles.items():
+    with open(f"../apiref/{os.path.basename(path)}.md", "w", encoding="utf-8") as file:
+        file.write("\n\n---\n\n".join(markdown))
