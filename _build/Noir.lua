@@ -125,7 +125,7 @@ function Noir.Class(name, parent)
     class._IsObject = false
 
     function class:New(...)
-        -- create Object
+        -- Create Object
         ---@type NoirClass
         local object = {} ---@diagnostic disable-line
         self:_Descend(object, {New = true, Init = true, _Descend = true})
@@ -204,7 +204,7 @@ function Noir.Class(name, parent)
 end
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Classes\Init.lua
+-- // [File] ..\src\Noir\Classes\init.lua
 ----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes
@@ -1023,6 +1023,22 @@ function Noir.Classes.PlayerClass:IsDowned()
 
     -- Return
     return data.dead or data.incapacitated or data.hp <= 0
+end
+
+--[[
+    Returns this player's look direction.
+]]
+---@return number LookX
+---@return number LookY
+---@return number LookZ
+function Noir.Classes.PlayerClass:GetLook()
+    local x, y, z, success = server.getPlayerLookDirection(self.ID)
+
+    if not success then
+        return 0, 0, 0
+    end
+
+    return x, y, z
 end
 
 -------------------------------
@@ -2865,10 +2881,10 @@ end
 -------------------------------
 
 --[[
-    The version of Noir.<br>
+    The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.2.5"
+Noir.Version = "1.2.8"
 
 --[[
     This event is called when the framework is started.<br>
@@ -2891,7 +2907,10 @@ Noir.HasStarted = false
 Noir.IsStarting = false
 
 --[[
-    This represents whether or not the addon was: reloaded, started via save creation, or started via save creation.
+    This represents whether or not the addon was:<br>
+    - Reloaded<br>
+    - Started via a save being loaded into<br>
+    - Started via a save creation
 ]]
 Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
 
