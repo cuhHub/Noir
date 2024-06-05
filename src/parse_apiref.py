@@ -11,7 +11,6 @@ import sys
 import os
 import textwrap
 from dataclasses import dataclass
-import pyperclip
 
 @dataclass
 class NoirValue:
@@ -47,6 +46,7 @@ class Parser():
             "Noir.Libraries.Events:Create()" : "NoirEvent",
             "Noir.Class" : "NoirClass",
             "Noir.Services:CreateService" : "NoirService",
+            "Noir.Libraries:Create" : "NoirLibrary",
         }
         
     def updateContent(self):
@@ -395,5 +395,6 @@ for value in values:
     # for next value
     markdown += "\n---\n\n"
     
-# copy to clipboard
-pyperclip.copy(markdown)
+# write to file
+with open("../apiref.md", "w") as f:
+    f.write(markdown)
