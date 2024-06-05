@@ -8,6 +8,8 @@ description: A service that wraps SW players in a class. Essentially makes playe
 Noir.Services.PlayerService:_GetSavedPlayers()
 ```
 
+**⚠️ | Deprecated. Do not use.**
+
 Returns all players saved in g\_savedata. Used internally.
 
 #### Returns
