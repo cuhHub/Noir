@@ -32,7 +32,7 @@
 -------------------------------
 
 --[[
-    The version of Noir.<br>
+    The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
 Noir.Version = "1.2.6"
