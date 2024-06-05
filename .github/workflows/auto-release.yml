@@ -26,7 +26,7 @@ jobs:
       - name: Extract version from commit message
         id: extract_version
         run: |
-          if [[ "${{ steps.get_commit_message.outputs.message }}" =~ RELEASE[[:space:]]-[[:space:]]([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+          if [[ "${{ steps.get_commit_message.outputs.message }}" =~ Release[[:space:]]-[[:space:]]([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             echo "::set-output name=version::${BASH_REMATCH[1]}"
           fi
 
@@ -38,7 +38,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.extract_version.outputs.version }}
-          release_name: ${{ steps.extract_version.outputs.version }}
+          release_name: Noir ${{ steps.extract_version.outputs.version }}
           body: |
             # 📚 Details
             **Version:** `${{ steps.extract_version.outputs.version }}`
