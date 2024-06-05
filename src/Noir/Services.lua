@@ -91,7 +91,7 @@ end
 
 --[[
     Retrieve a service by its name.<br>
-    This will error if the service hasn't started yet.
+    This will error if the service hasn't initialized yet.
 
     local service = Noir.Services:GetService("MyService")
     print(service.name) -- "MyService"
