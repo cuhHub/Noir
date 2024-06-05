@@ -1,0 +1,47 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+      - name: Get commit message
+        id: get_commit_message
+        run: echo "::set-output name=message::$(git log -1 --pretty=%B)"
+
+      - name: Extract version from commit message
+        id: extract_version
+        run: |
+          if [[ "${{ steps.get_commit_message.outputs.message }}" =~ RELEASE[[:space:]]-[[:space:]]([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            echo "::set-output name=version::${BASH_REMATCH[1]}"
+          fi
+
+      - name: Create GitHub Release
+        if: steps.extract_version.outputs.version != ''
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract_version.outputs.version }}
+          release_name: ${{ steps.extract_version.outputs.version }}
+          body: |
+            # 📚 Details
+            **Version:** `${{ steps.extract_version.outputs.version }}`
+            
+            # ❔ Installation
+            Check out the [documentation](https://cuhhub.gitbook.io/noir) for information on how to install and use Noir in your addon.
+          draft: false
+          prerelease: false
+          files: _build/Noir.lua
