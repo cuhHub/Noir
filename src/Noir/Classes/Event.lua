@@ -169,7 +169,7 @@ end
 
 --[[
     **Should only be used internally.**  
-    Disconnects the provided connection from the event immidiately.  
+    Disconnects the provided connection from the event immediately.  
 ]]
 ---@param connection NoirConnection
 function Noir.Classes.EventClass:_DisconnectImmediate(connection)
