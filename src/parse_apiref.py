@@ -11,6 +11,7 @@ import sys
 import os
 import textwrap
 from dataclasses import dataclass
+import pyperclip
 
 @dataclass
 class NoirValue:
@@ -26,13 +27,13 @@ class NoirValue:
 class Param:
     name: str
     type: str
-    description: str
+    description: str|None
     
 @dataclass
 class ReturnValue:
     name: str
     type: str
-    description: str
+    description: str|None
 
 class Parser():
     def __init__(self, path: str):
@@ -44,7 +45,8 @@ class Parser():
         
         self.customTypes = {
             "Noir.Libraries.Events:Create()" : "NoirEvent",
-            "Noir.Class" : "NoirClass"
+            "Noir.Class" : "NoirClass",
+            "Noir.Services:CreateService" : "NoirService",
         }
         
     def updateContent(self):
@@ -148,15 +150,15 @@ class Parser():
                 split = param.split(" ")
                 
                 if len(split) >= 2 and split[1].endswith(","): # table<integer*,* etc> annotation
-                    type = split[0] + " " + split[1]
-                    name = split[2] if len(split) >= 3 else None
+                    name = split[0]
+                    type = (split[1] + " " + split[2]) if len(split) >= 3 else None
                     description = " ".join(split[3:])
                 else:
                     name = split[0]
                     type = split[1]
                     description = " ".join(split[2:])
                 
-                description = description if description != "" else "N/A."
+                description = description if description != "" else None
                 
                 params.append(Param(
                     name = name,
@@ -165,25 +167,26 @@ class Parser():
                 ))
                 
         # return
-        return reversed(params)
+        return [*reversed(params)]
         
     def getReturns(self, point: int) -> list[ReturnValue]:
         # search backwards for ---@return
         returns = []
-        count = 0
-        
+
         for line in reversed(self.content[:point].split("\n")):
             line = self.deindent(line)
-            count += 1
 
             if line.find("]]") != -1:
                 break
+            
+            if line == "":
+                continue
             
             if line.find("---@return") != -1:
                 returnValue = line.split("---@return ")[1]
                 split = returnValue.split(" ")
 
-                if len(split) >= 2 and split[1].startswith("table<"): # table<integer*,* etc> annotation
+                if len(split) >= 2 and split[0].startswith("table<"): # table<integer*,* etc> annotation
                     type = split[0] + " " + split[1]
                     name = split[2] if len(split) >= 3 else None
                     description = " ".join(split[3:])
@@ -192,7 +195,7 @@ class Parser():
                     name = split[1] if len(split) >= 2 else None
                     description = " ".join(split[2:]) if len(split) >= 3 else None
                 
-                description = description if description != "" else "N/A."
+                description = description if description != "" else None
                 
                 returns.append(ReturnValue(
                     name = name,
@@ -200,10 +203,10 @@ class Parser():
                     description = description
                 ))
             else:
-                return []
+                break
                 
         # return
-        return reversed(returns)
+        return [*reversed(returns)]
     
     def getIsDeprecated(self, point: int) -> bool:
         line = self.getLine(point)
@@ -223,8 +226,8 @@ class Parser():
         if not line.startswith("function"):
             split = line.split(" = ")
             return split[0], split[1]
-        
-        return line, "function"
+        else:
+            return line[len("function") + 1:], "function"
         
     def getLine(self, point: int) -> str:
         return self.content[point:].split("\n")[0]
@@ -257,9 +260,22 @@ class Parser():
         line = self.getLine(point)
         return line.startswith(" ")
     
-    def isServiceMethod(self, point: int) -> bool:
+    def isService(self, point: int) -> bool:
         line = self.getLine(point)
-        return line.find("ServiceInit") != -1 or line.find("ServiceStart") != -1
+        
+        if line.find("ServiceInit") != -1:
+            return True
+        
+        if line.find("ServiceStart") != -1:
+            return True
+        
+        if line.find("InitPriority") != -1:
+            return True
+        
+        if line.find("StartPriority") != -1:
+            return True
+        
+        return False
     
     def deindent(self, string: str) -> str:
         return textwrap.dedent(string)
@@ -289,24 +305,31 @@ class Parser():
             if self.isInFunction(point):
                 continue
             
+            # check if service attribute
+            if self.isService(point):
+                continue
+            
             # add point
             attributePoints.append(point)
             
         # find functions
         functionPoints = []
-        functionPoints.extend([match.start() for match in re.finditer(r"function Noir:", self.content)])
-        functionPoints.extend([match.start() for match in re.finditer(r"function Noir\.", self.content)])
-        
-        for point in functionPoints:
+        methods = [match.start() for match in re.finditer(r"function Noir\.", self.content)]
+        functions = [match.start() for match in re.finditer(r"function Noir:", self.content)]
+
+        for point in [*methods, *functions]:
             # validation
             if self.isInComment(point):
-                functionPoints.remove(point)
+                continue
             
             if self.isInFunction(point):
-                functionPoints.remove(point)
+                continue
                 
-            if self.isServiceMethod(point):
-                functionPoints.remove(point)
+            if self.isService(point):
+                continue
+            
+            # add
+            functionPoints.append(point)
                 
         # combine
         points = [*attributePoints, *functionPoints]
@@ -338,18 +361,39 @@ if len(sys.argv) < 2:
 parser = Parser(sys.argv[1])
 values = parser.parse()
 
-for value in values:
-    paramsFormatted = "\n".join([f"{param.name}: {param.type}" for param in value.params] if value.params else ["N/A"])
-    paramsFormatted = textwrap.indent(paramsFormatted, "    ")
-    
-    returnsFormatted = "\n".join([f"{returnVal.type}: {returnVal.name} - {returnVal.description}" for returnVal in value.returns] if value.returns else ["N/A"])
-    returnsFormatted = textwrap.indent(returnsFormatted, "    ")
+markdown = ""
 
-    print(f"{value.name} of type {value.type} {"(DEPRECATED)" if value.deprecated else ""}\n\nparams:\n{paramsFormatted}\n\nreturns:\n{returnsFormatted}\n\n{value.description}")
-    print("-----------------------")
+for value in values:
+    # get value stuffs
+    name = value.name
+    valueType = value.type
+    description = value.description or "N/A"
+    deprecated = value.deprecated
+    deprecatedFormatted = "**⚠️ | Deprecated. Do not use.**\n\n" if deprecated else ""
     
-# bugs:
-"""
-table<integer, string> being split because of the gap of space in getParameters and getReturns
-ServiceStart and ServiceInit being parsed despite isServiceMethod check
-"""
+    # show value name, type, and description
+    markdown += f"```lua\n{name}\n```" if valueType == "function" else f"**{name}**: {valueType}"
+    markdown += f"\n\n{deprecatedFormatted}{description}\n"
+    
+    # if function, show params and returns
+    if valueType == "function":
+        if len(value.params) > 0:
+            markdown += "\n### Parameters\n"
+        
+            for param in value.params:
+                paramDescription = f" - {param.description}" if param.description else ""
+                markdown += f"- `{param.name}`: {param.type}{paramDescription}\n"
+            
+        if len(value.returns) > 0:
+            markdown += "\n### Returns\n"
+        
+            for returnValue in value.returns:
+                returnName = f": {returnValue.name}" if returnValue.name else ""
+                returnDescription = f" - {returnValue.description}" if returnValue.description else ""
+                markdown += f"- `{returnValue.type}`{returnName}{returnDescription}\n"
+    
+    # for next value
+    markdown += "\n---\n\n"
+    
+# copy to clipboard
+pyperclip.copy(markdown)
