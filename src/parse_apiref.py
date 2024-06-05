@@ -372,7 +372,7 @@ for value in values:
     deprecatedFormatted = "**⚠️ | Deprecated. Do not use.**\n\n" if deprecated else ""
     
     # show value name, type, and description
-    markdown += f"```lua\n{name}\n```" if valueType == "function" else f"**{name}**: {valueType}"
+    markdown += f"```lua\n{name}\n```" if valueType == "function" else f"**{name}**: `{valueType}`"
     markdown += f"\n\n{deprecatedFormatted}{description}\n"
     
     # if function, show params and returns
