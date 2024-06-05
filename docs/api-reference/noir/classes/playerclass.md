@@ -1,5 +1,7 @@
 # PlayerClass
 
+
+
 ```lua
 Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth)
 ```
@@ -191,3 +193,17 @@ Returns whether or not this player is downed.
 #### Returns
 
 * `boolean`
+
+***
+
+```lua
+Noir.Classes.PlayerClass:GetLook()
+```
+
+Returns this player's look direction.
+
+#### Returns
+
+* `number`: LookX
+* `number`: LookY
+* `number`: LookZ
