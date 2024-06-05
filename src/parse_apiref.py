@@ -405,5 +405,10 @@ for file in os.listdir(path):
             # for next value
             markdown += "\n---\n\n"
             
-        with open(f"../apiref/{os.path.join(path, file)}.md", "w") as f:
+        filePath = f"../apiref/{os.path.join(path, file)}.md"
+        
+        if not os.path.exists(os.path.dirname(filePath)):
+            os.makedirs(os.path.dirname(filePath), exist_ok = True)
+            
+        with open(filePath, "w", encoding = "utf-8") as f:
             f.write(markdown)
