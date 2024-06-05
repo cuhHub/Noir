@@ -1,6 +1,6 @@
 {
     "order" : [
-        "Init.lua",
+        "init.lua",
         "Connection.lua",
         "Event.lua",
         "Service.lua",
