@@ -30,7 +30,7 @@ layout:
 
 Noir is a framework that helps Stormworks addon developers create addons in a neat, modular structure.
 
-Noir also comes with built-in [services](tutorials/services.md) and [libraries](tutorials/libraries.md) to reduce the amount of code you have to write.&#x20;
+Noir also comes with built-in [services](tutorials/services.md) and [libraries](tutorials/libraries.md) to reduce the amount of code you have to write.
 
 ## Prerequisites
 
@@ -47,17 +47,16 @@ This page will assume you already have an addon placed in `%appdata%/Stormworks/
 
 Before we even set up an addon, let's install Noir first.
 
-1. Run `git clone https://github.com/cuhHub/Noir.git`
-2. Move `/Noir/src/Noir` into your addon directory
-3. (OPTIONAL) Move `docs/intellisense.lua` from [this repo](https://github.com/Cuh4/StormworksAddonLuaDocumentation) into your addon directory for full intellisense with addon lua.
+1. Head to the [latest Noir release.](https://github.com/cuhHub/Noir/releases/latest)
+2. Download the `Noir.lua` file.
+3. Move the file into your addon directory.
+4. (OPTIONAL) Move `docs/intellisense.lua` from [this repo](https://github.com/Cuh4/StormworksAddonLuaDocumentation) into your addon directory for full intellisense with addon lua.
 
 Your addon directory should now look like:
 
 ```
 📁 | Your Addon
-        📁 | Noir
-                🔵 | Noir.lua
-                ...
+        🔵 | Noir.lua
         🔵 | script.lua
         🔵 | intellisense.lua <-- optional
         🟠 | playlist.xml
@@ -67,14 +66,14 @@ Now, you need to use Noir in your `script.lua` file, but `Noir` is in a whole se
 
 ## Integrating Noir Using Noir's Tools
 
-1. Extract all files in `/Noir/tools` from and place it in your addon dircetory.
+1. Extract all files from [here](https://github.com/cuhHub/Noir/tree/main/tools) from and place it in your addon dircetory.
 2. Create an `__order.json` file in your addon directory containing the following:
 
 {% code title="__order.json" lineNumbers="true" %}
 ```json
 {
     "order" : [
-        "Noir",
+        "Noir.lua",
         "script.lua" // replace with your addon's main file. normally "script.lua"
     ]
 }
@@ -87,9 +86,7 @@ Your addon directory should now look like:
 
 ```
 📁 | Your Addon
-        📁 | Noir
-                🔵 | Noir.lua
-                ...
+        🔵 | Noir.lua
         🔵 | script.lua
         🔵 | intellisense.lua <-- optional
         🟠 | playlist.xml
@@ -102,10 +99,8 @@ Your addon directory should now look like:
 
 This assumes you have the [Stormworks Lua VSCode Extension.](https://marketplace.visualstudio.com/items?itemName=NameousChangey.lifeboatapi)
 
-1. Add `require("Noir.init")` into your `script.lua` file.
+1. Add `require("Noir")` into your `script.lua` file.
 2. Use the build keybind, or search "Build" in the VSCode command palette.
-
-You can now remove the `/Noir` directory you created earlier from `git clone`.
 
 ## Congratulations!
 
