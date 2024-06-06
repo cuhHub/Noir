@@ -778,12 +778,13 @@ end
     A class that represents a player for the built-in PlayerService.
 ]]
 ---@class NoirPlayer: NoirClass
----@field New fun(self: NoirPlayer, name: string, ID: integer, steam: string, admin: boolean, auth: boolean): NoirPlayer
+---@field New fun(self: NoirPlayer, name: string, ID: integer, steam: string, admin: boolean, auth: boolean, permissions: table<string, boolean>): NoirPlayer
 ---@field Name string The name of this player
 ---@field ID integer The ID of this player
 ---@field Steam string The Steam ID of this player
 ---@field Admin boolean Whether or not this player is an admin
 ---@field Auth boolean Whether or not this player is authed
+---@field Permissions table<string, boolean> The permissions this player has
 Noir.Classes.PlayerClass = Noir.Class("NoirPlayer")
 
 --[[
@@ -794,32 +795,34 @@ Noir.Classes.PlayerClass = Noir.Class("NoirPlayer")
 ---@param steam string
 ---@param admin boolean
 ---@param auth boolean
-function Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth)
+---@param permissions table<string, boolean>
+function Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions)
     self.Name = name
     self.ID = ID
     self.Steam = steam
     self.Admin = admin
     self.Auth = auth
+    self.Permissions = permissions
 end
 
 --[[
     Serializes this player for g_savedata.
 ]]
----@deprecated
+---@return NoirSerializedPlayer
 function Noir.Classes.PlayerClass:_Serialize()
     return {
         Name = self.Name,
         ID = self.ID,
         Steam = self.Steam,
         Admin = self.Admin,
-        Auth = self.Auth
+        Auth = self.Auth,
+        Permissions = self.Permissions
     }
 end
 
 --[[
     Deserializes a player from g_savedata into a player class object.
 ]]
----@deprecated
 ---@param serializedPlayer NoirSerializedPlayer
 ---@return NoirPlayer
 function Noir.Classes.PlayerClass._Deserialize(serializedPlayer)
@@ -828,10 +831,38 @@ function Noir.Classes.PlayerClass._Deserialize(serializedPlayer)
         serializedPlayer.ID,
         serializedPlayer.Steam,
         serializedPlayer.Admin,
-        serializedPlayer.Auth
+        serializedPlayer.Auth,
+        serializedPlayer.Permissions
     )
 
     return player
+end
+
+--[[
+    Give this player a permission.
+]]
+---@param permission string
+function Noir.Classes.PlayerClass:SetPermission(permission)
+    self.Permissions[permission] = true
+    Noir.Services.PlayerService:_SavePlayer(self)
+end
+
+--[[
+    Returns whether or not this player has a permission.
+]]
+---@param permission string
+---@return boolean
+function Noir.Classes.PlayerClass:HasPermission(permission)
+    return self.Permissions[permission] ~= nil
+end
+
+--[[
+    Remove a permission from this player.
+]]
+---@param permission string
+function Noir.Classes.PlayerClass:RemovePermission(permission)
+    self.Permissions[permission] = nil
+    Noir.Services.PlayerService:_SavePlayer(self)
 end
 
 --[[
@@ -951,6 +982,7 @@ end
 ---@field Steam string The Steam ID of the player
 ---@field Admin boolean Whether or not the player is an admin
 ---@field Auth boolean Whether or not the player is authed
+---@field Permissions table<string, boolean> The permissions of the player
 
 ----------------------------------------------
 -- // [File] ..\src\Noir\Classes\Task.lua
@@ -2657,7 +2689,13 @@ function Noir.Services.PlayerService:ServiceStart()
             end
 
             -- Give data
-            self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
+            local savedPlayer = self:_GetSavedPlayer(player.id)
+            local createdPlayer = self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
+
+            if createdPlayer and savedPlayer then
+                -- Load attributes (permissions, etc) from g_savedata
+                createdPlayer.Permissions = savedPlayer.Permissions
+            end
 
             ::continue::
         end
@@ -2668,7 +2706,6 @@ end
     Returns all players saved in g_savedata.<br>
     Used internally.
 ]]
----@deprecated
 ---@return table<integer, NoirSerializedPlayer>
 function Noir.Services.PlayerService:_GetSavedPlayers()
     return self:Load("players", {})
@@ -2697,13 +2734,13 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
         peer_id,
         tostring(steam_id),
         admin,
-        auth
+        auth,
+        {}
     )
 
     -- Save player
     self.Players[peer_id] = player
-    -- self:_GetSavedPlayers()[peer_id] = player:Serialize()
-    -- self:Save("players", self:_GetSavedPlayers())
+    self:_SavePlayer(player)
 
     -- Return
     return player
@@ -2724,9 +2761,39 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
 
     -- Remove player
     self.Players[player.ID] = nil
-    -- self:_GetSavedPlayers()[player.ID] = nil
+    self:_RemovePlayer(player)
 
     return true
+end
+
+--[[
+    Save a player to g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_SavePlayer(player)
+    self:_GetSavedPlayers()[player.ID] = player:_Serialize()
+    self:Save("players", self:_GetSavedPlayers())
+end
+
+--[[
+    Removes a player from g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_RemovePlayer(player)
+    self:_GetSavedPlayers()[player.ID] = nil
+    self:Save("players", self:_GetSavedPlayers())
+end
+
+--[[
+    Get a player from g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param ID integer
+---@return NoirSerializedPlayer|nil
+function Noir.Services.PlayerService:_GetSavedPlayer(ID)
+    return self:_GetSavedPlayers()[ID]
 end
 
 --[[
@@ -3537,7 +3604,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.3.4"
+Noir.Version = "1.3.5"
 
 --[[
     This event is called when the framework is started.<br>
