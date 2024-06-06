@@ -73,13 +73,18 @@ end
 function Noir.Services.ObjectService:ServiceStart()
     -- Load saved objects
     for _, object in pairs(self:_GetSavedObjects()) do
+        -- Register object
         local registeredObject = self:RegisterObject(object.ID)
 
         if not registeredObject then
             goto continue
         end
 
+        -- Update attributes
         registeredObject.Loaded = object.loaded
+
+        -- Log
+        Noir.Libraries.Logging:Info("ObjectService", "Loading object: %s", object.ID)
 
         ::continue::
     end
