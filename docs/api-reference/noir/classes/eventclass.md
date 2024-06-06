@@ -1,8 +1,10 @@
----
-description: A class for events.
----
-
 # EventClass
+
+**Noir.Classes.EventClass**: `NoirClass`
+
+A class for events.
+
+***
 
 ```lua
 Noir.Classes.EventClass:Init()

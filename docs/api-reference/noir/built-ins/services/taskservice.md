@@ -1,14 +1,18 @@
----
-description: A service for easily delaying or repeating tasks.
----
-
 # TaskService
+
+**Noir.Services.TaskService**: `NoirService`
+
+A service for easily delaying or repeating tasks.
+
+***
 
 ```lua
 Noir.Services.TaskService:GetTimeSeconds()
 ```
 
-Returns the current time in seconds. Equivalent to: server.getTimeMillisec() / 1000
+Returns the current time in seconds.
+
+Equivalent to: server.getTimeMillisec() / 1000
 
 #### Returns
 
@@ -44,5 +48,3 @@ Removes a task.
 #### Parameters
 
 * `task`: NoirTask
-
-***

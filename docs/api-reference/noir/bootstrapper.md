@@ -1,10 +1,10 @@
----
-description: >-
-  An internal module of Noir that is used to initialize and start services. Do
-  not use this in your code.
----
-
 # Bootstrapper
+
+**Noir.Bootstrapper**: `table`
+
+An internal module of Noir that is used to initialize and start services. Do not use this in your code.
+
+***
 
 ```lua
 Noir.Bootstrapper:InitializeSavedata()
