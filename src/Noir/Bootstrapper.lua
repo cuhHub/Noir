@@ -57,7 +57,7 @@ end
 ]]
 function Noir.Bootstrapper:InitializeServices()
     -- Calculate order of service initialization
-    local servicesToInit = Noir.Libraries.Table:Values(Noir.Services.CreatedServices) ---@type table<integer, NoirService>
+    local servicesToInit = Noir.Libraries.Table:Values(Noir.Services.CreatedServices)
     local lowestInitPriority = 0
 
     for _, service in pairs(servicesToInit) do
@@ -93,7 +93,7 @@ end
 ]]
 function Noir.Bootstrapper:StartServices()
     -- Calculate order of service start
-    local servicesToStart = Noir.Libraries.Table:Values(Noir.Services.CreatedServices) ---@type table<integer, NoirService>
+    local servicesToStart = Noir.Libraries.Table:Values(Noir.Services.CreatedServices)
     local lowestStartPriority = 0
 
     for _, service in pairs(servicesToStart) do

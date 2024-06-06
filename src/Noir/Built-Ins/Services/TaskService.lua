@@ -41,7 +41,6 @@
     task:SetDuration(10) -- Duration changes from 5 to 10
 ]]
 ---@class NoirTaskService: NoirService
----@field TaskClass NoirTask The class that represents a task. Used internally
 ---@field IncrementalID integer The ID of the next task
 ---@field Tasks table<integer, NoirTask> A table containing active tasks
 ---@field OnTickConnection NoirConnection Represents the connection to the onTick game callback
@@ -116,7 +115,7 @@ function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepe
     self.IncrementalID = self.IncrementalID + 1
 
     -- Create task
-    local task = Noir.Classes.TaskClass:New(self.IncrementalID, duration, isRepeating, arguments) ---@type NoirTask
+    local task = Noir.Classes.TaskClass:New(self.IncrementalID, duration, isRepeating, arguments)
     task.OnCompletion:Connect(callback)
 
     self.Tasks[task.ID] = task

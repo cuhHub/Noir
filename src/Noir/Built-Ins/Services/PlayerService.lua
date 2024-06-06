@@ -54,7 +54,7 @@
 ---@field DieCallback NoirConnection A connection to the onPlayerDie event
 ---@field RespawnCallback NoirConnection A connection to the onPlayerRespawn event
 ---@field DestroyCallback NoirConnection A connection to the onDestroy event
-Noir.Services.PlayerService = Noir.Services:CreateService("PlayerService") ---@type NoirPlayerService
+Noir.Services.PlayerService = Noir.Services:CreateService("PlayerService")
 Noir.Services.PlayerService.InitPriority = 2
 Noir.Services.PlayerService.StartPriority = 2
 
@@ -234,7 +234,6 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
     end
 
     -- Create player
-    ---@type NoirPlayer
     local player = Noir.Classes.PlayerClass:New(
         name,
         peer_id,

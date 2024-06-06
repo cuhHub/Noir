@@ -51,7 +51,7 @@ Noir.Libraries.Table = Noir.Libraries:Create("NoirTable")
     print(length) -- 2
 ]]
 ---@param tbl table
----@return number
+---@return integer
 function Noir.Libraries.Table:Length(tbl)
     local length = 0
 
@@ -90,8 +90,9 @@ end
     local keys = Noir.Libraries.Table:Keys(myTbl)
     print(keys) -- {true}
 ]]
+---@generic tbl: table
 ---@param tbl table
----@return table<integer, any>
+---@return tbl
 function Noir.Libraries.Table:Keys(tbl)
     local keys = {}
 
@@ -112,8 +113,9 @@ end
     local values = Noir.Libraries.Table:Values(myTbl)
     print(values) -- {1}
 ]]
----@param tbl table
----@return table<integer, any>
+---@generic tbl: table
+---@param tbl tbl
+---@return tbl
 function Noir.Libraries.Table:Values(tbl)
     local values = {}
 
@@ -131,10 +133,11 @@ end
     local trimmed = Noir.Libraries.Table:Slice(myTbl, 2, 4)
     print(trimmed) -- {2, 3, 4}
 ]]
----@param tbl table
+---@generic tbl: table
+---@param tbl tbl
 ---@param start number
 ---@param finish number
----@return table
+---@return tbl
 function Noir.Libraries.Table:Slice(tbl, start, finish)
     return {table.unpack(tbl, start, finish)}
 end
@@ -249,10 +252,9 @@ end
     local merged = Noir.Libraries.Table:Merge(myTbl, otherTbl)
     print(merged) -- {1, 2, 3, 4, 5, 6}
 ]]
----@generic tbl: table
----@param tbl tbl
----@param other tbl
----@return tbl
+---@param tbl table
+---@param other table
+---@return table
 function Noir.Libraries.Table:Merge(tbl, other)
     local new = self:Copy(tbl)
 
@@ -271,10 +273,9 @@ end
     local merged = Noir.Libraries.Table:ForceMerge(myTbl, otherTbl)
     print(merged) -- {4, 5, 6} <-- This is because the indexes are the same, so the values of myTbl were overwritten
 ]]
----@generic tbl: table
----@param tbl tbl
----@param other tbl
----@return tbl
+---@param tbl table
+---@param other table
+---@return table
 function Noir.Libraries.Table:ForceMerge(tbl, other)
     local new = self:Copy(tbl)
 

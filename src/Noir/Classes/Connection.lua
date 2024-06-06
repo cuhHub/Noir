@@ -35,6 +35,7 @@
     A class for event connections.
 ]]
 ---@class NoirConnection: NoirClass
+---@field New fun(self: NoirConnection, callback: function): NoirConnection
 ---@field ID integer The ID of this connection
 ---@field Callback function The callback that is assigned to this connection
 ---@field ParentEvent NoirEvent The event that this connection is connected to

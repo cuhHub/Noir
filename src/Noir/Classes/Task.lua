@@ -35,6 +35,7 @@
     Represents a task for the TaskService.
 ]]
 ---@class NoirTask: NoirClass
+---@field New fun(self: NoirTask, ID: integer, duration: number, isRepeating: boolean, arguments: table<integer, any>): NoirTask
 ---@field ID integer The ID of this task
 ---@field StartedAt integer The time that this task started at
 ---@field Duration integer The duration of this task

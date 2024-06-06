@@ -35,6 +35,7 @@
     A class that represents a service.
 ]]
 ---@class NoirService: NoirClass
+---@field New fun(self: NoirService, name: string): NoirService
 ---@field Name string The name of this service
 ---@field Initialized boolean Whether or not this service has been initialized
 ---@field Started boolean Whether or not this service has been started

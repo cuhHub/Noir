@@ -80,7 +80,7 @@ function Noir.Services:CreateService(name)
     end
 
     -- Create service
-    local service = Noir.Classes.ServiceClass:New(name) ---@type NoirService
+    local service = Noir.Classes.ServiceClass:New(name)
 
     -- Register service internally
     self.CreatedServices[name] = service

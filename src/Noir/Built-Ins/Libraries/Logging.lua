@@ -41,8 +41,7 @@ Noir.Libraries.Logging = Noir.Libraries:Create("NoirLogging")
     "DebugLog": Sends logs to DebugView
     "Chat": Sends logs to chat
 ]]
----@type NoirLoggingMode
-Noir.Libraries.Logging.LoggingMode = "DebugLog"
+Noir.Libraries.Logging.LoggingMode = "DebugLog" ---@type NoirLoggingMode
 
 --[[
     An event called when a log is sent.<br>

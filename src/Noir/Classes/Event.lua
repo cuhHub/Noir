@@ -35,6 +35,7 @@
     A class for events.
 ]]
 ---@class NoirEvent: NoirClass
+---@field New fun(self: NoirEvent): NoirEvent
 ---@field CurrentID integer The ID that will be passed to new connections. Increments by 1 every connection
 ---@field Connections table<integer, NoirConnection> The connections that are connected to this event
 ---@field ConnectionsOrder integer[] Array of connection IDs into Connections table
@@ -105,7 +106,7 @@ end
 function Noir.Classes.EventClass:Connect(callback)
     self.CurrentID = self.CurrentID + 1
 
-    local connection = Noir.Classes.ConnectionClass:New(callback, self) ---@type NoirConnection
+    local connection = Noir.Classes.ConnectionClass:New(callback)
     self.Connections[self.CurrentID] = connection
 
     connection.ParentEvent = self
