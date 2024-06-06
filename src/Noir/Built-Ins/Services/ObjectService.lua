@@ -234,3 +234,174 @@ function Noir.Services.ObjectService:RemoveObject(object_id)
     -- Remove from g_savedata
     self:_RemoveObjectSavedata(object_id)
 end
+
+--[[
+    Spawn an object.
+]]
+---@param objectType SWObjectTypeEnum
+---@param position SWMatrix
+---@return NoirObject|nil
+function Noir.Services.ObjectService:SpawnObject(objectType, position)
+    -- Spawn the object
+    local object_id, success = server.spawnObject(position, objectType)
+
+    if not success then
+        Noir.Libraries.Logging:Error("ObjectService", ":SpawnObject() failed due to server.spawnObject() being unsuccessful.", false)
+        return
+    end
+
+    -- Wrap object in a class
+    local object = self:GetObject(object_id)
+
+    if not object then
+        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnObject().", false)
+        return
+    end
+
+    -- Return
+    return object
+end
+
+--[[
+    Spawn a character.
+]]
+---@param outfitType SWOutfitTypeEnum
+---@param position SWMatrix
+---@return NoirObject|nil
+function Noir.Services.ObjectService:SpawnCharacter(outfitType, position)
+    -- Spawn the character
+    local object_id, success = server.spawnCharacter(position, outfitType)
+
+    if not success then
+        Noir.Libraries.Logging:Error("ObjectService", ":SpawnCharacter() failed due to server.spawnCharacter() being unsuccessful.", false)
+        return
+    end
+
+    -- Wrap object in a class
+    local object = self:GetObject(object_id)
+
+    if not object then
+        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnCharacter().", false)
+        return
+    end
+
+    -- Return
+    return object
+end
+
+--[[
+    Spawn a creature.
+]]
+---@param creatureType SWCreatureTypeEnum
+---@param position SWMatrix
+---@param sizeMultiplier number|nil Default: 1
+---@return NoirObject|nil
+function Noir.Services.ObjectService:SpawnCreature(creatureType, position, sizeMultiplier)
+    -- Spawn the creature
+    local object_id, success = server.spawnCreature(position, creatureType, sizeMultiplier or 1)
+
+    if not success then
+        Noir.Libraries.Logging:Error("ObjectService", ":SpawnCreature() failed due to server.spawnCreature() being unsuccessful.", false)
+        return
+    end
+
+    -- Wrap object in a class
+    local object = self:GetObject(object_id)
+
+    if not object then
+        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnCreature().", false)
+        return
+    end
+
+    -- Return
+    return object
+end
+
+--[[
+    Spawn an animal.
+]]
+---@param animalType SWAnimalTypeEnum
+---@param position SWMatrix
+---@param sizeMultiplier number|nil Default: 1
+---@return NoirObject|nil
+function Noir.Services.ObjectService:SpawnAnimal(animalType, position, sizeMultiplier)
+    -- Spawn the animal
+    local object_id, success = server.spawnAnimal(position, animalType, sizeMultiplier or 1)
+
+    if not success then
+        Noir.Libraries.Logging:Error("ObjectService", ":SpawnAnimal() failed due to server.spawnAnimal() being unsuccessful.", false)
+        return
+    end
+
+    -- Wrap object in a class
+    local object = self:GetObject(object_id)
+
+    if not object then
+        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnAnimal().", false)
+        return
+    end
+
+    -- Return
+    return object
+end
+
+--[[
+    Spawn an equipment item.
+]]
+---@param equipmentType SWEquipmentTypeEnum
+---@param position SWMatrix
+---@param int integer
+---@param float integer
+---@return NoirObject|nil
+function Noir.Services.ObjectService:SpawnEquipment(equipmentType, position, int, float)
+    -- Spawn the equipment
+    local object_id, success = server.spawnEquipment(position, equipmentType, int, float)
+
+    if not success then
+        Noir.Libraries.Logging:Error("ObjectService", ":SpawnEquipment() failed due to server.spawnEquipment() being unsuccessful.", false)
+        return
+    end
+
+    -- Wrap object in a class
+    local object = self:GetObject(object_id)
+
+    if not object then
+        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnEquipment().", false)
+        return
+    end
+
+    -- Return
+    return object
+end
+
+--[[
+    Spawn a fire.
+]]
+---@param position SWMatrix
+---@param size number 0 - 10
+---@param magnitude number -1 explodes instantly. Nearer to 0 means the explosion takes longer to happen. Must be below 0 for explosions to work.
+---@param isLit boolean Lights the fire. If the magnitude is >1, this will need to be true for the fire to first warm up before exploding.
+---@param isExplosive boolean
+---@param parentVehicleID integer|nil
+---@param explosionMagnitude number The size of the explosion (0-5)
+---@return NoirObject|nil
+function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit, isExplosive, parentVehicleID, explosionMagnitude)
+    -- Spawn the fire
+    local object_id, success = server.spawnFire(position, size, magnitude, isLit, isExplosive, parentVehicleID or 0, explosionMagnitude)
+
+    if not success then
+        Noir.Libraries.Logging:Error("ObjectService", ":SpawnFire() failed due to server.spawnFire() being unsuccessful.", false)
+        return
+    end
+
+    -- Wrap object in a class
+    local object = self:GetObject(object_id)
+
+    if not object then
+        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnFire().", false)
+        return
+    end
+
+    -- Return
+    return object
+end
