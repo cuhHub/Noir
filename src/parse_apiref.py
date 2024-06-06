@@ -100,10 +100,6 @@ class Parser():
             
         # make description
         lines = [line for line in reversed(lines)]
-
-        # remove last line if its empty
-        if lines[-1] == "":
-            lines.pop()
             
         # remove code
         newLines = []
@@ -385,7 +381,7 @@ for value in values:
     
     # show value name, type, and description
     markdown += f"```lua\n{name}\n```" if valueType == "function" else f"**{name}**: `{valueType}`\n"
-    markdown += f"\n{deprecatedFormatted}{description}\n"
+    markdown += f"\n{deprecatedFormatted}{description}" + ("\n" if len(value.params) > 0 or len(value.returns) > 0 else "")
     
     # if function, show params and returns
     if valueType == "function":
