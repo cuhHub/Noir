@@ -31,16 +31,11 @@
 -- // Main
 -------------------------------
 
+-- Create the service
 ---@class WelcomeService: NoirService
 ---@field greetingMessage string The greeting message
 ---@field farewellMessage string The farewell message
----
----@field SetMessages fun(self: WelcomeService, greet: string, farewell: string) A method that sets the greeting and farewell messages
----@field Greet fun(self: WelcomeService, player: NoirPlayer) A method that greets a player to everyone
----@field Farewell fun(self: WelcomeService, player: NoirPlayer) A method that sends a farewell message to everyone about a player
-
--- Create the service
-local WelcomeService = Noir.Services:CreateService("WelcomeService") ---@type WelcomeService
+local WelcomeService = Noir.Services:CreateService("WelcomeService")
 
 -- Called when the service is initialized. This is to be used for setting up the service
 function WelcomeService:ServiceInit()
@@ -53,17 +48,21 @@ function WelcomeService:ServiceStart()
 end
 
 -- Set the greeting and farewell messages
+---@param hello string
+---@param bye string
 function WelcomeService:SetMessages(hello, bye)
     self.greetingMessage = hello
     self.farewellMessage = bye
 end
 
 -- Greet a player
+---@param player NoirPlayer
 function WelcomeService:Greet(player)
     server.announce("Greeting", self.greetingMessage:format(player.Name))
 end
 
 -- Farewell a player
+---@param player NoirPlayer
 function WelcomeService:Farewell(player)
     server.announce("Farewell", self.farewellMessage:format(player.Name))
 end

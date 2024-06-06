@@ -31,12 +31,9 @@
 -- // Main
 -------------------------------
 
+-- Create the service
 ---@class CommandService: NoirService
 ---@field commands table<string, NoirEvent>
----
----@field CreateCommand fun(self: CommandService, command: string, callback: fun(player: NoirPlayer, args: table<integer, string>)) Creates a command
-
--- Create the service
 local CommandService = Noir.Services:CreateService("CommandService") ---@type CommandService
 
 -- Called when the service is initialized. This is to be used for setting up the service
@@ -69,6 +66,8 @@ function CommandService:ServiceStart()
 end
 
 -- Create a command
+---@param command string
+---@param callback fun(player: NoirPlayer, ...: any)
 function CommandService:CreateCommand(command, callback)
     -- Validate
     command = command:lower()

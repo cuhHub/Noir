@@ -33,18 +33,12 @@
 
 ---@alias PlayerVehicles table<integer, boolean>
 
+-- Create the service
 ---@class VehicleService: NoirService
 ---@field vehicles table<NoirPlayer, PlayerVehicles> A table containing vehicles belonging to a player
 ---@field onSpawn NoirEvent An event that fires when a vehicle spawns. Args: player, vehicle_id
 ---@field onDespawn NoirEvent An event that fires when a vehicle despawns. Args: player, vehicle_id
----
----@field GetVehicles fun(self: VehicleService, player: NoirPlayer): table<integer, integer> A method that returns the vehicles belonging to a player
----@field GetPlayer fun(self: VehicleService, vehicle_id: integer): NoirPlayer|nil A method that returns the the player a vehicle belongs to
----@field DespawnVehicles fun(self: VehicleService, player: NoirPlayer) A method that despawns all vehicles belonging to a player
----@field DespawnVehicle fun(self: VehicleService, vehicle_id: integer) A method that despawns a vehicle
-
--- Create the service
-local VehicleService = Noir.Services:CreateService("VehicleService") ---@type VehicleService
+local VehicleService = Noir.Services:CreateService("VehicleService")
 
 -- Called when the service is initialized. This is to be used for setting up the service
 function VehicleService:ServiceInit()
@@ -92,11 +86,13 @@ function VehicleService:ServiceStart()
 end
 
 -- Get the vehicles belonging to a player
+---@param player NoirPlayer
 function VehicleService:GetVehicles(player)
     return Noir.Libraries.Table:Keys(self.vehicles[player] or {})
 end
 
 -- Get the player a vehicle belongs to
+---@param vehicle_id integer
 function VehicleService:GetPlayer(vehicle_id)
     for player, vehicles in pairs(self.vehicles) do
         if vehicles[vehicle_id] then
@@ -106,6 +102,7 @@ function VehicleService:GetPlayer(vehicle_id)
 end
 
 -- Despawn all vehicles belonging to a player
+---@param player NoirPlayer
 function VehicleService:DespawnVehicles(player)
     for _, vehicle_id in pairs(self:GetVehicles(player)) do
         self:DespawnVehicle(vehicle_id)
@@ -113,6 +110,7 @@ function VehicleService:DespawnVehicles(player)
 end
 
 -- Despawn a vehicle
+---@param vehicle_id integer
 function VehicleService:DespawnVehicle(vehicle_id)
     server.despawnVehicle(vehicle_id, true)
 end
