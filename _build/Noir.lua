@@ -125,7 +125,7 @@ function Noir.Class(name, parent)
     class._IsObject = false
 
     function class:New(...)
-        -- Create Object
+        -- Create class object
         ---@type NoirClass
         local object = {} ---@diagnostic disable-line
         self:_Descend(object, {New = true, Init = true, _Descend = true})
@@ -284,6 +284,7 @@ Noir.Classes = {}
     A class for event connections.
 ]]
 ---@class NoirConnection: NoirClass
+---@field New fun(self: NoirConnection, callback: function): NoirConnection
 ---@field ID integer The ID of this connection
 ---@field Callback function The callback that is assigned to this connection
 ---@field ParentEvent NoirEvent The event that this connection is connected to
@@ -368,6 +369,7 @@ end
     A class for events.
 ]]
 ---@class NoirEvent: NoirClass
+---@field New fun(self: NoirEvent): NoirEvent
 ---@field CurrentID integer The ID that will be passed to new connections. Increments by 1 every connection
 ---@field Connections table<integer, NoirConnection> The connections that are connected to this event
 ---@field ConnectionsOrder integer[] Array of connection IDs into Connections table
@@ -438,7 +440,7 @@ end
 function Noir.Classes.EventClass:Connect(callback)
     self.CurrentID = self.CurrentID + 1
 
-    local connection = Noir.Classes.ConnectionClass:New(callback, self) ---@type NoirConnection
+    local connection = Noir.Classes.ConnectionClass:New(callback)
     self.Connections[self.CurrentID] = connection
 
     connection.ParentEvent = self
@@ -561,6 +563,7 @@ end
     A class that represents a service.
 ]]
 ---@class NoirService: NoirClass
+---@field New fun(self: NoirService, name: string): NoirService
 ---@field Name string The name of this service
 ---@field Initialized boolean Whether or not this service has been initialized
 ---@field Started boolean Whether or not this service has been started
@@ -774,6 +777,7 @@ end
     A class that represents a player for the built-in PlayerService.
 ]]
 ---@class NoirPlayer: NoirClass
+---@field New fun(self: NoirPlayer, name: string, ID: integer, steam: string, admin: boolean, auth: boolean): NoirPlayer
 ---@field Name string The name of this player
 ---@field ID integer The ID of this player
 ---@field Steam string The Steam ID of this player
@@ -818,7 +822,7 @@ end
 ---@param serializedPlayer NoirSerializedPlayer
 ---@return NoirPlayer
 function Noir.Classes.PlayerClass._Deserialize(serializedPlayer)
-    local player = Noir.Classes.PlayerClass:New( ---@type NoirPlayer
+    local player = Noir.Classes.PlayerClass:New(
         serializedPlayer.Name,
         serializedPlayer.ID,
         serializedPlayer.Steam,
@@ -881,8 +885,15 @@ end
 --[[
     Returns this player's position.
 ]]
+---@return SWMatrix
 function Noir.Classes.PlayerClass:GetPosition()
-    return (server.getPlayerPos(self.ID)) or matrix.translation(0, 0, 0)
+    local pos, success = server.getPlayerPos(self.ID)
+
+    if not success then
+        return matrix.translation(0, 0 ,0)
+    end
+
+    return pos
 end
 
 --[[
@@ -901,7 +912,7 @@ function Noir.Classes.PlayerClass:SetCharacterData(health, interactable, AI)
     end
 
     -- Set the data
-    server.setCharacterData(character, health, interactable, AI)
+    character:SetData(health, interactable, AI)
 end
 
 --[[
@@ -936,7 +947,7 @@ end
 --[[
     Returns this player's character object ID.
 ]]
----@return integer|nil
+---@return NoirObject|nil
 function Noir.Classes.PlayerClass:GetCharacter()
     -- Get the character
     local character = server.getPlayerCharacterID(self.ID)
@@ -946,8 +957,16 @@ function Noir.Classes.PlayerClass:GetCharacter()
         return
     end
 
+    -- Get or create object for character
+    local object = Noir.Services.ObjectService:GetObject(character)
+
+    if not object then
+        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacter() failed for player %s (%d, %s) due to object being nil", false, self.Name, self.ID, self.Steam)
+        return
+    end
+
     -- Return
-    return character
+    return object
 end
 
 --[[
@@ -963,7 +982,7 @@ function Noir.Classes.PlayerClass:Revive()
     end
 
     -- Revive the character
-    server.reviveCharacter(character)
+    character:Revive()
 end
 
 --[[
@@ -980,7 +999,7 @@ function Noir.Classes.PlayerClass:GetCharacterData()
     end
 
     -- Get the character data
-    local data = server.getCharacterData(character)
+    local data = character:GetData()
 
     if not data then
         Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s). Data is nil", false, self.Name, self.ID, self.Steam)
@@ -1095,6 +1114,7 @@ end
     Represents a task for the TaskService.
 ]]
 ---@class NoirTask: NoirClass
+---@field New fun(self: NoirTask, ID: integer, duration: number, isRepeating: boolean, arguments: table<integer, any>): NoirTask
 ---@field ID integer The ID of this task
 ---@field StartedAt integer The time that this task started at
 ---@field Duration integer The duration of this task
@@ -1148,6 +1168,168 @@ end
 function Noir.Classes.TaskClass:SetArguments(arguments)
     self.Arguments = arguments
 end
+
+----------------------------------------------
+-- // [File] ..\src\Noir\Classes\Object.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Classes - Object
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author: @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a object for the ObjectService.
+]]
+---@class NoirObject: NoirClass
+---@field New fun(self: NoirObject, ID: integer): NoirObject
+---@field ID integer
+---@field Loaded boolean
+---@field OnLoad NoirEvent
+---@field OnUnload NoirEvent
+---@field OnDespawn NoirEvent
+Noir.Classes.ObjectClass = Noir.Class("NoirObject")
+
+--[[
+    Initializes object class objects.
+]]
+---@param ID integer
+function Noir.Classes.ObjectClass:Init(ID)
+    self.ID = ID
+    self.Loaded = false
+
+    self.OnLoad = Noir.Libraries.Events:Create()
+    self.OnUnload = Noir.Libraries.Events:Create()
+    self.OnDespawn = Noir.Libraries.Events:Create()
+end
+
+--[[
+    Serializes this object into g_savedata format.<br>
+    Used internally. Do not use in your code.
+]]
+---@return NoirSerializedObject
+function Noir.Classes.ObjectClass:_Serialize()
+    return {
+        ID = self.ID,
+        Loaded = self.Loaded
+    }
+end
+
+--[[
+    Deserializes this object from g_savedata format.<br>
+    Used internally. Do not use in your code.
+]]
+---@param serializedObject NoirSerializedObject
+---@return NoirObject
+function Noir.Classes.ObjectClass._Deserialize(serializedObject)
+    local object = Noir.Classes.ObjectClass:New(serializedObject.ID)
+    object.Loaded = serializedObject.loaded
+
+    return object
+end
+
+--[[
+    Returns the data of this object.
+]]
+---@return SWObjectData|nil
+function Noir.Classes.ObjectClass:GetData()
+    local data = server.getObjectData(self.ID)
+
+    if not data then
+        Noir.Libraries.Logging:Error("ObjectService", ":GetData() failed for object %d. Data is nil", false, self.ID)
+        return
+    end
+
+    return data
+end
+
+--[[
+    Returns whether or not this object is simulating.
+]]
+---@return boolean
+function Noir.Classes.ObjectClass:IsSimulating()
+    local simulating, success = server.getObjectSimulating(self.ID)
+    return simulating and success
+end
+
+--[[
+    Despawn this object.
+]]
+function Noir.Classes.ObjectClass:Despawn()
+    server.despawnObject(self.ID, true)
+    self.OnDespawn:Fire()
+end
+
+--[[
+    Get this object's position.
+]]
+---@return SWMatrix
+function Noir.Classes.ObjectClass:GetPosition()
+    return (server.getObjectPos(self.ID))
+end
+
+--[[
+    Teleport this object.
+]]
+---@param position SWMatrix
+function Noir.Classes.ObjectClass:Teleport(position)
+    server.setObjectPos(self.ID, position)
+end
+
+--[[
+    Revive this object (if character).
+]]
+function Noir.Classes.ObjectClass:Revive()
+    server.reviveCharacter(self.ID)
+end
+
+--[[
+    Set this object's data (if character).
+]]
+---@param hp number
+---@param interactable boolean
+---@param AI boolean
+function Noir.Classes.ObjectClass:SetData(hp, interactable, AI)
+    server.setCharacterData(self.ID, hp, interactable, AI)
+end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+--[[
+    Represents an object class that has been serialized.
+]]
+---@class NoirSerializedObject
+---@field ID integer The object ID
+---@field loaded boolean Whether or not the object is loaded
 
 ----------------------------------------------
 -- // [File] ..\src\Noir\Libraries.lua
@@ -1284,7 +1466,7 @@ Noir.Libraries.Events = Noir.Libraries:Create("NoirEvents")
 ]]
 ---@return NoirEvent
 function Noir.Libraries.Events:Create()
-    local event = Noir.Classes.EventClass:New() ---@type NoirEvent
+    local event = Noir.Classes.EventClass:New()
     return event
 end
 
@@ -1334,8 +1516,7 @@ Noir.Libraries.Logging = Noir.Libraries:Create("NoirLogging")
     "DebugLog": Sends logs to DebugView
     "Chat": Sends logs to chat
 ]]
----@type NoirLoggingMode
-Noir.Libraries.Logging.LoggingMode = "DebugLog"
+Noir.Libraries.Logging.LoggingMode = "DebugLog" ---@type NoirLoggingMode
 
 --[[
     An event called when a log is sent.<br>
@@ -1525,7 +1706,7 @@ Noir.Libraries.Table = Noir.Libraries:Create("NoirTable")
     print(length) -- 2
 ]]
 ---@param tbl table
----@return number
+---@return integer
 function Noir.Libraries.Table:Length(tbl)
     local length = 0
 
@@ -1564,8 +1745,9 @@ end
     local keys = Noir.Libraries.Table:Keys(myTbl)
     print(keys) -- {true}
 ]]
+---@generic tbl: table
 ---@param tbl table
----@return table<integer, any>
+---@return tbl
 function Noir.Libraries.Table:Keys(tbl)
     local keys = {}
 
@@ -1586,8 +1768,9 @@ end
     local values = Noir.Libraries.Table:Values(myTbl)
     print(values) -- {1}
 ]]
----@param tbl table
----@return table<integer, any>
+---@generic tbl: table
+---@param tbl tbl
+---@return tbl
 function Noir.Libraries.Table:Values(tbl)
     local values = {}
 
@@ -1605,10 +1788,11 @@ end
     local trimmed = Noir.Libraries.Table:Slice(myTbl, 2, 4)
     print(trimmed) -- {2, 3, 4}
 ]]
----@param tbl table
+---@generic tbl: table
+---@param tbl tbl
 ---@param start number
 ---@param finish number
----@return table
+---@return tbl
 function Noir.Libraries.Table:Slice(tbl, start, finish)
     return {table.unpack(tbl, start, finish)}
 end
@@ -1723,10 +1907,9 @@ end
     local merged = Noir.Libraries.Table:Merge(myTbl, otherTbl)
     print(merged) -- {1, 2, 3, 4, 5, 6}
 ]]
----@generic tbl: table
----@param tbl tbl
----@param other tbl
----@return tbl
+---@param tbl table
+---@param other table
+---@return table
 function Noir.Libraries.Table:Merge(tbl, other)
     local new = self:Copy(tbl)
 
@@ -1745,10 +1928,9 @@ end
     local merged = Noir.Libraries.Table:ForceMerge(myTbl, otherTbl)
     print(merged) -- {4, 5, 6} <-- This is because the indexes are the same, so the values of myTbl were overwritten
 ]]
----@generic tbl: table
----@param tbl tbl
----@param other tbl
----@return tbl
+---@param tbl table
+---@param other table
+---@return table
 function Noir.Libraries.Table:ForceMerge(tbl, other)
     local new = self:Copy(tbl)
 
@@ -2036,7 +2218,7 @@ function Noir.Services:CreateService(name)
     end
 
     -- Create service
-    local service = Noir.Classes.ServiceClass:New(name) ---@type NoirService
+    local service = Noir.Classes.ServiceClass:New(name)
 
     -- Register service internally
     self.CreatedServices[name] = service
@@ -2119,7 +2301,6 @@ end
     task:SetDuration(10) -- Duration changes from 5 to 10
 ]]
 ---@class NoirTaskService: NoirService
----@field TaskClass NoirTask The class that represents a task. Used internally
 ---@field IncrementalID integer The ID of the next task
 ---@field Tasks table<integer, NoirTask> A table containing active tasks
 ---@field OnTickConnection NoirConnection Represents the connection to the onTick game callback
@@ -2194,7 +2375,7 @@ function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepe
     self.IncrementalID = self.IncrementalID + 1
 
     -- Create task
-    local task = Noir.Classes.TaskClass:New(self.IncrementalID, duration, isRepeating, arguments) ---@type NoirTask
+    local task = Noir.Classes.TaskClass:New(self.IncrementalID, duration, isRepeating, arguments)
     task.OnCompletion:Connect(callback)
 
     self.Tasks[task.ID] = task
@@ -2270,7 +2451,7 @@ end
 ---@field DieCallback NoirConnection A connection to the onPlayerDie event
 ---@field RespawnCallback NoirConnection A connection to the onPlayerRespawn event
 ---@field DestroyCallback NoirConnection A connection to the onDestroy event
-Noir.Services.PlayerService = Noir.Services:CreateService("PlayerService") ---@type NoirPlayerService
+Noir.Services.PlayerService = Noir.Services:CreateService("PlayerService")
 Noir.Services.PlayerService.InitPriority = 2
 Noir.Services.PlayerService.StartPriority = 2
 
@@ -2450,7 +2631,6 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
     end
 
     -- Create player
-    ---@type NoirPlayer
     local player = Noir.Classes.PlayerClass:New(
         name,
         peer_id,
@@ -2556,6 +2736,246 @@ end
 ---@return boolean
 function Noir.Services.PlayerService:IsSamePlayer(playerA, playerB)
     return playerA.ID == playerB.ID
+end
+
+----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Services\ObjectService.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Services - Object Service
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author: @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A service for wrapping SW objects in classes.
+
+    local object_id = 5
+    local object = Service:GetObject(object_id)
+
+    object:GetData()
+    object:Despawn()
+    object:GetPosition()
+    object:Teleport()
+
+    object.OnLoad:Connect(function()
+        -- Code
+    end)
+
+    object.OnUnload:Connect(function()
+        -- Code
+    end)
+]]
+---@class NoirObjectService: NoirService
+---@field Objects table<integer, NoirObject> A table containing all objects
+---@field OnObjectRegister NoirEvent Fired when an object is registered
+---@field OnObjectUnregister NoirEvent Fired when an object is unregistered
+---@field OnObjectLoad NoirEvent Fired when an object is loaded (first arg: NoirObject)
+---@field OnObjectUnload NoirEvent Fired when an object is unloaded (first arg: NoirObject)
+---
+---@field OnLoadConnection NoirConnection A connection to the onObjectLoad game callback
+---@field OnUnloadConnection NoirConnection A connection to the onObjectUnload game callback
+Noir.Services.ObjectService = Noir.Services:CreateService("ObjectService")
+
+function Noir.Services.ObjectService:ServiceInit()
+    self.Objects = {}
+
+    self.OnObjectRegister = Noir.Libraries.Events:Create()
+    self.OnObjectUnregister = Noir.Libraries.Events:Create()
+    self.OnObjectLoad = Noir.Libraries.Events:Create()
+    self.OnObjectUnload = Noir.Libraries.Events:Create()
+end
+
+function Noir.Services.ObjectService:ServiceStart()
+    -- Load saved objects
+    for _, object in pairs(Noir.Libraries.Table:Copy(self:_GetSavedObjects())) do -- important to copy, because :RegisterObject() modifies the saved objects table
+        -- Register object
+        local registeredObject = self:RegisterObject(object.ID)
+
+        if not registeredObject then
+            goto continue
+        end
+
+        -- Update attributes
+        registeredObject.Loaded = object.loaded
+        self:_SaveObjectSavedata(registeredObject)
+
+        -- Log
+        Noir.Libraries.Logging:Info("ObjectService", "Loading object: %s", object.ID)
+
+        ::continue::
+    end
+
+    -- Listen for object loading/unloading
+    ---@param object_id integer
+    self.OnLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
+        -- Get object
+        local object = self:GetObject(object_id)
+
+        if not object then
+            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnLoadConnection callback.", false)
+            return
+        end
+
+        -- Fire event, set loaded
+        object.Loaded = true
+        object.OnLoad:Fire()
+        self.OnObjectLoad:Fire(object)
+
+        -- Save
+        self:_SaveObjectSavedata(object)
+    end)
+
+    ---@param object_id integer
+    self.OnUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
+        -- Get object
+        local object = self:GetObject(object_id)
+
+        if not object then
+            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnUnloadConnection callback.", false)
+            return
+        end
+
+        -- Fire events, set loaded
+        object.Loaded = false
+        object.OnUnload:Fire()
+        self.OnObjectUnload:Fire(object)
+
+        -- Save
+        self:_SaveObjectSavedata(object)
+    end)
+end
+
+--[[
+    Overwrite saved objects.<br>
+    Used internally. Do not use in your code.
+]]
+---@param objects table<integer, NoirSerializedObject>
+function Noir.Services.ObjectService:_SaveObjects(objects)
+    self:Save("objects", objects)
+end
+
+--[[
+    Get saved objects.<br>
+    Used internally. Do not use in your code.
+]]
+---@return table<integer, NoirSerializedObject>
+function Noir.Services.ObjectService:_GetSavedObjects()
+    return self:Load("objects", {})
+end
+
+--[[
+    Get all objects.
+]]
+---@return table<integer, NoirObject>
+function Noir.Services.ObjectService:GetObjects()
+    return self.Objects
+end
+
+--[[
+    Save an object to g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param object NoirObject
+function Noir.Services.ObjectService:_SaveObjectSavedata(object)
+    local saved = self:_GetSavedObjects()
+    saved[object.ID] = object:_Serialize()
+
+    self:_SaveObjects(saved)
+end
+
+--[[
+    Remove an object from g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param object_id integer
+function Noir.Services.ObjectService:_RemoveObjectSavedata(object_id)
+    local saved = self:_GetSavedObjects()
+    saved[object_id] = nil
+
+    self:_SaveObjects(saved)
+end
+
+--[[
+    Registers an object by ID.
+]]
+---@param object_id integer
+---@return NoirObject|nil
+function Noir.Services.ObjectService:RegisterObject(object_id)
+    -- Create object
+    local object = Noir.Classes.ObjectClass:New(object_id)
+    self.Objects[object_id] = object
+    self.OnObjectRegister:Fire(object)
+
+    -- Save to g_savedata
+    self:_SaveObjectSavedata(object)
+
+    -- Remove on object despawn
+    object.OnDespawn:Once(function()
+        self:RemoveObject(object_id)
+    end)
+
+    -- Return
+    return object
+end
+
+--[[
+    Returns the object with the given ID.
+]]
+---@param object_id integer
+---@return NoirObject|nil
+function Noir.Services.ObjectService:GetObject(object_id)
+    return self.Objects[object_id] or self:RegisterObject(object_id)
+end
+
+--[[
+    Removes the object with the given ID.
+]]
+---@param object_id integer
+function Noir.Services.ObjectService:RemoveObject(object_id)
+    -- Get object
+    local object = self:GetObject(object_id)
+
+    if not object then
+        Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in :RemoveObject().", false)
+        return
+    end
+
+    -- Fire event
+    self.OnObjectUnregister:Fire(object)
+
+    -- Remove object
+    self.Objects[object_id] = nil
+
+    -- Remove from g_savedata
+    self:_RemoveObjectSavedata(object_id)
 end
 
 ----------------------------------------------
@@ -2779,7 +3199,7 @@ end
 ]]
 function Noir.Bootstrapper:InitializeServices()
     -- Calculate order of service initialization
-    local servicesToInit = Noir.Libraries.Table:Values(Noir.Services.CreatedServices) ---@type table<integer, NoirService>
+    local servicesToInit = Noir.Libraries.Table:Values(Noir.Services.CreatedServices)
     local lowestInitPriority = 0
 
     for _, service in pairs(servicesToInit) do
@@ -2815,7 +3235,7 @@ end
 ]]
 function Noir.Bootstrapper:StartServices()
     -- Calculate order of service start
-    local servicesToStart = Noir.Libraries.Table:Values(Noir.Services.CreatedServices) ---@type table<integer, NoirService>
+    local servicesToStart = Noir.Libraries.Table:Values(Noir.Services.CreatedServices)
     local lowestStartPriority = 0
 
     for _, service in pairs(servicesToStart) do
@@ -2909,7 +3329,7 @@ Noir.IsStarting = false
 --[[
     This represents whether or not the addon was:<br>
     - Reloaded<br>
-    - Started via a save being loaded into<br>
+    - Started via a save being loaded<br>
     - Started via a save creation
 ]]
 Noir.AddonReason = "AddonReload" ---@type NoirAddonReason

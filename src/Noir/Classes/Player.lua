@@ -216,7 +216,7 @@ function Noir.Classes.PlayerClass:GetCharacter()
     end
 
     -- Get or create object for character
-    local object = Noir.Services.ObjectService:GetOrCreateObject(character)
+    local object = Noir.Services.ObjectService:GetObject(character)
 
     if not object then
         Noir.Libraries.Logging:Error("PlayerService", ":GetCharacter() failed for player %s (%d, %s) due to object being nil", false, self.Name, self.ID, self.Steam)
