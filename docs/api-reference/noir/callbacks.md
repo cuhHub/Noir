@@ -1,11 +1,10 @@
----
-description: >-
-  A module of Noir that allows you to attach multiple functions to game
-  callbacks. These functions can be disconnected from the game callbacks at any
-  time.
----
-
 # Callbacks
+
+**Noir.Callbacks**: `table`
+
+A module of Noir that allows you to attach multiple functions to game callbacks. These functions can be disconnected from the game callbacks at any time.
+
+***
 
 **Noir.Callbacks.Events**: `table<string, NoirEvent>`
 

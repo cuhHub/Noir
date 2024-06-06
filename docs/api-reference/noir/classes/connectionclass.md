@@ -1,8 +1,10 @@
----
-description: A class for event connections.
----
-
 # ConnectionClass
+
+**Noir.Classes.ConnectionClass**: `NoirClass`
+
+A class for event connections.
+
+***
 
 ```lua
 Noir.Classes.ConnectionClass:Init(callback)

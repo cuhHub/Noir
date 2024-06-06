@@ -1,6 +1,10 @@
 # PlayerClass
 
+**Noir.Classes.PlayerClass**: `NoirClass`
 
+A class that represents a player for the built-in PlayerService.
+
+***
 
 ```lua
 Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth)
@@ -100,43 +104,9 @@ Noir.Classes.PlayerClass:GetPosition()
 
 Returns this player's position.
 
-***
+#### Returns
 
-```lua
-Noir.Classes.PlayerClass:SetCharacterData(health, interactable, AI)
-```
-
-Sets the character data for this player.
-
-#### Parameters
-
-* `health`: number
-* `interactable`: boolean
-* `AI`: boolean
-
-***
-
-```lua
-Noir.Classes.PlayerClass:Heal(amount)
-```
-
-Heals this player by a certain amount.
-
-#### Parameters
-
-* `amount`: number
-
-***
-
-```lua
-Noir.Classes.PlayerClass:Damage(amount)
-```
-
-Damages this player by a certain amount.
-
-#### Parameters
-
-* `amount`: number
+* `SWMatrix`
 
 ***
 
@@ -144,55 +114,11 @@ Damages this player by a certain amount.
 Noir.Classes.PlayerClass:GetCharacter()
 ```
 
-Returns this player's character object ID.
+Returns this player's character as a NoirObject.
 
 #### Returns
 
-* `integer|nil`
-
-***
-
-```lua
-Noir.Classes.PlayerClass:Revive()
-```
-
-Revives this player.
-
-***
-
-```lua
-Noir.Classes.PlayerClass:GetCharacterData()
-```
-
-Returns this player's character data.
-
-#### Returns
-
-* `SWObjectData|nil`
-
-***
-
-```lua
-Noir.Classes.PlayerClass:GetHealth()
-```
-
-Returns this player's health.
-
-#### Returns
-
-* `number`
-
-***
-
-```lua
-Noir.Classes.PlayerClass:IsDowned()
-```
-
-Returns whether or not this player is downed.
-
-#### Returns
-
-* `boolean`
+* `NoirObject|nil`
 
 ***
 

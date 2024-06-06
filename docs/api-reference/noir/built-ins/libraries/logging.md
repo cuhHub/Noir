@@ -1,24 +1,33 @@
----
-description: A library containing methods related to logging.
----
-
 # Logging
 
-**Noir.Libraries.Logging.LoggingMode**: string
+**Noir.Libraries.Logging**: `NoirLibrary`
 
-The mode to use when logging. "DebugLog": Sends logs to DebugView "Chat": Sends logs to chat
-
-***
-
-**Noir.Libraries.Logging.OnLog**: NoirEvent
-
-An event called when a log is sent. Arguments: (log: string)
+A library containing methods related to logging.
 
 ***
 
-**Noir.Libraries.Logging.Layout**: string
+**Noir.Libraries.Logging.LoggingMode**: `NoirLoggingMode`
 
-Represents the logging layout. Requires two '%s' in the layout. First %s is the log type, the second %s is the log title. The message is then added after the layout.
+The mode to use when logging.
+
+* "DebugLog": Sends logs to DebugView
+* "Chat": Sends logs to chat
+
+***
+
+**Noir.Libraries.Logging.OnLog**: `NoirEvent`
+
+An event called when a log is sent.
+
+Arguments: (log: string)
+
+***
+
+**Noir.Libraries.Logging.Layout**: `string`
+
+Represents the logging layout.
+
+Requires two '%s' in the layout. First %s is the log type, the second %s is the log title. The message is then added after the layout.
 
 ***
 
@@ -53,7 +62,9 @@ Sends a log.
 Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
 ```
 
-Format a log. Used internally.
+Format a log.
+
+Used internally.
 
 #### Parameters
 
@@ -68,7 +79,9 @@ Format a log. Used internally.
 Noir.Libraries.Logging:Error(title, message, triggerError, ...)
 ```
 
-Sends an error log. Passing true to the third argument will intentionally cause an addon error to be thrown.
+Sends an error log.
+
+Passing true to the third argument will intentionally cause an addon error to be thrown.
 
 #### Parameters
 

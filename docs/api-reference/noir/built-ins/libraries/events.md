@@ -1,8 +1,10 @@
----
-description: A library that allows you to create events.
----
-
 # Events
+
+**Noir.Libraries.Events**: `NoirLibrary`
+
+A library that allows you to create events.
+
+***
 
 ```lua
 Noir.Libraries.Events:Create()

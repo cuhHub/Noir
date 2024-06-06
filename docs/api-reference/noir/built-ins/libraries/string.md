@@ -1,8 +1,10 @@
----
-description: A library containing helper methods relating to strings.
----
-
 # String
+
+**Noir.Libraries.String**: `NoirLibrary`
+
+A library containing helper methods relating to strings.
+
+***
 
 ```lua
 Noir.Libraries.String:Split(str, separator)

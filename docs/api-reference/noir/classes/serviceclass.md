@@ -1,8 +1,10 @@
----
-description: A class that represents a service.
----
-
 # ServiceClass
+
+**Noir.Classes.ServiceClass**: `NoirClass`
+
+A class that represents a service.
+
+***
 
 ```lua
 Noir.Classes.ServiceClass:Init(name)

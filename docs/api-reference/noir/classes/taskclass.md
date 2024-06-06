@@ -1,8 +1,10 @@
----
-description: Represents a task for the TaskService.
----
-
 # TaskClass
+
+**Noir.Classes.TaskClass**: `NoirClass`
+
+Represents a task for the TaskService.
+
+***
 
 ```lua
 Noir.Classes.TaskClass:Init(ID, duration, isRepeating, arguments)

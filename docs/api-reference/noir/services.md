@@ -1,10 +1,10 @@
----
-description: >-
-  A module of Noir that allows you to create organized services. These services
-  can be used to hold methods that are all designed for a specific purpose.
----
-
 # Services
+
+**Noir.Services**: `table`
+
+A module of Noir that allows you to create organized services. These services can be used to hold methods that are all designed for a specific purpose.
+
+***
 
 **Noir.Services.CreatedServices**: `table<string, NoirService>`
 

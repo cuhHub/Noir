@@ -1,8 +1,10 @@
----
-description: A service that wraps SW players in a class. Essentially makes players OOP.
----
-
 # PlayerService
+
+**Noir.Services.PlayerService**: `NoirService`
+
+A service that wraps SW players in a class. Essentially makes players OOP.
+
+***
 
 ```lua
 Noir.Services.PlayerService:_GetSavedPlayers()
@@ -10,7 +12,9 @@ Noir.Services.PlayerService:_GetSavedPlayers()
 
 **⚠️ | Deprecated. Do not use.**
 
-Returns all players saved in g\_savedata. Used internally.
+Returns all players saved in g\_savedata.
+
+Used internally.
 
 #### Returns
 
@@ -22,7 +26,9 @@ Returns all players saved in g\_savedata. Used internally.
 Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, admin, auth)
 ```
 
-Gives data to a player. Used internally.
+Gives data to a player.
+
+Used internally.
 
 #### Parameters
 
@@ -42,7 +48,9 @@ Gives data to a player. Used internally.
 Noir.Services.PlayerService:_RemovePlayerData(player)
 ```
 
-Removes data for a player. Used internally.
+Removes data for a player.
+
+Used internally.
 
 #### Parameters
 
@@ -58,7 +66,9 @@ Removes data for a player. Used internally.
 Noir.Services.PlayerService:GetPlayers()
 ```
 
-Returns all players. This is the preferred way to get all players instead of using `Noir.Services.PlayerService.Players`.
+Returns all players.
+
+This is the preferred way to get all players instead of using `Noir.Services.PlayerService.Players`.
 
 #### Returns
 
@@ -70,7 +80,9 @@ Returns all players. This is the preferred way to get all players instead of usi
 Noir.Services.PlayerService:GetPlayer(ID)
 ```
 
-Returns a player by their peer ID. This is the preferred way to get a player.
+Returns a player by their peer ID.
+
+This is the preferred way to get a player.
 
 #### Parameters
 
@@ -86,7 +98,9 @@ Returns a player by their peer ID. This is the preferred way to get a player.
 Noir.Services.PlayerService:GetPlayerBySteam(steam)
 ```
 
-Returns a player by their Steam ID. Note that two players or more can have the same Steam ID if they spoof their Steam ID or join the server on two Stormworks instances.
+Returns a player by their Steam ID.
+
+Note that two players or more can have the same Steam ID if they spoof their Steam ID or join the server on two Stormworks instances.
 
 #### Parameters
 
@@ -102,7 +116,9 @@ Returns a player by their Steam ID. Note that two players or more can have the s
 Noir.Services.PlayerService:GetPlayerByName(name)
 ```
 
-Returns a player by their exact name. Consider using :SearchPlayerByName() if you want to search and not directly fetch.
+Returns a player by their exact name.
+
+Consider using `:SearchPlayerByName()` if you want to search and not directly fetch.
 
 #### Parameters
 
@@ -144,5 +160,3 @@ Returns whether or not two players are the same.
 #### Returns
 
 * `boolean`
-
-***

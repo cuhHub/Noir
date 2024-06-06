@@ -1,8 +1,10 @@
----
-description: A library containing helper methods relating to tables.
----
-
 # Table
+
+**Noir.Libraries.Table**: `NoirLibrary`
+
+A library containing helper methods relating to tables.
+
+***
 
 ```lua
 Noir.Libraries.Table:Length(tbl)
@@ -16,7 +18,7 @@ Returns the length of the provided table.
 
 #### Returns
 
-* `number`
+* `integer`
 
 ***
 
@@ -48,7 +50,7 @@ Return the keys of the provided table.
 
 #### Returns
 
-* `table<integer, any>`
+* `tbl`
 
 ***
 
@@ -60,11 +62,11 @@ Return the values of the provided table.
 
 #### Parameters
 
-* `tbl`: table
+* `tbl`: tbl
 
 #### Returns
 
-* `table<integer, any>`
+* `tbl`
 
 ***
 
@@ -76,13 +78,13 @@ Get a portion of a table between two points.
 
 #### Parameters
 
-* `tbl`: table
+* `tbl`: tbl
 * `start`: number
 * `finish`: number
 
 #### Returns
 
-* `table`
+* `tbl`
 
 ***
 
@@ -143,12 +145,12 @@ Merge two tables together (unforced).
 
 #### Parameters
 
-* `tbl`: tbl
-* `other`: tbl
+* `tbl`: table
+* `other`: table
 
 #### Returns
 
-* `tbl`
+* `table`
 
 ***
 
@@ -160,12 +162,12 @@ Merge two tables together (forced).
 
 #### Parameters
 
-* `tbl`: tbl
-* `other`: tbl
+* `tbl`: table
+* `other`: table
 
 #### Returns
 
-* `tbl`
+* `table`
 
 ***
 

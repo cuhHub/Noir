@@ -1,8 +1,10 @@
----
-description: A library containing helper methods relating to numbers.
----
-
 # Number
+
+**Noir.Libraries.Number**: `NoirLibrary`
+
+A library containing helper methods relating to numbers.
+
+***
 
 ```lua
 Noir.Libraries.Number:IsWithin(number, start, stop)
