@@ -310,7 +310,7 @@ end
 -------------------------------
 
 --[[
-    Represents an object class that has been serialized.
+    Represents an object class object that has been serialized.
 ]]
 ---@class NoirSerializedObject
 ---@field ID integer The object ID
