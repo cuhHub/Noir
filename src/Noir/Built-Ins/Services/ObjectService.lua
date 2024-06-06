@@ -51,7 +51,7 @@
     end)
 ]]
 ---@class NoirObjectService: NoirService
----@field objects table<integer, NoirObject> A table containing all objects
+---@field Objects table<integer, NoirObject> A table containing all objects
 ---@field OnObjectRegister NoirEvent Fired when an object is registered
 ---@field OnObjectUnregister NoirEvent Fired when an object is unregistered
 ---@field OnObjectLoad NoirEvent Fired when an object is loaded (first arg: NoirObject)
@@ -62,7 +62,7 @@
 Noir.Services.ObjectService = Noir.Services:CreateService("ObjectService")
 
 function Noir.Services.ObjectService:ServiceInit()
-    self.objects = {}
+    self.Objects = {}
 
     self.OnObjectRegister = Noir.Libraries.Events:Create()
     self.OnObjectUnregister = Noir.Libraries.Events:Create()
@@ -144,7 +144,7 @@ end
 ]]
 ---@return table<integer, NoirObject>
 function Noir.Services.ObjectService:GetObjects()
-    return self.objects
+    return self.Objects
 end
 
 --[[
@@ -161,7 +161,7 @@ function Noir.Services.ObjectService:RegisterObject(object_id)
 
     -- Create object
     local object = Noir.Classes.ObjectClass:New(object_id)
-    self.objects[object_id] = object
+    self.Objects[object_id] = object
     self.OnObjectRegister:Fire(object)
 
     -- Save to g_savedata
@@ -200,7 +200,7 @@ end
 ---@param object_id integer
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:GetObject(object_id)
-    return self.objects[object_id]
+    return self.Objects[object_id]
 end
 
 --[[
@@ -220,7 +220,7 @@ function Noir.Services.ObjectService:RemoveObject(object_id)
     self.OnObjectUnregister:Fire(object)
 
     -- Remove object
-    self.objects[object_id] = nil
+    self.Objects[object_id] = nil
 
     -- Remove from g_savedata
     local saved = self:_GetSavedObjects()
