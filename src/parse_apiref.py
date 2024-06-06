@@ -106,21 +106,15 @@ class Parser():
 
         for line in lines:
             if line != "":
-                newLines.append(line)
+                newLines.append(line.replace("<br>", "\n\n"))
             else:
                 break
         
         # join lines
-        description = "\n".join(newLines)
+        description = "".join(newLines)
         
         # deindent
         description = self.deindent(description)
-            
-        # remove line breaks
-        description = description.replace("<br>", "")
-        
-        # make new lines truly a new line in markdown
-        description = description.replace("\\n", "\n")
           
         # return
         return description
