@@ -305,6 +305,30 @@ function Noir.Classes.ObjectClass:Heal(amount)
     self:SetData(health + amount, false, false)
 end
 
+--[[
+    Get this fire's data (if fire).
+]]
+---@return boolean isLit
+function Noir.Classes.ObjectClass:GetFireData()
+    local isLit, success = server.getFireData(self.ID)
+
+    if not success then
+        Noir.Libraries.Logging:Error("Object", "server.getFireData(...) was unsuccessful. Returning false.", false)
+        return false
+    end
+
+    return isLit
+end
+
+--[[
+    Set this fire's data (if fire).
+]]
+---@param isLit boolean
+---@param isExplosive boolean
+function Noir.Classes.ObjectClass:SetFireData(isLit, isExplosive)
+    server.setFireData(self.ID, isLit, isExplosive)
+end
+
 -------------------------------
 -- // Intellisense
 -------------------------------
