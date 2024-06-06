@@ -52,10 +52,10 @@
 ]]
 ---@class NoirObjectService: NoirService
 ---@field Objects table<integer, NoirObject> A table containing all objects
----@field OnObjectRegister NoirEvent Fired when an object is registered
----@field OnObjectUnregister NoirEvent Fired when an object is unregistered
----@field OnObjectLoad NoirEvent Fired when an object is loaded (first arg: NoirObject)
----@field OnObjectUnload NoirEvent Fired when an object is unloaded (first arg: NoirObject)
+---@field OnRegister NoirEvent Fired when an object is registered (first arg: NoirObject)
+---@field OnUnregister NoirEvent Fired when an object is unregistered (first arg: NoirObject)
+---@field OnLoad NoirEvent Fired when an object is loaded (first arg: NoirObject)
+---@field OnUnload NoirEvent Fired when an object is unloaded (first arg: NoirObject)
 ---
 ---@field OnLoadConnection NoirConnection A connection to the onObjectLoad game callback
 ---@field OnUnloadConnection NoirConnection A connection to the onObjectUnload game callback
@@ -64,10 +64,10 @@ Noir.Services.ObjectService = Noir.Services:CreateService("ObjectService")
 function Noir.Services.ObjectService:ServiceInit()
     self.Objects = {}
 
-    self.OnObjectRegister = Noir.Libraries.Events:Create()
-    self.OnObjectUnregister = Noir.Libraries.Events:Create()
-    self.OnObjectLoad = Noir.Libraries.Events:Create()
-    self.OnObjectUnload = Noir.Libraries.Events:Create()
+    self.OnRegister = Noir.Libraries.Events:Create()
+    self.OnUnregister = Noir.Libraries.Events:Create()
+    self.OnLoad = Noir.Libraries.Events:Create()
+    self.OnUnload = Noir.Libraries.Events:Create()
 end
 
 function Noir.Services.ObjectService:ServiceStart()
@@ -81,7 +81,7 @@ function Noir.Services.ObjectService:ServiceStart()
         end
 
         -- Update attributes
-        registeredObject.Loaded = object.loaded
+        registeredObject.Loaded = object.Loaded
         self:_SaveObjectSavedata(registeredObject)
 
         -- Log
@@ -104,7 +104,7 @@ function Noir.Services.ObjectService:ServiceStart()
         -- Fire event, set loaded
         object.Loaded = true
         object.OnLoad:Fire()
-        self.OnObjectLoad:Fire(object)
+        self.OnLoad:Fire(object)
 
         -- Save
         self:_SaveObjectSavedata(object)
@@ -123,7 +123,7 @@ function Noir.Services.ObjectService:ServiceStart()
         -- Fire events, set loaded
         object.Loaded = false
         object.OnUnload:Fire()
-        self.OnObjectUnload:Fire(object)
+        self.OnUnload:Fire(object)
 
         -- Save
         self:_SaveObjectSavedata(object)
@@ -189,7 +189,7 @@ function Noir.Services.ObjectService:RegisterObject(object_id)
     -- Create object
     local object = Noir.Classes.ObjectClass:New(object_id)
     self.Objects[object_id] = object
-    self.OnObjectRegister:Fire(object)
+    self.OnRegister:Fire(object)
 
     -- Save to g_savedata
     self:_SaveObjectSavedata(object)
@@ -226,7 +226,7 @@ function Noir.Services.ObjectService:RemoveObject(object_id)
     end
 
     -- Fire event
-    self.OnObjectUnregister:Fire(object)
+    self.OnUnregister:Fire(object)
 
     -- Remove object
     self.Objects[object_id] = nil
