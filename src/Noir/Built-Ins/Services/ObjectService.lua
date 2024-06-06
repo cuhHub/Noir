@@ -72,7 +72,7 @@ end
 
 function Noir.Services.ObjectService:ServiceStart()
     -- Load saved objects
-    for _, object in pairs(Noir.Libraries.Table:Copy(self:_GetSavedObjects())) do -- important to copy, because :RegisterObject() modifies the saved objects table
+    for _, object in pairs(self:_GetSavedObjects()) do -- important to copy, because :RegisterObject() modifies the saved objects table
         -- Register object
         local registeredObject = self:RegisterObject(object.ID)
 
@@ -145,7 +145,7 @@ end
 ]]
 ---@return table<integer, NoirSerializedObject>
 function Noir.Services.ObjectService:_GetSavedObjects()
-    return self:Load("objects", {})
+    return Noir.Libraries.Table:Copy(self:Load("objects", {}))
 end
 
 --[[
@@ -153,7 +153,7 @@ end
 ]]
 ---@return table<integer, NoirObject>
 function Noir.Services.ObjectService:GetObjects()
-    return self.Objects
+    return Noir.Libraries.Table:Copy(self.Objects)
 end
 
 --[[
