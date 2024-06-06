@@ -37,6 +37,7 @@ This is an example of a class. The `---@` bits are for intellisense.
 ---------- Creating a class
 
 ---@class Person: NoirClass <-- For intellisense
+---@field New fun(self: Person, name: string, occupation: string): Person <-- so the Lua extension thinks Person:New() returns a Person and not a NoirClass
 ---@field name string The name of this person
 ---@field occupation string The occupation of this person
 local Person = Noir.Class("Person")
@@ -53,7 +54,7 @@ function Person:PrintInfo()
 end
 
 ---------- Creating an object from the class
-local JohnDoe = Person:New("John Doe", "Unoccupied") ---@type Person
+local JohnDoe = Person:New("John Doe", "Unoccupied")
 JohnDoe:PrintInfo()
 ```
 {% endcode %}

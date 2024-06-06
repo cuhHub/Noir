@@ -193,23 +193,30 @@ function MyService:ACustomMethod()
 end
 ```
 
-You would add:
+You would add this directly above `:CreateService()`:
 
 ```lua
 ---@class MyService: NoirService
 ---@field something boolean A service attribute
----@field ACustomMethod fun(self: MyService): boolean A method that returns true
 ```
 
-Then you can add:
+The final result should look like:
 
 ```lua
-local MyService = Noir.Services:GetService("MyService") ---@type MyService
+---@class MyService: NoirService
+---@field something boolean A service attribute
+local MyService = Noir.Services:GetService("MyService")
+
+function MyService:ServiceInit()
+    self.something = true
+end
+
+function MyService:ServiceStart()
+    
+end
+
+function MyService:ACustomMethod()
+    server.announce("Server", "Hello World")
+    return true
+end
 ```
-
-It's also recommended to add `---@type MyService` just after `:CreateService("MyService")`
-
-```lua
-local MyService = Noir.Services:CreateService("MyService") ---@type MyService
-```
-
