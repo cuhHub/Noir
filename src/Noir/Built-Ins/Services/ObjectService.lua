@@ -72,7 +72,7 @@ end
 
 function Noir.Services.ObjectService:ServiceStart()
     -- Load saved objects
-    for _, object in pairs(self:_GetSavedObjects()) do
+    for _, object in pairs(Noir.Libraries.Table:Copy(self:_GetSavedObjects())) do -- important to copy, because :RegisterObject() modifies the saved objects table
         -- Register object
         local registeredObject = self:RegisterObject(object.ID)
 
