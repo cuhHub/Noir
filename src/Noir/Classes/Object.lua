@@ -130,7 +130,7 @@ function Noir.Classes.ObjectClass:Teleport(position)
 end
 
 --[[
-    Revive this object (if character).
+    Revive this character (if character).
 ]]
 function Noir.Classes.ObjectClass:Revive()
     server.reviveCharacter(self.ID)
