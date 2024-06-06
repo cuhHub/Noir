@@ -35,6 +35,7 @@
     A class that represents a player for the built-in PlayerService.
 ]]
 ---@class NoirPlayer: NoirClass
+---@field New fun(self: NoirPlayer, name: string, ID: integer, steam: string, admin: boolean, auth: boolean): NoirPlayer
 ---@field Name string The name of this player
 ---@field ID integer The ID of this player
 ---@field Steam string The Steam ID of this player
@@ -79,7 +80,7 @@ end
 ---@param serializedPlayer NoirSerializedPlayer
 ---@return NoirPlayer
 function Noir.Classes.PlayerClass._Deserialize(serializedPlayer)
-    local player = Noir.Classes.PlayerClass:New( ---@type NoirPlayer
+    local player = Noir.Classes.PlayerClass:New(
         serializedPlayer.Name,
         serializedPlayer.ID,
         serializedPlayer.Steam,
@@ -142,8 +143,15 @@ end
 --[[
     Returns this player's position.
 ]]
+---@return SWMatrix
 function Noir.Classes.PlayerClass:GetPosition()
-    return (server.getPlayerPos(self.ID)) or matrix.translation(0, 0, 0)
+    local pos, success = server.getPlayerPos(self.ID)
+
+    if not success then
+        return matrix.translation(0, 0 ,0)
+    end
+
+    return pos
 end
 
 --[[
@@ -162,7 +170,7 @@ function Noir.Classes.PlayerClass:SetCharacterData(health, interactable, AI)
     end
 
     -- Set the data
-    server.setCharacterData(character, health, interactable, AI)
+    character:SetData(health, interactable, AI)
 end
 
 --[[
@@ -197,7 +205,7 @@ end
 --[[
     Returns this player's character object ID.
 ]]
----@return integer|nil
+---@return NoirObject|nil
 function Noir.Classes.PlayerClass:GetCharacter()
     -- Get the character
     local character = server.getPlayerCharacterID(self.ID)
@@ -207,8 +215,16 @@ function Noir.Classes.PlayerClass:GetCharacter()
         return
     end
 
+    -- Get or create object for character
+    local object = Noir.Services.ObjectService:GetOrCreateObject(character)
+
+    if not object then
+        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacter() failed for player %s (%d, %s) due to object being nil", false, self.Name, self.ID, self.Steam)
+        return
+    end
+
     -- Return
-    return character
+    return object
 end
 
 --[[
@@ -224,7 +240,7 @@ function Noir.Classes.PlayerClass:Revive()
     end
 
     -- Revive the character
-    server.reviveCharacter(character)
+    character:Revive()
 end
 
 --[[
@@ -241,7 +257,7 @@ function Noir.Classes.PlayerClass:GetCharacterData()
     end
 
     -- Get the character data
-    local data = server.getCharacterData(character)
+    local data = character:GetData()
 
     if not data then
         Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s). Data is nil", false, self.Name, self.ID, self.Steam)

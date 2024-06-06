@@ -1,6 +1,7 @@
 {
     "order" : [
         "TaskService.lua",
-        "PlayerService.lua"
+        "PlayerService.lua",
+        "ObjectService.lua"
     ]
 }

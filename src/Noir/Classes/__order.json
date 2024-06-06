@@ -5,6 +5,7 @@
         "Event.lua",
         "Service.lua",
         "Player.lua",
-        "Task.lua"
+        "Task.lua",
+        "Object.lua"
     ]
 }
