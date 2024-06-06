@@ -38,7 +38,7 @@ Noir.Libraries.Logging = Noir.Libraries:Create("NoirLogging")
 
 --[[
     The mode to use when logging.<br>
-    "DebugLog": Sends logs to DebugView
+    "DebugLog": Sends logs to DebugView<br>
     "Chat": Sends logs to chat
 ]]
 Noir.Libraries.Logging.LoggingMode = "DebugLog" ---@type NoirLoggingMode
