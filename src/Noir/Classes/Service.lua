@@ -67,12 +67,12 @@ end
 function Noir.Classes.ServiceClass:_Initialize()
     -- Checks
     if self.Initialized then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to initialize this service when it has already initialized.", true)
+        Noir.Libraries.Logging:Error("Service", "%s: Attempted to initialize this service when it has already initialized.", true, self.Name)
         return
     end
 
     if self.Started then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.", true)
+        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has already started.", true, self.Name)
         return
     end
 
@@ -81,7 +81,7 @@ function Noir.Classes.ServiceClass:_Initialize()
 
     -- Call ServiceInit
     if not self.ServiceInit then
-        Noir.Libraries.Logging:Error(self.Name, "This service is missing a ServiceInit method.", true)
+        Noir.Libraries.Logging:Error("Service", "%s: This service is missing a ServiceInit method.", true, self.Name)
         return
     end
 
@@ -95,12 +95,12 @@ end
 function Noir.Classes.ServiceClass:_Start()
     -- Checks
     if self.Started then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.", true)
+        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has already started.", true, self.Name)
         return
     end
 
     if not self.Initialized then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has not initialized yet.", true)
+        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has not initialized yet.", true, self.Name)
         return
     end
 
@@ -109,7 +109,7 @@ function Noir.Classes.ServiceClass:_Start()
 
     -- Call ServiceStart
     if not self.ServiceStart then
-        Noir.Libraries.Logging:Warning(self.Name, "This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.")
+        Noir.Libraries.Logging:Warning("Service", "%s: This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.", self.Name)
         return
     end
 
@@ -124,21 +124,22 @@ end
 function Noir.Classes.ServiceClass:_CheckSaveData()
     -- Checks
     if not g_savedata then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata is nil.", true)
+        Noir.Libraries.Logging:Error("Service", "_CheckSaveData(): g_savedata is nil.", true)
         return false
     end
 
     if not g_savedata.Noir then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir is nil. Something might have gone wrong with the Noir bootstrapper.", true)
+        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir is nil.", true)
         return false
     end
 
     if not g_savedata.Noir.Services then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir.Services is nil. Something might have gone wrong with the Noir bootstrapper.", true)
+        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir.Services is nil.", true)
         return false
     end
 
     if not g_savedata.Noir.Services[self.Name] then
+        Noir.Libraries.Logging:Info("Service", "_CheckSaveData(): %s is missing a table in g_savedata.Noir.Services. Creating one.", self.Name)
         g_savedata.Noir.Services[self.Name] = {}
     end
 
