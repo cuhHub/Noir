@@ -3341,7 +3341,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.3.2"
+Noir.Version = "1.3.3"
 
 --[[
     This event is called when the framework is started.<br>
