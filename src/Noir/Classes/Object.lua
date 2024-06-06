@@ -76,7 +76,7 @@ end
 ---@return NoirObject
 function Noir.Classes.ObjectClass._Deserialize(serializedObject)
     local object = Noir.Classes.ObjectClass:New(serializedObject.ID)
-    object.Loaded = serializedObject.loaded
+    object.Loaded = serializedObject.Loaded
 
     return object
 end
@@ -146,6 +146,165 @@ function Noir.Classes.ObjectClass:SetData(hp, interactable, AI)
     server.setCharacterData(self.ID, hp, interactable, AI)
 end
 
+--[[
+    Returns this character's health (if character).
+]]
+---@return number
+function Noir.Classes.ObjectClass:GetHealth()
+    -- Get character data
+    local data = self:GetData()
+
+    if not data then
+        Noir.Libraries.Logging:Error("Object", ":GetHealth() failed as data is nil. Returning 100 as default.", false)
+        return 100
+    end
+
+    -- Return
+    return data.hp
+end
+
+--[[
+    Set this character's tooltip (if character).
+]]
+---@param tooltip string
+function Noir.Classes.ObjectClass:SetTooltip(tooltip)
+    server.setCharacterTooltip(self.ID, tooltip)
+end
+
+--[[
+    Set this character's AI state (if character).
+]]
+---@param state integer 0 = none, 1 = path to destination
+function Noir.Classes.ObjectClass:SetAIState(state)
+    server.setAIState(self.ID, state)
+end
+
+--[[
+    Set this character's AI character target (if character).
+]]
+---@param target NoirObject
+function Noir.Classes.ObjectClass:SetAICharacterTarget(target)
+    server.setAITargetCharacter(self.ID, target.ID)
+end
+
+--[[
+    Set this character's AI vehicle target (if character).
+]]
+---@param vehicle_id integer
+function Noir.Classes.ObjectClass:SetAIVehicleTarget(vehicle_id)
+    server.setAITargetVehicle(self.ID, vehicle_id)
+end
+
+--[[
+    Kills this character (if character).
+]]
+function Noir.Classes.ObjectClass:Kill()
+    server.killCharacter(self.ID)
+end
+
+--[[
+    Returns the vehicle this character is sat in (if character).
+]]
+---@return integer|nil
+function Noir.Classes.ObjectClass:GetVehicle()
+    local vehicle_id, success = server.getCharacterVehicle(self.ID)
+
+    if not success then
+        Noir.Libraries.Logging:Error("Object", "server.getCharacterVehicle(...) was unsuccessful.", false)
+        return
+    end
+
+    return vehicle_id
+end
+
+--[[
+    Returns the item this character is holding in the specified slot (if character).
+]]
+---@param slot SWSlotNumberEnum
+---@return integer|nil
+function Noir.Classes.ObjectClass:GetItem(slot)
+    local item, success = server.getCharacterItem(self.ID, slot)
+
+    if not success then
+        Noir.Libraries.Logging:Error("Object", "server.getCharacterItem(...) was unsuccessful.", false)
+        return
+    end
+
+    return item
+end
+
+--[[
+    Returns whether or not this character is downed (dead, incapaciated, or hp <= 0) (if character).
+]]
+---@return boolean
+function Noir.Classes.ObjectClass:IsDowned()
+    -- Get data
+    local data = self:GetData()
+
+    if not data then
+        Noir.Libraries.Logging:Error("Object", ":IsDowned() failed due to data being nil.", false)
+        return false
+    end
+
+    -- Return
+    return data.dead or data.incapacitated or data.hp <= 0
+end
+
+--[[
+    Seat this character in a seat (if character).
+]]
+---@param vehicle_id integer
+---@param name string|nil
+---@param voxelX integer|nil
+---@param voxelY integer|nil
+---@param voxelZ integer|nil
+function Noir.Classes.ObjectClass:Seat(vehicle_id, name, voxelX, voxelY, voxelZ)
+    if name then
+        server.setSeated(self.ID, vehicle_id, name)
+    elseif voxelX and voxelY and voxelZ then
+        server.setSeated(self.ID, vehicle_id, voxelX, voxelY, voxelZ)
+    else
+        Noir.Libraries.Logging:Error("Object", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().", true)
+    end
+end
+
+--[[
+    Set the move target of this character (if creature).
+]]
+---@param position SWMatrix
+function Noir.Classes.ObjectClass:SetMoveTarget(position)
+    server.setCreatureMoveTarget(self.ID, position)
+end
+
+--[[
+    Damage this character by a certain amount (if character).
+]]
+---@param amount number
+function Noir.Classes.ObjectClass:Damage(amount)
+    -- Get health
+    local health = self:GetHealth()
+
+    -- Damage
+    self:SetData(health - amount, false, false)
+end
+
+--[[
+    Heal this character by a certain amount (if character).
+]]
+---@param amount number
+function Noir.Classes.ObjectClass:Heal(amount)
+    -- Get health
+    local health = self:GetHealth()
+
+    -- Prevent soft-lock
+    if health <= 0 and amount > 0 then
+        self:Revive()
+    end
+
+    -- Heal
+    self:SetData(health + amount, false, false)
+end
+
 -------------------------------
 -- // Intellisense
 -------------------------------
@@ -155,4 +314,4 @@ end
 ]]
 ---@class NoirSerializedObject
 ---@field ID integer The object ID
----@field loaded boolean Whether or not the object is loaded
+---@field Loaded boolean Whether or not the object is loaded
