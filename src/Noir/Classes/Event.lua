@@ -46,7 +46,7 @@
 Noir.Classes.EventClass = Noir.Class("NoirEvent")
 
 --[[
-    Initializes event  class objects.
+    Initializes event class objects.
 ]]
 function Noir.Classes.EventClass:Init()
     self.CurrentID = 0

@@ -380,7 +380,7 @@ end
 Noir.Classes.EventClass = Noir.Class("NoirEvent")
 
 --[[
-    Initializes event  class objects.
+    Initializes event class objects.
 ]]
 function Noir.Classes.EventClass:Init()
     self.CurrentID = 0
@@ -898,7 +898,7 @@ function Noir.Classes.PlayerClass:GetPosition()
 end
 
 --[[
-    Returns this player's character object ID.
+    Returns this player's character as a NoirObject.
 ]]
 ---@return NoirObject|nil
 function Noir.Classes.PlayerClass:GetCharacter()
@@ -1182,7 +1182,7 @@ function Noir.Classes.ObjectClass:Teleport(position)
 end
 
 --[[
-    Revive this object (if character).
+    Revive this character (if character).
 ]]
 function Noir.Classes.ObjectClass:Revive()
     server.reviveCharacter(self.ID)
