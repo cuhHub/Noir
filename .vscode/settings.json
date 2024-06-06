@@ -1,6 +1,6 @@
 {
     "Lua.workspace.ignoreDir": [
         ".vscode",
-        "_build"
+        "_build/Noir.lua"
     ]
 }
