@@ -35,7 +35,7 @@
     A service for wrapping SW objects in classes.
 
     local object_id = 5
-    local object = Service:GetOrCreateObject(object_id)
+    local object = Service:GetObject(object_id)
 
     object:GetData()
     object:Despawn()
@@ -82,6 +82,7 @@ function Noir.Services.ObjectService:ServiceStart()
 
         -- Update attributes
         registeredObject.Loaded = object.loaded
+        self:_SaveObjectSavedata(registeredObject)
 
         -- Log
         Noir.Libraries.Logging:Info("ObjectService", "Loading object: %s", object.ID)
@@ -93,9 +94,10 @@ function Noir.Services.ObjectService:ServiceStart()
     ---@param object_id integer
     self.OnLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
         -- Get object
-        local object = self:GetOrCreateObject(object_id)
+        local object = self:GetObject(object_id)
 
         if not object then
+            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnLoadConnection callback.", false)
             return
         end
 
@@ -103,14 +105,18 @@ function Noir.Services.ObjectService:ServiceStart()
         object.Loaded = true
         object.OnLoad:Fire()
         self.OnObjectLoad:Fire(object)
+
+        -- Save
+        self:_SaveObjectSavedata(object)
     end)
 
     ---@param object_id integer
     self.OnUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
         -- Get object
-        local object = self:GetOrCreateObject(object_id)
+        local object = self:GetObject(object_id)
 
         if not object then
+            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnUnloadConnection callback.", false)
             return
         end
 
@@ -118,6 +124,9 @@ function Noir.Services.ObjectService:ServiceStart()
         object.Loaded = false
         object.OnUnload:Fire()
         self.OnObjectUnload:Fire(object)
+
+        -- Save
+        self:_SaveObjectSavedata(object)
     end)
 end
 
@@ -126,7 +135,7 @@ end
     Used internally. Do not use in your code.
 ]]
 ---@param objects table<integer, NoirSerializedObject>
-function Noir.Services.ObjectService:SaveObjects(objects)
+function Noir.Services.ObjectService:_SaveObjects(objects)
     self:Save("objects", objects)
 end
 
@@ -148,6 +157,30 @@ function Noir.Services.ObjectService:GetObjects()
 end
 
 --[[
+    Save an object to g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param object NoirObject
+function Noir.Services.ObjectService:_SaveObjectSavedata(object)
+    local saved = self:_GetSavedObjects()
+    saved[object.ID] = object:_Serialize()
+
+    self:_SaveObjects(saved)
+end
+
+--[[
+    Remove an object from g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param object_id integer
+function Noir.Services.ObjectService:_RemoveObjectSavedata(object_id)
+    local saved = self:_GetSavedObjects()
+    saved[object_id] = nil
+
+    self:_SaveObjects(saved)
+end
+
+--[[
     Registers an object by ID.
 ]]
 ---@param object_id integer
@@ -165,10 +198,7 @@ function Noir.Services.ObjectService:RegisterObject(object_id)
     self.OnObjectRegister:Fire(object)
 
     -- Save to g_savedata
-    local saved = self:_GetSavedObjects()
-    saved[object_id] = object:_Serialize()
-
-    self:SaveObjects(saved)
+    self:_SaveObjectSavedata(object)
 
     -- Remove on object despawn
     object.OnDespawn:Once(function()
@@ -180,27 +210,12 @@ function Noir.Services.ObjectService:RegisterObject(object_id)
 end
 
 --[[
-    Returns the object with the given ID, or creates a new class object wrapping around the object if it doesn't exist.
-]]
----@param object_id integer
----@return NoirObject|nil
-function Noir.Services.ObjectService:GetOrCreateObject(object_id)
-    local object = self:GetObject(object_id)
-
-    if not object then
-        return self:RegisterObject(object_id)
-    end
-
-    return object
-end
-
---[[
     Returns the object with the given ID.
 ]]
 ---@param object_id integer
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:GetObject(object_id)
-    return self.Objects[object_id]
+    return self.Objects[object_id] or self:RegisterObject(object_id)
 end
 
 --[[
@@ -212,7 +227,7 @@ function Noir.Services.ObjectService:RemoveObject(object_id)
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Warning("ObjectService", "Attempted to remove an object that doesn't exist, ID: %s (:RemoveObject() method)", object_id)
+        Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in :RemoveObject().", false)
         return
     end
 
@@ -223,8 +238,5 @@ function Noir.Services.ObjectService:RemoveObject(object_id)
     self.Objects[object_id] = nil
 
     -- Remove from g_savedata
-    local saved = self:_GetSavedObjects()
-    saved[object_id] = nil
-
-    self:SaveObjects(saved)
+    self:_RemoveObjectSavedata(object_id)
 end
