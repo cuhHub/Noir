@@ -155,7 +155,7 @@ function Noir.Classes.PlayerClass:GetPosition()
 end
 
 --[[
-    Returns this player's character object ID.
+    Returns this player's character as a NoirObject.
 ]]
 ---@return NoirObject|nil
 function Noir.Classes.PlayerClass:GetCharacter()
