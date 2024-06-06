@@ -595,12 +595,12 @@ end
 function Noir.Classes.ServiceClass:_Initialize()
     -- Checks
     if self.Initialized then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to initialize this service when it has already initialized.", true)
+        Noir.Libraries.Logging:Error("Service", "%s: Attempted to initialize this service when it has already initialized.", true, self.Name)
         return
     end
 
     if self.Started then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.", true)
+        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has already started.", true, self.Name)
         return
     end
 
@@ -609,7 +609,7 @@ function Noir.Classes.ServiceClass:_Initialize()
 
     -- Call ServiceInit
     if not self.ServiceInit then
-        Noir.Libraries.Logging:Error(self.Name, "This service is missing a ServiceInit method.", true)
+        Noir.Libraries.Logging:Error("Service", "%s: This service is missing a ServiceInit method.", true, self.Name)
         return
     end
 
@@ -623,12 +623,12 @@ end
 function Noir.Classes.ServiceClass:_Start()
     -- Checks
     if self.Started then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has already started.", true)
+        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has already started.", true, self.Name)
         return
     end
 
     if not self.Initialized then
-        Noir.Libraries.Logging:Error(self.Name, "Attempted to start this service when it has not initialized yet.", true)
+        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has not initialized yet.", true, self.Name)
         return
     end
 
@@ -637,7 +637,7 @@ function Noir.Classes.ServiceClass:_Start()
 
     -- Call ServiceStart
     if not self.ServiceStart then
-        Noir.Libraries.Logging:Warning(self.Name, "This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.")
+        Noir.Libraries.Logging:Warning("Service", "%s: This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.", self.Name)
         return
     end
 
@@ -652,21 +652,22 @@ end
 function Noir.Classes.ServiceClass:_CheckSaveData()
     -- Checks
     if not g_savedata then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata is nil.", true)
+        Noir.Libraries.Logging:Error("Service", "_CheckSaveData(): g_savedata is nil.", true)
         return false
     end
 
     if not g_savedata.Noir then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir is nil. Something might have gone wrong with the Noir bootstrapper.", true)
+        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir is nil.", true)
         return false
     end
 
     if not g_savedata.Noir.Services then
-        Noir.Libraries.Logging:Error("Service Save", "Attempted to save data to a service when g_savedata.Noir.Services is nil. Something might have gone wrong with the Noir bootstrapper.", true)
+        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir.Services is nil.", true)
         return false
     end
 
     if not g_savedata.Noir.Services[self.Name] then
+        Noir.Libraries.Logging:Info("Service", "_CheckSaveData(): %s is missing a table in g_savedata.Noir.Services. Creating one.", self.Name)
         g_savedata.Noir.Services[self.Name] = {}
     end
 
@@ -897,54 +898,6 @@ function Noir.Classes.PlayerClass:GetPosition()
 end
 
 --[[
-    Sets the character data for this player.
-]]
----@param health number
----@param interactable boolean
----@param AI boolean
-function Noir.Classes.PlayerClass:SetCharacterData(health, interactable, AI)
-    -- Get the character
-    local character = self:GetCharacter()
-
-    if not character then
-        Noir.Libraries.Logging:Error("PlayerService", ":SetCharacterData() failed for player %s (%d, %s) due to character being nil", false, self.Name, self.ID, self.Steam)
-        return
-    end
-
-    -- Set the data
-    character:SetData(health, interactable, AI)
-end
-
---[[
-    Heals this player by a certain amount.
-]]
----@param amount number
-function Noir.Classes.PlayerClass:Heal(amount)
-    -- Get health
-    local health = self:GetHealth()
-
-    -- Prevent soft-lock
-    if health <= 0 and amount > 0 then
-        self:Revive()
-    end
-
-    -- Heal
-    self:SetCharacterData(health + amount, false, false)
-end
-
---[[
-    Damages this player by a certain amount.
-]]
----@param amount number
-function Noir.Classes.PlayerClass:Damage(amount)
-    -- Get health
-    local health = self:GetHealth()
-
-    -- Damage
-    self:SetCharacterData(health - amount, false, false)
-end
-
---[[
     Returns this player's character object ID.
 ]]
 ---@return NoirObject|nil
@@ -953,7 +906,7 @@ function Noir.Classes.PlayerClass:GetCharacter()
     local character = server.getPlayerCharacterID(self.ID)
 
     if not character then
-        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacter() failed for player %s (%d, %s)", false, self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("Player", ":GetCharacter() failed for player %s (%d, %s)", false, self.Name, self.ID, self.Steam)
         return
     end
 
@@ -961,87 +914,12 @@ function Noir.Classes.PlayerClass:GetCharacter()
     local object = Noir.Services.ObjectService:GetObject(character)
 
     if not object then
-        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacter() failed for player %s (%d, %s) due to object being nil", false, self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("Player", ":GetCharacter() failed for player %s (%d, %s) due to object being nil", false, self.Name, self.ID, self.Steam)
         return
     end
 
     -- Return
     return object
-end
-
---[[
-    Revives this player.
-]]
-function Noir.Classes.PlayerClass:Revive()
-    -- Get the character
-    local character = self:GetCharacter()
-
-    if not character then
-        Noir.Libraries.Logging:Error("PlayerService", ":Revive() failed for player %s (%d, %s) due to character being nil", false, self.Name, self.ID, self.Steam)
-        return
-    end
-
-    -- Revive the character
-    character:Revive()
-end
-
---[[
-    Returns this player's character data.
-]]
----@return SWObjectData|nil
-function Noir.Classes.PlayerClass:GetCharacterData()
-    -- Get the character
-    local character = self:GetCharacter()
-
-    if not character then
-        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s) due to character being nil", false, self.Name, self.ID, self.Steam)
-        return
-    end
-
-    -- Get the character data
-    local data = character:GetData()
-
-    if not data then
-        Noir.Libraries.Logging:Error("PlayerService", ":GetCharacterData() failed for player %s (%d, %s). Data is nil", false, self.Name, self.ID, self.Steam)
-        return
-    end
-
-    -- Return
-    return data
-end
-
---[[
-    Returns this player's health.
-]]
----@return number
-function Noir.Classes.PlayerClass:GetHealth()
-    -- Get character data
-    local data = self:GetCharacterData()
-
-    if not data then
-        Noir.Libraries.Logging:Error("PlayerService", ":GetHealth() failed for player %s (%d, %s) due to data being nil. Returning 100 instead", false, self.Name, self.ID, self.Steam)
-        return 100
-    end
-
-    -- Return
-    return data.hp
-end
-
---[[
-    Returns whether or not this player is downed.
-]]
----@return boolean
-function Noir.Classes.PlayerClass:IsDowned()
-    -- Get character data
-    local data = self:GetCharacterData()
-
-    if not data then
-        Noir.Libraries.Logging:Error("PlayerService", ":IsDowned() failed for player %s (%d, %s) due to data being nil. Returning false instead", false, self.Name, self.ID, self.Steam)
-        return false
-    end
-
-    -- Return
-    return data.dead or data.incapacitated or data.hp <= 0
 end
 
 --[[
@@ -1250,7 +1128,7 @@ end
 ---@return NoirObject
 function Noir.Classes.ObjectClass._Deserialize(serializedObject)
     local object = Noir.Classes.ObjectClass:New(serializedObject.ID)
-    object.Loaded = serializedObject.loaded
+    object.Loaded = serializedObject.Loaded
 
     return object
 end
@@ -1320,16 +1198,175 @@ function Noir.Classes.ObjectClass:SetData(hp, interactable, AI)
     server.setCharacterData(self.ID, hp, interactable, AI)
 end
 
+--[[
+    Returns this character's health (if character).
+]]
+---@return number
+function Noir.Classes.ObjectClass:GetHealth()
+    -- Get character data
+    local data = self:GetData()
+
+    if not data then
+        Noir.Libraries.Logging:Error("Object", ":GetHealth() failed as data is nil. Returning 100 as default.", false)
+        return 100
+    end
+
+    -- Return
+    return data.hp
+end
+
+--[[
+    Set this character's tooltip (if character).
+]]
+---@param tooltip string
+function Noir.Classes.ObjectClass:SetTooltip(tooltip)
+    server.setCharacterTooltip(self.ID, tooltip)
+end
+
+--[[
+    Set this character's AI state (if character).
+]]
+---@param state integer 0 = none, 1 = path to destination
+function Noir.Classes.ObjectClass:SetAIState(state)
+    server.setAIState(self.ID, state)
+end
+
+--[[
+    Set this character's AI character target (if character).
+]]
+---@param target NoirObject
+function Noir.Classes.ObjectClass:SetAICharacterTarget(target)
+    server.setAITargetCharacter(self.ID, target.ID)
+end
+
+--[[
+    Set this character's AI vehicle target (if character).
+]]
+---@param vehicle_id integer
+function Noir.Classes.ObjectClass:SetAIVehicleTarget(vehicle_id)
+    server.setAITargetVehicle(self.ID, vehicle_id)
+end
+
+--[[
+    Kills this character (if character).
+]]
+function Noir.Classes.ObjectClass:Kill()
+    server.killCharacter(self.ID)
+end
+
+--[[
+    Returns the vehicle this character is sat in (if character).
+]]
+---@return integer|nil
+function Noir.Classes.ObjectClass:GetVehicle()
+    local vehicle_id, success = server.getCharacterVehicle(self.ID)
+
+    if not success then
+        Noir.Libraries.Logging:Error("Object", "server.getCharacterVehicle(...) was unsuccessful.", false)
+        return
+    end
+
+    return vehicle_id
+end
+
+--[[
+    Returns the item this character is holding in the specified slot (if character).
+]]
+---@param slot SWSlotNumberEnum
+---@return integer|nil
+function Noir.Classes.ObjectClass:GetItem(slot)
+    local item, success = server.getCharacterItem(self.ID, slot)
+
+    if not success then
+        Noir.Libraries.Logging:Error("Object", "server.getCharacterItem(...) was unsuccessful.", false)
+        return
+    end
+
+    return item
+end
+
+--[[
+    Returns whether or not this character is downed (dead, incapaciated, or hp <= 0) (if character).
+]]
+---@return boolean
+function Noir.Classes.ObjectClass:IsDowned()
+    -- Get data
+    local data = self:GetData()
+
+    if not data then
+        Noir.Libraries.Logging:Error("Object", ":IsDowned() failed due to data being nil.", false)
+        return false
+    end
+
+    -- Return
+    return data.dead or data.incapacitated or data.hp <= 0
+end
+
+--[[
+    Seat this character in a seat (if character).
+]]
+---@param vehicle_id integer
+---@param name string|nil
+---@param voxelX integer|nil
+---@param voxelY integer|nil
+---@param voxelZ integer|nil
+function Noir.Classes.ObjectClass:Seat(vehicle_id, name, voxelX, voxelY, voxelZ)
+    if name then
+        server.setSeated(self.ID, vehicle_id, name)
+    elseif voxelX and voxelY and voxelZ then
+        server.setSeated(self.ID, vehicle_id, voxelX, voxelY, voxelZ)
+    else
+        Noir.Libraries.Logging:Error("Object", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().", true)
+    end
+end
+
+--[[
+    Set the move target of this character (if creature).
+]]
+---@param position SWMatrix
+function Noir.Classes.ObjectClass:SetMoveTarget(position)
+    server.setCreatureMoveTarget(self.ID, position)
+end
+
+--[[
+    Damage this character by a certain amount (if character).
+]]
+---@param amount number
+function Noir.Classes.ObjectClass:Damage(amount)
+    -- Get health
+    local health = self:GetHealth()
+
+    -- Damage
+    self:SetData(health - amount, false, false)
+end
+
+--[[
+    Heal this character by a certain amount (if character).
+]]
+---@param amount number
+function Noir.Classes.ObjectClass:Heal(amount)
+    -- Get health
+    local health = self:GetHealth()
+
+    -- Prevent soft-lock
+    if health <= 0 and amount > 0 then
+        self:Revive()
+    end
+
+    -- Heal
+    self:SetData(health + amount, false, false)
+end
+
 -------------------------------
 -- // Intellisense
 -------------------------------
 
 --[[
-    Represents an object class that has been serialized.
+    Represents an object class object that has been serialized.
 ]]
 ---@class NoirSerializedObject
 ---@field ID integer The object ID
----@field loaded boolean Whether or not the object is loaded
+---@field Loaded boolean Whether or not the object is loaded
 
 ----------------------------------------------
 -- // [File] ..\src\Noir\Libraries.lua
@@ -2795,10 +2832,10 @@ end
 ]]
 ---@class NoirObjectService: NoirService
 ---@field Objects table<integer, NoirObject> A table containing all objects
----@field OnObjectRegister NoirEvent Fired when an object is registered
----@field OnObjectUnregister NoirEvent Fired when an object is unregistered
----@field OnObjectLoad NoirEvent Fired when an object is loaded (first arg: NoirObject)
----@field OnObjectUnload NoirEvent Fired when an object is unloaded (first arg: NoirObject)
+---@field OnRegister NoirEvent Fired when an object is registered (first arg: NoirObject)
+---@field OnUnregister NoirEvent Fired when an object is unregistered (first arg: NoirObject)
+---@field OnLoad NoirEvent Fired when an object is loaded (first arg: NoirObject)
+---@field OnUnload NoirEvent Fired when an object is unloaded (first arg: NoirObject)
 ---
 ---@field OnLoadConnection NoirConnection A connection to the onObjectLoad game callback
 ---@field OnUnloadConnection NoirConnection A connection to the onObjectUnload game callback
@@ -2807,15 +2844,15 @@ Noir.Services.ObjectService = Noir.Services:CreateService("ObjectService")
 function Noir.Services.ObjectService:ServiceInit()
     self.Objects = {}
 
-    self.OnObjectRegister = Noir.Libraries.Events:Create()
-    self.OnObjectUnregister = Noir.Libraries.Events:Create()
-    self.OnObjectLoad = Noir.Libraries.Events:Create()
-    self.OnObjectUnload = Noir.Libraries.Events:Create()
+    self.OnRegister = Noir.Libraries.Events:Create()
+    self.OnUnregister = Noir.Libraries.Events:Create()
+    self.OnLoad = Noir.Libraries.Events:Create()
+    self.OnUnload = Noir.Libraries.Events:Create()
 end
 
 function Noir.Services.ObjectService:ServiceStart()
     -- Load saved objects
-    for _, object in pairs(Noir.Libraries.Table:Copy(self:_GetSavedObjects())) do -- important to copy, because :RegisterObject() modifies the saved objects table
+    for _, object in pairs(self:_GetSavedObjects()) do -- important to copy, because :RegisterObject() modifies the saved objects table
         -- Register object
         local registeredObject = self:RegisterObject(object.ID)
 
@@ -2824,7 +2861,7 @@ function Noir.Services.ObjectService:ServiceStart()
         end
 
         -- Update attributes
-        registeredObject.Loaded = object.loaded
+        registeredObject.Loaded = object.Loaded
         self:_SaveObjectSavedata(registeredObject)
 
         -- Log
@@ -2847,7 +2884,7 @@ function Noir.Services.ObjectService:ServiceStart()
         -- Fire event, set loaded
         object.Loaded = true
         object.OnLoad:Fire()
-        self.OnObjectLoad:Fire(object)
+        self.OnLoad:Fire(object)
 
         -- Save
         self:_SaveObjectSavedata(object)
@@ -2866,7 +2903,7 @@ function Noir.Services.ObjectService:ServiceStart()
         -- Fire events, set loaded
         object.Loaded = false
         object.OnUnload:Fire()
-        self.OnObjectUnload:Fire(object)
+        self.OnUnload:Fire(object)
 
         -- Save
         self:_SaveObjectSavedata(object)
@@ -2888,7 +2925,7 @@ end
 ]]
 ---@return table<integer, NoirSerializedObject>
 function Noir.Services.ObjectService:_GetSavedObjects()
-    return self:Load("objects", {})
+    return Noir.Libraries.Table:Copy(self:Load("objects", {}))
 end
 
 --[[
@@ -2896,7 +2933,7 @@ end
 ]]
 ---@return table<integer, NoirObject>
 function Noir.Services.ObjectService:GetObjects()
-    return self.Objects
+    return Noir.Libraries.Table:Copy(self.Objects)
 end
 
 --[[
@@ -2932,7 +2969,7 @@ function Noir.Services.ObjectService:RegisterObject(object_id)
     -- Create object
     local object = Noir.Classes.ObjectClass:New(object_id)
     self.Objects[object_id] = object
-    self.OnObjectRegister:Fire(object)
+    self.OnRegister:Fire(object)
 
     -- Save to g_savedata
     self:_SaveObjectSavedata(object)
@@ -2969,7 +3006,7 @@ function Noir.Services.ObjectService:RemoveObject(object_id)
     end
 
     -- Fire event
-    self.OnObjectUnregister:Fire(object)
+    self.OnUnregister:Fire(object)
 
     -- Remove object
     self.Objects[object_id] = nil
@@ -3304,7 +3341,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.3.0"
+Noir.Version = "1.3.1"
 
 --[[
     This event is called when the framework is started.<br>
