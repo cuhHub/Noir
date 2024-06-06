@@ -1550,8 +1550,8 @@ Noir.Libraries.Logging = Noir.Libraries:Create("NoirLogging")
 
 --[[
     The mode to use when logging.<br>
-    "DebugLog": Sends logs to DebugView
-    "Chat": Sends logs to chat
+    - "DebugLog": Sends logs to DebugView<br>
+    - "Chat": Sends logs to chat
 ]]
 Noir.Libraries.Logging.LoggingMode = "DebugLog" ---@type NoirLoggingMode
 
@@ -3341,7 +3341,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.3.1"
+Noir.Version = "1.3.2"
 
 --[[
     This event is called when the framework is started.<br>
