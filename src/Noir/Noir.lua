@@ -35,7 +35,7 @@
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.3.8"
+Noir.Version = "1.3.0"
 
 --[[
     This event is called when the framework is started.<br>
