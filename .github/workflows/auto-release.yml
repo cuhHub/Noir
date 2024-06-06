@@ -27,9 +27,9 @@ jobs:
         id: extract_details
         run: |
           message="${{ steps.get_commit_message.outputs.message }}"
-          if [[ "$message" =~ RELEASE[[:space:]]-[[:space:]]([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+          if [[ "$message" =~ Release[[:space:]]-[[:space:]]([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             version="${BASH_REMATCH[1]}"
-            description="${message/RELEASE - $version/}"
+            description="${message/Release - $version/}"
             echo "::set-output name=version::$version"
             echo "::set-output name=description::$description"
           fi
@@ -42,7 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.extract_details.outputs.version }}
-          release_name: ${{ steps.extract_details.outputs.version }}
+          release_name: Noir ${{ steps.extract_details.outputs.version }}
           body: |
             # 📚 Details
             **Version:** `${{ steps.extract_details.outputs.version }}`
