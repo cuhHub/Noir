@@ -186,12 +186,6 @@ end
 ---@param object_id integer
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:RegisterObject(object_id)
-    -- Check if already exists
-    if self:GetObject(object_id) then
-        Noir.Libraries.Logging:Error("ObjectService", "Attempted to register an object that already exists.", true)
-        return
-    end
-
     -- Create object
     local object = Noir.Classes.ObjectClass:New(object_id)
     self.Objects[object_id] = object
