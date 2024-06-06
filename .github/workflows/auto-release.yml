@@ -23,41 +23,34 @@ jobs:
         id: get_commit_message
         run: echo "::set-output name=message::$(git log -1 --pretty=%B)"
 
-      - name: Extract version and description from commit message
-        id: extract_details
+      - name: Extract version from commit message
+        id: extract_version
         run: |
-          message="${{ steps.get_commit_message.outputs.message }}"
-          if [[ "$message" =~ Release[[:space:]]-[[:space:]]([0-9]+\.[0-9]+\.[0-9]+) ]]; then
-            version="${BASH_REMATCH[1]}"
-            description="${message/Release - $version/}"
-            echo "::set-output name=version::$version"
-            echo "::set-output name=description::$description"
+          if [[ "${{ steps.get_commit_message.outputs.message }}" =~ Release[[:space:]]-[[:space:]]([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            echo "::set-output name=version::${BASH_REMATCH[1]}"
           fi
 
       - name: Create GitHub Release
         id: create_release
-        if: steps.extract_details.outputs.version != ''
+        if: steps.extract_version.outputs.version != ''
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.extract_details.outputs.version }}
-          release_name: Noir ${{ steps.extract_details.outputs.version }}
+          tag_name: ${{ steps.extract_version.outputs.version }}
+          release_name: Noir ${{ steps.extract_version.outputs.version }}
           body: |
             # 📚 Details
-            **Version:** `${{ steps.extract_details.outputs.version }}`
+            **Version:** `${{ steps.extract_version.outputs.version }}`
             
             # ❔ Installation
             Check out the [documentation](https://cuhhub.gitbook.io/noir) for information on how to install and use Noir in your addon.
-
-            # 📝 Description
-            ${{ steps.extract_details.outputs.description }}
           draft: false
           prerelease: false
 
       - name: Upload release asset
         id: upload_release_asset
-        if: steps.extract_details.outputs.version != ''
+        if: steps.extract_version.outputs.version != ''
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
