@@ -199,7 +199,13 @@ function Noir.Services.PlayerService:ServiceStart()
             end
 
             -- Give data
-            self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
+            local savedPlayer = self:_GetSavedPlayer(player.id)
+            local createdPlayer = self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
+
+            if createdPlayer and savedPlayer then
+                -- Load attributes (permissions, etc) from g_savedata
+                createdPlayer.Permissions = savedPlayer.Permissions
+            end
 
             ::continue::
         end
@@ -210,7 +216,6 @@ end
     Returns all players saved in g_savedata.<br>
     Used internally.
 ]]
----@deprecated
 ---@return table<integer, NoirSerializedPlayer>
 function Noir.Services.PlayerService:_GetSavedPlayers()
     return self:Load("players", {})
@@ -239,13 +244,13 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
         peer_id,
         tostring(steam_id),
         admin,
-        auth
+        auth,
+        {}
     )
 
     -- Save player
     self.Players[peer_id] = player
-    -- self:_GetSavedPlayers()[peer_id] = player:Serialize()
-    -- self:Save("players", self:_GetSavedPlayers())
+    self:_SavePlayer(player)
 
     -- Return
     return player
@@ -266,9 +271,39 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
 
     -- Remove player
     self.Players[player.ID] = nil
-    -- self:_GetSavedPlayers()[player.ID] = nil
+    self:_RemovePlayer(player)
 
     return true
+end
+
+--[[
+    Save a player to g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_SavePlayer(player)
+    self:_GetSavedPlayers()[player.ID] = player:_Serialize()
+    self:Save("players", self:_GetSavedPlayers())
+end
+
+--[[
+    Removes a player from g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_RemovePlayer(player)
+    self:_GetSavedPlayers()[player.ID] = nil
+    self:Save("players", self:_GetSavedPlayers())
+end
+
+--[[
+    Get a player from g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param ID integer
+---@return NoirSerializedPlayer|nil
+function Noir.Services.PlayerService:_GetSavedPlayer(ID)
+    return self:_GetSavedPlayers()[ID]
 end
 
 --[[
