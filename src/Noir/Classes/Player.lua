@@ -32,7 +32,11 @@
 -------------------------------
 
 --[[
-    A class that represents a player for the built-in PlayerService.
+    Represents a player.
+
+    player:GetCharacter() -- NoirCharacter
+    player:SetPermission("Awesome")
+    player:HasPermission("Awesome") -- true
 ]]
 ---@class NoirPlayer: NoirClass
 ---@field New fun(self: NoirPlayer, name: string, ID: integer, steam: string, admin: boolean, auth: boolean, permissions: table<string, boolean>): NoirPlayer

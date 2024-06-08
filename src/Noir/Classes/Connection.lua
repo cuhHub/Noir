@@ -32,7 +32,7 @@
 -------------------------------
 
 --[[
-    A class for event connections.
+    Represents a connection to an event.
 ]]
 ---@class NoirConnection: NoirClass
 ---@field New fun(self: NoirConnection, callback: function): NoirConnection

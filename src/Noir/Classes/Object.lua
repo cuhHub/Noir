@@ -32,7 +32,10 @@
 -------------------------------
 
 --[[
-    Represents a object for the ObjectService.
+    Represents a Stormworks object.
+
+    object:IsSimulating() -- true
+    object:Teleport(matrix.translation(0, 0, 0))
 ]]
 ---@class NoirObject: NoirClass
 ---@field New fun(self: NoirObject, ID: integer): NoirObject

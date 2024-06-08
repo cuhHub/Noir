@@ -32,7 +32,7 @@
 -------------------------------
 
 --[[
-    A class for events.
+    Represents an event.
 ]]
 ---@class NoirEvent: NoirClass
 ---@field New fun(self: NoirEvent): NoirEvent

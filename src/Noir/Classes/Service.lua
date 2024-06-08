@@ -32,7 +32,7 @@
 -------------------------------
 
 --[[
-    A class that represents a service.
+    Represents a Noir service.
 ]]
 ---@class NoirService: NoirClass
 ---@field New fun(self: NoirService, name: string): NoirService

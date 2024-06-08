@@ -32,7 +32,14 @@
 -------------------------------
 
 --[[
-    Represents a task for the TaskService.
+    Represents a task.
+
+    task:SetRepeating(true)
+    task:SetDuration(1)
+
+    task.OnCompletion:Connect(function()
+        -- Do something
+    end)
 ]]
 ---@class NoirTask: NoirClass
 ---@field New fun(self: NoirTask, ID: integer, duration: number, isRepeating: boolean, arguments: table<integer, any>): NoirTask
