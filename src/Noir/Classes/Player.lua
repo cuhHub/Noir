@@ -67,45 +67,12 @@ function Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions
 end
 
 --[[
-    Serializes this player for g_savedata.
-]]
----@return NoirSerializedPlayer
-function Noir.Classes.PlayerClass:_Serialize()
-    return {
-        Name = self.Name,
-        ID = self.ID,
-        Steam = self.Steam,
-        Admin = self.Admin,
-        Auth = self.Auth,
-        Permissions = self.Permissions
-    }
-end
-
---[[
-    Deserializes a player from g_savedata into a player class object.
-]]
----@param serializedPlayer NoirSerializedPlayer
----@return NoirPlayer
-function Noir.Classes.PlayerClass._Deserialize(serializedPlayer)
-    local player = Noir.Classes.PlayerClass:New(
-        serializedPlayer.Name,
-        serializedPlayer.ID,
-        serializedPlayer.Steam,
-        serializedPlayer.Admin,
-        serializedPlayer.Auth,
-        serializedPlayer.Permissions
-    )
-
-    return player
-end
-
---[[
     Give this player a permission.
 ]]
 ---@param permission string
 function Noir.Classes.PlayerClass:SetPermission(permission)
     self.Permissions[permission] = true
-    Noir.Services.PlayerService:_SavePlayer(self)
+    Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
 end
 
 --[[
@@ -123,7 +90,7 @@ end
 ---@param permission string
 function Noir.Classes.PlayerClass:RemovePermission(permission)
     self.Permissions[permission] = nil
-    Noir.Services.PlayerService:_SavePlayer(self)
+    Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
 end
 
 --[[
@@ -229,18 +196,3 @@ function Noir.Classes.PlayerClass:GetLook()
 
     return x, y, z
 end
-
--------------------------------
--- // Intellisense
--------------------------------
-
---[[
-    Represents a player class that has been serialized.
-]]
----@class NoirSerializedPlayer
----@field Name string The name of the player
----@field ID integer The peer ID of the player
----@field Steam string The Steam ID of the player
----@field Admin boolean Whether or not the player is an admin
----@field Auth boolean Whether or not the player is authed
----@field Permissions table<string, boolean> The permissions of the player

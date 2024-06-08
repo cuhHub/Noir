@@ -157,30 +157,6 @@ function Noir.Services.PlayerService:ServiceStart()
         end
     end)
 
-    -- REMOVED: No need for this. I remembered about the onDestroy callback, and that callback makes the code below useless.
-    -- Load players from save data
-    -- local savedPlayers = Noir.AddonReason ~= "AddonReload" and {} or self:_GetSavedPlayers()
-    --  To explain the above:
-    --      If a server was to stop with players in it, these players would be re-added when the server starts back up due to save data.
-    --      This is bad, because if the players were to join back, their data wouldn't be added because it already exists.
-    --      This is why we make this table empty.
-
-    -- for _, player in pairs(savedPlayers) do
-    --     -- Log
-    --     Noir.Libraries.Logging:Info("PlayerService", "Loading player from save data: %s (%d, %s)", player.Name, player.ID, player.Steam)
-
-    --     -- Check if already loaded
-    --     if self:GetPlayer(player.ID) then
-    --         Noir.Libraries.Logging:Info("PlayerService", "(savedata load) %s already has data. Ignoring.", player.Name)
-    --         goto continue
-    --     end
-
-    --     -- Give data
-    --     self:_GivePlayerData(player.Steam, player.Name, player.ID, player.Admin, player.Auth)
-
-    --     ::continue::
-    -- end
-
     -- Load players in game
     if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
         for _, player in pairs(server.getPlayers()) do
@@ -199,26 +175,25 @@ function Noir.Services.PlayerService:ServiceStart()
             end
 
             -- Give data
-            local savedPlayer = self:_GetSavedPlayer(player.id)
             local createdPlayer = self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
 
-            if createdPlayer and savedPlayer then
-                -- Load attributes (permissions, etc) from g_savedata
-                createdPlayer.Permissions = savedPlayer.Permissions
+            if not createdPlayer then
+                Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
+                goto continue
+            end
+
+            -- Load saved properties
+            local savedProperties = self:_GetSavedPropertiesForPlayer(createdPlayer)
+
+            if savedProperties then
+                for property, value in pairs(savedProperties) do
+                    createdPlayer[property] = value
+                end
             end
 
             ::continue::
         end
     end
-end
-
---[[
-    Returns all players saved in g_savedata.<br>
-    Used internally.
-]]
----@return table<integer, NoirSerializedPlayer>
-function Noir.Services.PlayerService:_GetSavedPlayers()
-    return self:Load("players", {})
 end
 
 --[[
@@ -250,10 +225,33 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
 
     -- Save player
     self.Players[peer_id] = player
-    self:_SavePlayer(player)
+
+    -- Add properties savedata table
+    local properties = self:_GetSavedProperties()
+    properties[peer_id] = {}
+
+    self:_OverwriteSavedProperties(properties)
 
     -- Return
     return player
+end
+
+--[[
+    Overwrite saved properties.<br>
+    Used internally. Do not use in your code.
+]]
+---@param properties NoirSavedPlayerProperties
+function Noir.Services.PlayerService:_OverwriteSavedProperties(properties)
+    self:Save("PlayerProperties", properties)
+end
+
+--[[
+    Returns all saved player properties saved in g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@return NoirSavedPlayerProperties
+function Noir.Services.PlayerService:_GetSavedProperties()
+    return self:Load("PlayerProperties", {})
 end
 
 --[[
@@ -271,39 +269,49 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
 
     -- Remove player
     self.Players[player.ID] = nil
-    self:_RemovePlayer(player)
+
+    -- Remove saved properties
+    self:_RemoveSavedProperties(player)
 
     return true
 end
 
 --[[
-    Save a player to g_savedata.<br>
+    Save a player's property to g_savedata.<br>
     Used internally. Do not use in your code.
 ]]
 ---@param player NoirPlayer
-function Noir.Services.PlayerService:_SavePlayer(player)
-    self:_GetSavedPlayers()[player.ID] = player:_Serialize()
-    self:Save("players", self:_GetSavedPlayers())
+---@param property string
+function Noir.Services.PlayerService:_SaveProperty(player, property)
+    local properties = self:_GetSavedProperties()
+
+    if not properties[player.ID] then
+        Noir.Libraries.Logging:Error("PlayerService", "%s is missing a properties savedata table, causing PlayerService:_SaveProperty() to fail.", false, player.Name)
+        return
+    end
+
+    properties[player.ID][property] = player[property]
+    self:_OverwriteSavedProperties(properties)
 end
 
 --[[
-    Removes a player from g_savedata.<br>
+    Get a player's saved properties.<br>
     Used internally. Do not use in your code.
 ]]
 ---@param player NoirPlayer
-function Noir.Services.PlayerService:_RemovePlayer(player)
-    self:_GetSavedPlayers()[player.ID] = nil
-    self:Save("players", self:_GetSavedPlayers())
+function Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
+    return self:_GetSavedProperties()[player.ID]
 end
 
 --[[
-    Get a player from g_savedata.<br>
+    Removes a player's saved properties from g_savedata.<br>
     Used internally. Do not use in your code.
 ]]
----@param ID integer
----@return NoirSerializedPlayer|nil
-function Noir.Services.PlayerService:_GetSavedPlayer(ID)
-    return self:_GetSavedPlayers()[ID]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_RemoveSavedProperties(player)
+    local properties = self:_GetSavedProperties()
+    properties[player.ID] = nil
+    self:_OverwriteSavedProperties(properties)
 end
 
 --[[
@@ -375,3 +383,9 @@ end
 function Noir.Services.PlayerService:IsSamePlayer(playerA, playerB)
     return playerA.ID == playerB.ID
 end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+---@alias NoirSavedPlayerProperties table<integer, table<string, any>>
