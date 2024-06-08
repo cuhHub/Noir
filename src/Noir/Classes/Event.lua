@@ -54,7 +54,6 @@ function Noir.Classes.EventClass:Init()
     self.ConnectionsOrder = {}
     self.ConnectionsToRemove = {}  -- Only used when IsFiring is true, should remain empty otherwise.
     self.ConnectionsToAdd = {}  -- Only used when IsFiring is true, should remain empty otherwise.
-    self.ConnectionsToAddMap = {}  -- Only used when IsFiring is true, should remain empty otherwise.
     self.IsFiring = false
     self.HasFiredOnce = false
 end
@@ -90,8 +89,8 @@ function Noir.Classes.EventClass:Fire(...)
 end
 
 --[[
-    Connects a function to the event. A connection is automatically made for the function.  
-    If connecting to an event that is currently being handled, it will be added afterwards and run the next time the event is fired.  
+    Connects a function to the event. A connection is automatically made for the function.<br>
+    If connecting to an event that is currently being handled, it will be added afterwards and run the next time the event is fired.
 
     local event = Noir.Libraries.Events:Create()
 
@@ -126,7 +125,7 @@ function Noir.Classes.EventClass:Connect(callback)
 end
 
 --[[
-    **Should only be used internally.**  
+    **Should only be used internally.**<br>
     Finalizes the connection to the event, allowing it to be run.  
 ]]
 ---@param connection NoirConnection
@@ -138,7 +137,7 @@ function Noir.Classes.EventClass:_ConnectFinalize(connection)
 end
 
 --[[
-    Connects a callback to the event that will automatically be disconnected upon the event being fired.  
+    Connects a callback to the event that will automatically be disconnected upon the event being fired.<br>
     If connecting to an event that is currently being handled, it will be added afterwards and run the next time the event is fired.  
 ]]
 ---@param callback function
@@ -155,7 +154,7 @@ function Noir.Classes.EventClass:Once(callback)
 end
 
 --[[
-    Disconnects the provided connection from the event.  
+    Disconnects the provided connection from the event.<br>
     The disconnection may be delayed if done while handling the event.  
 ]]
 ---@param connection NoirConnection
@@ -169,7 +168,7 @@ function Noir.Classes.EventClass:Disconnect(connection)
 end
 
 --[[
-    **Should only be used internally.**  
+    **Should only be used internally.**<br>
     Disconnects the provided connection from the event immediately.  
 ]]
 ---@param connection NoirConnection
