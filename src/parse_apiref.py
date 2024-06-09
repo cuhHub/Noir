@@ -362,7 +362,7 @@ class Parser():
         return values
         
 values = Parser.parseAll("Noir")
-valuesForFiles: dict[str, str] = {}
+valuesForFiles: dict[str, list[str]] = {}
 
 for value in values:
     # get value stuffs
