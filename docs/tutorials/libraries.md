@@ -26,9 +26,19 @@ Libraries are simply tables containing helper methods. These methods can then be
 
 ## Libraries VS Services
 
-The main distinction between libraries and services is that libraries do not need to listen for game callbacks. They simply return values and **do not manage anything**.
+The main distinction between libraries and services is that libraries do not need to listen for **game callbacks nor manage things**. They simply return values.
 
-Services on the other hand can return values, but they also **manage things** and listen for callbacks, etc.
+#### Services
+
+Services on the other hand can, sure, return values via methods, but they also manage things relating to their purpose.
+
+For example, the built-in Player Service listens for players joining and wraps the player in a class, and saves that class into the service. When the player leaves, the class is then removed from the service. The Player Service will also save information relating to the player to `g_savedata`. The service also comes with methods that allow you to retrieve saved players and such. The service is essentially **managing** players for your addon.
+
+#### Libraries
+
+With libraries, they only serve as helper functions that do similar things. As an example, think of Lua's built-in `math` library. They all take in values and return something that uses those values. (Libraries don't have to take in values!)
+
+For example, the built-in Number library **purely** contains helper functions that deals with numbers.
 
 ## Built-In Libraries
 
@@ -46,8 +56,8 @@ sayHello:Connect(function(name)
     print("Hello, "..name)
 end)
 
-sayHello:Once(function(name) -- once this event is fired when this callback is listening, the callback gets disconnected
-    print("Hello and bye forever, "..name) -- this means this will only run once
+sayHello:Once(function(name) -- Only ever gets triggered once
+    print("Hello and bye forever, "..name)
 end)
 
 for _ = 1, 5 do
@@ -66,7 +76,7 @@ end
 
 -- You can also disconnect a connection (function binded to an event) from an event
 local connection = sayHello:Connect(function()
-    -- bla bla
+    -- Code
 end)
 
 connection:Disconnect()
@@ -138,7 +148,7 @@ Problem solved!
 
 ## Retrieving A Library
 
-Libraries you create aren't stored in Noir. You have to store them yourselves by either placing them under `Noir.Libraries`, or just by placing it into `_ENV` like so:
+Libraries you create aren't stored in Noir. You have to store them yourselves by either placing them under `Noir.Libraries`, or just by placing them into `_ENV` like so:
 
 ```lua
 MatrixLibrary = ... -- placed into _ENV

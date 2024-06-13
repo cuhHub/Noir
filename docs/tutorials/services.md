@@ -22,7 +22,7 @@ layout:
 
 ## What Are Services?
 
-Services, when simplified, are simply tables containing methods you can use throughout your code.&#x20;
+Services, when simplified, are simply tables containing methods you can use throughout your code.
 
 Example:
 
@@ -48,7 +48,7 @@ end
 ```
 {% endcode %}
 
-You probably noticed in the example that there are two strange methods - `ServiceInit`, and `ServiceStart`. These methods are strictly for service initialization and are actually quite useful.&#x20;
+You probably noticed in the example that there are two strange methods - `ServiceInit`, and `ServiceStart`. These methods are strictly for service initialization and are actually quite useful.
 
 Here's a quick rundown:
 
@@ -205,7 +205,7 @@ The final result should look like:
 ```lua
 ---@class MyService: NoirService
 ---@field something boolean A service attribute
-local MyService = Noir.Services:GetService("MyService")
+local MyService = Noir.Services:CreateService("MyService")
 
 function MyService:ServiceInit()
     self.something = true
