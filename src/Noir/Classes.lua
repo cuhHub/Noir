@@ -32,6 +32,7 @@
 -------------------------------
 
 --[[
-    A table containing classes used through Noir.
+    A table containing classes used throughout Noir.<br>
+    This is a good place to store your classes.
 ]]
 Noir.Classes = {}

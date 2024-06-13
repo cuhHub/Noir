@@ -2,11 +2,16 @@
     "order" : [
         "Definition.lua",
         "Class.lua",
-        "Classes",
+
+        "Classes.lua",
+        "Built-Ins/Classes",
+
         "Libraries.lua",
         "Built-Ins/Libraries",
+
         "Services.lua",
         "Built-Ins/Services",
+
         "Callbacks.lua",
         "Bootstrapper.lua",
         "Noir.lua"

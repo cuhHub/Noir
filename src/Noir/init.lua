@@ -36,18 +36,19 @@
 -- // Main
 -------------------------------
 require("Noir.Definition")
-
-require("Noir.Libraries")
-
 require("Noir.Class")
 
-require("Noir.Classes.init")
-require("Noir.Classes.Connection")
-require("Noir.Classes.Event")
-require("Noir.Classes.Service")
-require("Noir.Classes.Player")
-require("Noir.Classes.Task")
-require("Noir.Classes.Object")
+require("Noir.Classes")
+
+require("Noir.Built-Ins.Connection")
+require("Noir.Built-Ins.Event")
+require("Noir.Built-Ins.Service")
+require("Noir.Built-Ins.Player")
+require("Noir.Built-Ins.Task")
+require("Noir.Built-Ins.Object")
+require("Noir.Built-Ins.Classes.Vehicle")
+
+require("Noir.Libraries")
 
 require("Noir.Built-Ins.Libraries.Events")
 require("Noir.Built-Ins.Libraries.Logging")
@@ -60,9 +61,8 @@ require("Noir.Services")
 require("Noir.Built-Ins.Services.TaskService")
 require("Noir.Built-Ins.Services.PlayerService")
 require("Noir.Built-Ins.Services.ObjectService")
+require("Noir.Built-Ins.Services.VehicleService")
 
 require("Noir.Callbacks")
-
 require("Noir.Bootstrapper")
-
 require("Noir.Noir")
