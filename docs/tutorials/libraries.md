@@ -22,7 +22,13 @@ layout:
 
 ## What Are Libraries?
 
-Libraries are simply tables containing helper functions that perform similar things. These functions can then be used throughout your addon.
+Libraries are simply tables containing helper functions that perform similar actions. These functions can then be used throughout your addon. Libraries are a really good way to organize your code.
+
+{% hint style="warning" %}
+Libraries should not interact with services nor the game itself! Libraries can interact with each other though.
+
+If your library needs to interact with the game or with services, you may want to consider making your library a service instead. See [this page](services.md).
+{% endhint %}
 
 ## Built-In Libraries
 

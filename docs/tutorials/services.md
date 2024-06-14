@@ -24,7 +24,7 @@ layout:
 
 Services, when simplified, are simply tables containing methods you can use throughout your code.
 
-Unlike libraries, services tend to interact with the game and store data.
+Unlike libraries, services tend to interact with the game and store data within itself or through `g_savedata`. Services can utilize one another as well as libraries.
 
 Example:
 
@@ -37,7 +37,7 @@ function MyService:ServiceInit()
     self.AVariable = 5
 end
 
--- Called when the service is started and when we can safely get other services. This is to be used for setting up things that may require event connections, etc
+-- Called when the service is started. This is to be used for setting up things that may require event connections, etc
 function MyService:ServiceStart()
     Noir.Callbacks:Connect("onPlayerJoin", function()
         server.announce("Server", "A player joined!")
