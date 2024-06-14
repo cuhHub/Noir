@@ -22,7 +22,9 @@ layout:
 
 ## What Are Services?
 
-Services, when simplified, are simply tables containing methods you can use throughout your code.&#x20;
+Services, when simplified, are simply tables containing methods you can use throughout your code.
+
+Unlike libraries, services tend to interact with the game and store data within itself or through `g_savedata`. Services can utilize one another as well as libraries.
 
 Example:
 
@@ -35,7 +37,7 @@ function MyService:ServiceInit()
     self.AVariable = 5
 end
 
--- Called when the service is started and when we can safely get other services. This is to be used for setting up things that may require event connections, etc
+-- Called when the service is started. This is to be used for setting up things that may require event connections, etc
 function MyService:ServiceStart()
     Noir.Callbacks:Connect("onPlayerJoin", function()
         server.announce("Server", "A player joined!")
@@ -48,7 +50,7 @@ end
 ```
 {% endcode %}
 
-You probably noticed in the example that there are two strange methods - `ServiceInit`, and `ServiceStart`. These methods are strictly for service initialization and are actually quite useful.&#x20;
+You probably noticed in the example that there are two strange methods - `ServiceInit`, and `ServiceStart`. These methods are strictly for service initialization and are actually quite useful.
 
 Here's a quick rundown:
 
@@ -205,7 +207,7 @@ The final result should look like:
 ```lua
 ---@class MyService: NoirService
 ---@field something boolean A service attribute
-local MyService = Noir.Services:GetService("MyService")
+local MyService = Noir.Services:CreateService("MyService")
 
 function MyService:ServiceInit()
     self.something = true

@@ -22,13 +22,13 @@ layout:
 
 ## What Are Libraries?
 
-Libraries are simply tables containing helper methods. These methods can then be used throughout your addon.
+Libraries are simply tables containing helper functions that perform similar actions. These functions can then be used throughout your addon. Libraries are a really good way to organize your code.
 
-## Libraries VS Services
+{% hint style="warning" %}
+Libraries should not interact with services nor the game itself! Libraries can interact with each other though.
 
-The main distinction between libraries and services is that libraries do not need to listen for game callbacks. They simply return values and **do not manage anything**.
-
-Services on the other hand can return values, but they also **manage things** and listen for callbacks, etc.
+If your library needs to interact with the game or with services, you may want to consider making your library a service instead. See [this page](services.md).
+{% endhint %}
 
 ## Built-In Libraries
 
@@ -46,8 +46,8 @@ sayHello:Connect(function(name)
     print("Hello, "..name)
 end)
 
-sayHello:Once(function(name) -- once this event is fired when this callback is listening, the callback gets disconnected
-    print("Hello and bye forever, "..name) -- this means this will only run once
+sayHello:Once(function(name) -- Only ever gets triggered once
+    print("Hello and bye forever, "..name)
 end)
 
 for _ = 1, 5 do
@@ -66,7 +66,7 @@ end
 
 -- You can also disconnect a connection (function binded to an event) from an event
 local connection = sayHello:Connect(function()
-    -- bla bla
+    -- Code
 end)
 
 connection:Disconnect()
@@ -138,7 +138,7 @@ Problem solved!
 
 ## Retrieving A Library
 
-Libraries you create aren't stored in Noir. You have to store them yourselves by either placing them under `Noir.Libraries`, or just by placing it into `_ENV` like so:
+Libraries you create aren't stored in Noir. You have to store them yourselves by either placing them under `Noir.Libraries`, or just by placing them into `_ENV` like so:
 
 ```lua
 MatrixLibrary = ... -- placed into _ENV
