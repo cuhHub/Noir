@@ -24,6 +24,8 @@ layout:
 
 Services, when simplified, are simply tables containing methods you can use throughout your code.
 
+Unlike libraries, services tend to interact with the game and store data.
+
 Example:
 
 {% code title="MyService.lua" lineNumbers="true" %}

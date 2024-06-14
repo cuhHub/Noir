@@ -5,6 +5,7 @@
   * [🎓 Starting Noir](tutorials/starting-noir.md)
   * [📖 Libraries](tutorials/libraries.md)
   * [🖥️ Services](tutorials/services.md)
+  * [❔ Libraries VS Services](tutorials/libraries-vs-services.md)
   * [💬 Callbacks](tutorials/callbacks.md)
   * [💥 Classes](tutorials/callbacks-1.md)
 * [📚 Examples](examples.md)
