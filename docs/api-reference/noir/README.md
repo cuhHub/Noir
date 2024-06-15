@@ -38,4 +38,4 @@ This represents whether or not the addon was:
 Noir:Start()
 ```
 
-Starts the framework. This will initalize all services, then upon completion, all services will be started. Use the `Noir.Started` event to safely run your code.
+Starts the framework. This will initialize all services, then upon completion, all services will be started. Use the `Noir.Started` event to safely run your code.

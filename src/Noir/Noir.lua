@@ -67,7 +67,7 @@ Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
 
 --[[
     Starts the framework.<br>
-    This will initalize all services, then upon completion, all services will be started.<br>
+    This will initialize all services, then upon completion, all services will be started.<br>
     Use the `Noir.Started` event to safely run your code.
 
     Noir.Started:Once(function()
