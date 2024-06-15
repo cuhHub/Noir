@@ -60,6 +60,7 @@ require("Noir.Services")
 require("Noir.Built-Ins.Services.TaskService")
 require("Noir.Built-Ins.Services.PlayerService")
 require("Noir.Built-Ins.Services.ObjectService")
+require("Noir.Built-Ins.Services.GameSettingsService")
 
 require("Noir.Callbacks")
 require("Noir.Bootstrapper")

@@ -2,6 +2,7 @@
     "order" : [
         "TaskService.lua",
         "PlayerService.lua",
-        "ObjectService.lua"
+        "ObjectService.lua",
+        "GameSettingsService.lua"
     ]
 }
