@@ -837,6 +837,14 @@ function Noir.Classes.PlayerClass:RemovePermission(permission)
 end
 
 --[[
+    Returns a table containing the player's permissions.
+]]
+---@return table<integer, string>
+function Noir.Classes.PlayerClass:GetPermissions()
+    return Noir.Libraries.Table:Keys(self.Permissions)
+end
+
+--[[
     Sets whether or not this player is authed.
 ]]
 ---@param auth boolean
