@@ -53,7 +53,7 @@ Noir.Libraries.Logging.OnLog = Noir.Libraries.Events:Create()
     Represents the logging layout.<br>
     Requires two '%s' in the layout. First %s is the log type, the second %s is the log title. The message is then added after the layout.
 ]]
-Noir.Libraries.Logging.Layout = "[%s] [%s]: "
+Noir.Libraries.Logging.Layout = "[Noir] [%s] [%s]: "
 
 --[[
     Set the logging mode.
@@ -102,7 +102,7 @@ end
 ---@param ... any
 function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
     -- Validate args
-    local validatedLogType = tostring(logType):upper()
+    local validatedLogType = tostring(logType)
     local validatedTitle = tostring(title)
     local validatedMessage = type(message) == "table" and Noir.Libraries.Table:ToString(message) or (... and tostring(message):format(...) or tostring(message))
 
