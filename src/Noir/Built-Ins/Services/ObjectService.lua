@@ -80,10 +80,6 @@ function Noir.Services.ObjectService:ServiceStart()
             goto continue
         end
 
-        -- Update attributes
-        registeredObject.Loaded = object.Loaded
-        self:_SaveObjectSavedata(registeredObject)
-
         -- Log
         Noir.Libraries.Logging:Info("ObjectService", "Loading object: %s", object.ID)
 
@@ -149,14 +145,6 @@ function Noir.Services.ObjectService:_GetSavedObjects()
 end
 
 --[[
-    Get all objects.
-]]
----@return table<integer, NoirObject>
-function Noir.Services.ObjectService:GetObjects()
-    return Noir.Libraries.Table:Copy(self.Objects)
-end
-
---[[
     Save an object to g_savedata.<br>
     Used internally. Do not use in your code.
 ]]
@@ -181,13 +169,31 @@ function Noir.Services.ObjectService:_RemoveObjectSavedata(object_id)
 end
 
 --[[
+    Get all objects.
+]]
+---@return table<integer, NoirObject>
+function Noir.Services.ObjectService:GetObjects()
+    return Noir.Libraries.Table:Copy(self.Objects)
+end
+
+--[[
     Registers an object by ID.
 ]]
 ---@param object_id integer
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:RegisterObject(object_id)
+    -- Check if the object exists and is loaded
+    local loaded, exists = server.getObjectSimulating(object_id)
+
+    if not exists then
+        self:_RemoveObjectSavedata(object_id) -- prevent memory leak
+        return
+    end
+
     -- Create object
     local object = Noir.Classes.ObjectClass:New(object_id)
+    object.Loaded = loaded
+
     self.Objects[object_id] = object
     self.OnRegister:Fire(object)
 

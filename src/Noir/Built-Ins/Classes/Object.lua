@@ -66,8 +66,7 @@ end
 ---@return NoirSerializedObject
 function Noir.Classes.ObjectClass:_Serialize()
     return {
-        ID = self.ID,
-        Loaded = self.Loaded
+        ID = self.ID
     }
 end
 
@@ -79,8 +78,6 @@ end
 ---@return NoirObject
 function Noir.Classes.ObjectClass._Deserialize(serializedObject)
     local object = Noir.Classes.ObjectClass:New(serializedObject.ID)
-    object.Loaded = serializedObject.Loaded
-
     return object
 end
 
@@ -341,4 +338,3 @@ end
 ]]
 ---@class NoirSerializedObject
 ---@field ID integer The object ID
----@field Loaded boolean Whether or not the object is loaded
