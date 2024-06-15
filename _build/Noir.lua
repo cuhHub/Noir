@@ -637,7 +637,7 @@ function Noir.Classes.ServiceClass:_Start()
 
     -- Call ServiceStart
     if not self.ServiceStart then
-        Noir.Libraries.Logging:Warning("Service", "%s: This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.", self.Name)
+        Noir.Libraries.Logging:Warning("Service", "%s: This service is missing a ServiceStart method. You can ignore this if this service doesn't require it.", self.Name)
         return
     end
 
@@ -1591,7 +1591,7 @@ Noir.Libraries.Logging.OnLog = Noir.Libraries.Events:Create()
     Represents the logging layout.<br>
     Requires two '%s' in the layout. First %s is the log type, the second %s is the log title. The message is then added after the layout.
 ]]
-Noir.Libraries.Logging.Layout = "[%s] [%s]: "
+Noir.Libraries.Logging.Layout = "[Noir] [%s] [%s]: "
 
 --[[
     Set the logging mode.
@@ -1640,7 +1640,7 @@ end
 ---@param ... any
 function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
     -- Validate args
-    local validatedLogType = tostring(logType):upper()
+    local validatedLogType = tostring(logType)
     local validatedTitle = tostring(title)
     local validatedMessage = type(message) == "table" and Noir.Libraries.Table:ToString(message) or (... and tostring(message):format(...) or tostring(message))
 
@@ -2625,11 +2625,11 @@ function Noir.Services.PlayerService:ServiceStart()
             end
 
             -- Log
-            Noir.Libraries.Logging:Info("PlayerService", "Loading player in game: %s (%d, %s)", player.name, player.id, player.steam_id)
+            Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): Loading player in game: %s (%d, %s)", player.name, player.id, player.steam_id)
 
             -- Check if already loaded
             if self:GetPlayer(player.id) then
-                Noir.Libraries.Logging:Info("PlayerService", "(in-game load) %s already has data. Ignoring.", player.name)
+                Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): %s already has data. Ignoring.", player.name)
                 goto continue
             end
 
@@ -2684,12 +2684,6 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
 
     -- Save player
     self.Players[peer_id] = player
-
-    -- Add properties savedata table
-    local properties = self:_GetSavedProperties()
-    properties[peer_id] = {}
-
-    self:_OverwriteSavedProperties(properties)
 
     -- Return
     return player
@@ -3761,7 +3755,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.6.1"
+Noir.Version = "1.6.2"
 
 --[[
     This event is called when the framework is started.<br>
