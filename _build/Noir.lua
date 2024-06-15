@@ -1121,8 +1121,7 @@ end
 ---@return NoirSerializedObject
 function Noir.Classes.ObjectClass:_Serialize()
     return {
-        ID = self.ID,
-        Loaded = self.Loaded
+        ID = self.ID
     }
 end
 
@@ -1134,8 +1133,6 @@ end
 ---@return NoirObject
 function Noir.Classes.ObjectClass._Deserialize(serializedObject)
     local object = Noir.Classes.ObjectClass:New(serializedObject.ID)
-    object.Loaded = serializedObject.Loaded
-
     return object
 end
 
@@ -1396,7 +1393,6 @@ end
 ]]
 ---@class NoirSerializedObject
 ---@field ID integer The object ID
----@field Loaded boolean Whether or not the object is loaded
 
 ----------------------------------------------
 -- // [File] ..\src\Noir\Libraries.lua
@@ -2938,10 +2934,6 @@ function Noir.Services.ObjectService:ServiceStart()
             goto continue
         end
 
-        -- Update attributes
-        registeredObject.Loaded = object.Loaded
-        self:_SaveObjectSavedata(registeredObject)
-
         -- Log
         Noir.Libraries.Logging:Info("ObjectService", "Loading object: %s", object.ID)
 
@@ -3007,14 +2999,6 @@ function Noir.Services.ObjectService:_GetSavedObjects()
 end
 
 --[[
-    Get all objects.
-]]
----@return table<integer, NoirObject>
-function Noir.Services.ObjectService:GetObjects()
-    return Noir.Libraries.Table:Copy(self.Objects)
-end
-
---[[
     Save an object to g_savedata.<br>
     Used internally. Do not use in your code.
 ]]
@@ -3039,13 +3023,31 @@ function Noir.Services.ObjectService:_RemoveObjectSavedata(object_id)
 end
 
 --[[
+    Get all objects.
+]]
+---@return table<integer, NoirObject>
+function Noir.Services.ObjectService:GetObjects()
+    return Noir.Libraries.Table:Copy(self.Objects)
+end
+
+--[[
     Registers an object by ID.
 ]]
 ---@param object_id integer
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:RegisterObject(object_id)
+    -- Check if the object exists and is loaded
+    local loaded, exists = server.getObjectSimulating(object_id)
+
+    if not exists then
+        self:_RemoveObjectSavedata(object_id) -- prevent memory leak
+        return
+    end
+
     -- Create object
     local object = Noir.Classes.ObjectClass:New(object_id)
+    object.Loaded = loaded
+
     self.Objects[object_id] = object
     self.OnRegister:Fire(object)
 
@@ -3759,7 +3761,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.5.1"
+Noir.Version = "1.6.1"
 
 --[[
     This event is called when the framework is started.<br>
