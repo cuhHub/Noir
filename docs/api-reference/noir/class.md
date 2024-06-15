@@ -4,7 +4,9 @@
 Noir.Class(name, parent)
 ```
 
-Create a class that objects can be created from. Note that classes can inherit from other classes.
+Create a class that objects can be created from.
+
+Note that classes can inherit from other classes.
 
 #### Parameters
 

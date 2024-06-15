@@ -7,22 +7,6 @@ A service that wraps SW players in a class. Essentially makes players OOP.
 ***
 
 ```lua
-Noir.Services.PlayerService:_GetSavedPlayers()
-```
-
-**⚠️ | Deprecated. Do not use.**
-
-Returns all players saved in g\_savedata.
-
-Used internally.
-
-#### Returns
-
-* `table<integer, NoirSerializedPlayer>`
-
-***
-
-```lua
 Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, admin, auth)
 ```
 
@@ -45,6 +29,34 @@ Used internally.
 ***
 
 ```lua
+Noir.Services.PlayerService:_OverwriteSavedProperties(properties)
+```
+
+Overwrite saved properties.
+
+Used internally. Do not use in your code.
+
+#### Parameters
+
+* `properties`: NoirSavedPlayerProperties
+
+***
+
+```lua
+Noir.Services.PlayerService:_GetSavedProperties()
+```
+
+Returns all saved player properties saved in g\_savedata.
+
+Used internally. Do not use in your code.
+
+#### Returns
+
+* `NoirSavedPlayerProperties`
+
+***
+
+```lua
 Noir.Services.PlayerService:_RemovePlayerData(player)
 ```
 
@@ -59,6 +71,49 @@ Used internally.
 #### Returns
 
 * `boolean`: success - Whether or not the operation was successful
+
+***
+
+```lua
+Noir.Services.PlayerService:_SaveProperty(player, property)
+```
+
+Save a player's property to g\_savedata.
+
+Used internally. Do not use in your code.
+
+#### Parameters
+
+* `player`: NoirPlayer
+* `property`: string
+
+***
+
+```lua
+Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
+```
+
+Get a player's saved properties.
+
+Used internally. Do not use in your code.
+
+#### Parameters
+
+* `player`: NoirPlayer
+
+***
+
+```lua
+Noir.Services.PlayerService:_RemoveSavedProperties(player)
+```
+
+Removes a player's saved properties from g\_savedata.
+
+Used internally. Do not use in your code.
+
+#### Parameters
+
+* `player`: NoirPlayer
 
 ***
 

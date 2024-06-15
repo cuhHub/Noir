@@ -2,13 +2,17 @@
 
 **Noir.Callbacks**: `table`
 
-A module of Noir that allows you to attach multiple functions to game callbacks. These functions can be disconnected from the game callbacks at any time.
+A module of Noir that allows you to attach multiple functions to game callbacks.
+
+These functions can be disconnected from the game callbacks at any time.
 
 ***
 
 **Noir.Callbacks.Events**: `table<string, NoirEvent>`
 
-A table of events assigned to game callbacks. Do not directly modify this table.
+A table of events assigned to game callbacks.
+
+Do not directly modify this table.
 
 ***
 
@@ -24,10 +28,6 @@ Connect to a game callback.
 * `callback`: function
 * `hideStartWarning`: boolean|nil
 
-#### Returns
-
-* `NoirConnection`
-
 ***
 
 ```lua
@@ -42,17 +42,15 @@ Connect to a game callback, but disconnect after the game callback has been call
 * `callback`: function
 * `hideStartWarning`: boolean|nil
 
-#### Returns
-
-* `NoirConnection`
-
 ***
 
 ```lua
 Noir.Callbacks:Get(name)
 ```
 
-Get a game callback event. It's best to use `Noir.Callbacks:Connect()` or `Noir.Callbacks:Once()` instead of getting a callback event directly and connecting to it.
+Get a game callback event.
+
+It's best to use `Noir.Callbacks:Connect()` or `Noir.Callbacks:Once()` instead of getting a callback event directly and connecting to it.
 
 #### Parameters
 
@@ -68,7 +66,9 @@ Get a game callback event. It's best to use `Noir.Callbacks:Connect()` or `Noir.
 Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
 ```
 
-Creates an event and an \_ENV function for a game callback. Used internally, do not use this in your addon.
+Creates an event and an \_ENV function for a game callback.
+
+Used internally, do not use this in your addon.
 
 #### Parameters
 
