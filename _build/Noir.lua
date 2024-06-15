@@ -3259,6 +3259,90 @@ end
 
 
 ----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Services\GameSettingsService.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Services - Game Settings Service
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author: @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A service for changing and accessing the game's settings.
+
+    Noir.Services.GameSettingsService:GetSetting("infinite_batteries") -- false
+    Noir.Services.GameSettingsService:SetSetting("infinite_batteries", true)
+]]
+---@class NoirGameSettingsService: NoirService
+Noir.Services.GameSettingsService = Noir.Services:CreateService("GameSettingsService")
+
+function Noir.Services.GameSettingsService:ServiceInit()
+
+end
+
+--[[
+    Returns the value of the provided game setting.
+
+    Noir.Services.GameSettingsService:GetSetting("infinite_batteries") -- false
+]]
+---@param name SWGameSettingEnum
+---@return any
+function Noir.Services.GameSettingsService:GetSetting(name)
+    local settings = server.getGameSettings()
+    local setting = settings[name]
+
+    if not setting then
+        Noir.Libraries.Logging:Error("GameSettingsService", "GetSetting(): %s is not a valid game setting.", false, name)
+        return
+    end
+
+    return setting
+end
+
+--[[
+    Sets the value of the provided game setting.
+
+    Noir.Services.GameSettingsService:SetSetting("infinite_batteries", true)
+]]
+---@param name SWGameSettingEnum
+---@param value any
+function Noir.Services.GameSettingsService:SetSetting(name, value)
+    if not self:GetSetting(name) then
+        Noir.Libraries.Logging:Error("GameSettingsService", "SetSetting(): %s is not a valid game setting.", false, name)
+        return
+    end
+
+    server.setGameSetting(name, value)
+end
+
+----------------------------------------------
 -- // [File] ..\src\Noir\Callbacks.lua
 ----------------------------------------------
 --------------------------------------------------------
@@ -3325,6 +3409,48 @@ Noir.Callbacks.Events = {} ---@type table<string, NoirEvent>
 ---@param callback function
 ---@param hideStartWarning boolean|nil
 ---@return NoirConnection
+---@overload fun(name: "onClearOilSpill", callback: fun(), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onTick", callback: fun(game_ticks: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCreate", callback: fun(is_world_create: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onDestroy", callback: fun(), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCustomCommand", callback: fun(full_message: string, peer_id: number, is_admin: boolean, is_auth: boolean, command: string, ...: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onChatMessage", callback: fun(peer_id: number, sender_name: string, message: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerJoin", callback: fun(steam_id: number, name: string, peer_id: number, is_admin: boolean, is_auth: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerSit", callback: fun(peer_id: number, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerUnsit", callback: fun(peer_id: number, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCharacterSit", callback: fun(object_id: integer, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCharacterUnsit", callback: fun(object_id: integer, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCharacterPickup", callback: fun(object_id_actor: integer, object_id_target: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCreatureSit", callback: fun(object_id: integer, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCreatureUnsit", callback: fun(object_id: integer, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCreaturePickup", callback: fun(object_id_actor: integer, object_id_target: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onEquipmentPickup", callback: fun(character_object_id: integer, equipment_object_id: integer, equipment_id: SWEquipmentTypeEnum), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onEquipmentDrop", callback: fun(character_object_id: integer, equipment_object_id: integer, equipment_id: SWEquipmentTypeEnum), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerRespawn", callback: fun(peer_id: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerLeave", callback: fun(steam_id: number, name: string, peer_id: number, is_admin: boolean, is_auth: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onToggleMap", callback: fun(peer_id: number, is_open: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerDie", callback: fun(steam_id: number, name: string, peer_id: number, is_admin: boolean, is_auth: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleSpawn", callback: fun(vehicle_id: integer, peer_id: number, x: number, y: number, z: number, group_cost: number, group_id: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onGroupSpawn", callback: fun(group_id: integer, peer_id: number, x: number, y: number, z: number, group_cost: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleDespawn", callback: fun(vehicle_id: integer, peer_id: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleLoad", callback: fun(vehicle_id: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleUnload", callback: fun(vehicle_id: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleTeleport", callback: fun(vehicle_id: integer, peer_id: number, x: number, y: number, z: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onObjectLoad", callback: fun(object_id: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onObjectUnload", callback: fun(object_id: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onButtonPress", callback: fun(vehicle_id: integer, peer_id: number, button_name: string, is_pressed: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onSpawnAddonComponent", callback: fun(vehicle_or_object_id: integer, component_name: string, type_string: string, addon_index: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleDamaged", callback: fun(vehicle_id: integer, damage_amount: number, voxel_x: number, voxel_y: number, voxel_z: number, body_index: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "httpReply", callback: fun(port: number, request: string, reply: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onFireExtinguished", callback: fun(fire_x: number, fire_y: number, fire_z: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onForestFireSpawned", callback: fun(fire_objective_id: number, fire_x: number, fire_y: number, fire_z: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onForestFireExtinguished", callback: fun(fire_objective_id: number, fire_x: number, fire_y: number, fire_z: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onTornado", callback: fun(transform: SWMatrix), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onMeteor", callback: fun(transform: SWMatrix, magnitude), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onTsunami", callback: fun(transform: SWMatrix, magnitude: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onWhirlpool", callback: fun(transform: SWMatrix, magnitude: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVolcano", callback: fun(transform: SWMatrix), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onOilSpill", callback: fun(tile_x: number, tile_z: number, delta: number, total: number, vehicle_id: integer), hideStartWarning: boolean): NoirConnection
 function Noir.Callbacks:Connect(name, callback, hideStartWarning)
     -- Get or create event
     local event = self:_InstantiateCallback(name, hideStartWarning or false)
@@ -3344,6 +3470,48 @@ end
 ---@param callback function
 ---@param hideStartWarning boolean|nil
 ---@return NoirConnection
+---@overload fun(name: "onClearOilSpill", callback: fun(), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onTick", callback: fun(game_ticks: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCreate", callback: fun(is_world_create: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onDestroy", callback: fun(), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCustomCommand", callback: fun(full_message: string, peer_id: number, is_admin: boolean, is_auth: boolean, command: string, ...: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onChatMessage", callback: fun(peer_id: number, sender_name: string, message: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerJoin", callback: fun(steam_id: number, name: string, peer_id: number, is_admin: boolean, is_auth: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerSit", callback: fun(peer_id: number, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerUnsit", callback: fun(peer_id: number, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCharacterSit", callback: fun(object_id: integer, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCharacterUnsit", callback: fun(object_id: integer, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCharacterPickup", callback: fun(object_id_actor: integer, object_id_target: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCreatureSit", callback: fun(object_id: integer, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCreatureUnsit", callback: fun(object_id: integer, vehicle_id: integer, seat_name: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onCreaturePickup", callback: fun(object_id_actor: integer, object_id_target: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onEquipmentPickup", callback: fun(character_object_id: integer, equipment_object_id: integer, equipment_id: SWEquipmentTypeEnum), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onEquipmentDrop", callback: fun(character_object_id: integer, equipment_object_id: integer, equipment_id: SWEquipmentTypeEnum), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerRespawn", callback: fun(peer_id: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerLeave", callback: fun(steam_id: number, name: string, peer_id: number, is_admin: boolean, is_auth: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onToggleMap", callback: fun(peer_id: number, is_open: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onPlayerDie", callback: fun(steam_id: number, name: string, peer_id: number, is_admin: boolean, is_auth: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleSpawn", callback: fun(vehicle_id: integer, peer_id: number, x: number, y: number, z: number, group_cost: number, group_id: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onGroupSpawn", callback: fun(group_id: integer, peer_id: number, x: number, y: number, z: number, group_cost: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleDespawn", callback: fun(vehicle_id: integer, peer_id: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleLoad", callback: fun(vehicle_id: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleUnload", callback: fun(vehicle_id: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleTeleport", callback: fun(vehicle_id: integer, peer_id: number, x: number, y: number, z: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onObjectLoad", callback: fun(object_id: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onObjectUnload", callback: fun(object_id: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onButtonPress", callback: fun(vehicle_id: integer, peer_id: number, button_name: string, is_pressed: boolean), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onSpawnAddonComponent", callback: fun(vehicle_or_object_id: integer, component_name: string, type_string: string, addon_index: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVehicleDamaged", callback: fun(vehicle_id: integer, damage_amount: number, voxel_x: number, voxel_y: number, voxel_z: number, body_index: integer), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "httpReply", callback: fun(port: number, request: string, reply: string), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onFireExtinguished", callback: fun(fire_x: number, fire_y: number, fire_z: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onForestFireSpawned", callback: fun(fire_objective_id: number, fire_x: number, fire_y: number, fire_z: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onForestFireExtinguished", callback: fun(fire_objective_id: number, fire_x: number, fire_y: number, fire_z: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onTornado", callback: fun(transform: SWMatrix), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onMeteor", callback: fun(transform: SWMatrix, magnitude), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onTsunami", callback: fun(transform: SWMatrix, magnitude: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onWhirlpool", callback: fun(transform: SWMatrix, magnitude: number), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onVolcano", callback: fun(transform: SWMatrix), hideStartWarning: boolean): NoirConnection
+---@overload fun(name: "onOilSpill", callback: fun(tile_x: number, tile_z: number, delta: number, total: number, vehicle_id: integer), hideStartWarning: boolean): NoirConnection
 function Noir.Callbacks:Once(name, callback, hideStartWarning)
     -- Get or create event
     local event = self:_InstantiateCallback(name, hideStartWarning or false)
@@ -3584,7 +3752,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.3.5"
+Noir.Version = "1.41.0"
 
 --[[
     This event is called when the framework is started.<br>
