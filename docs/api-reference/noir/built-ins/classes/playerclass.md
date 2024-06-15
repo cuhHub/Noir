@@ -2,12 +2,12 @@
 
 **Noir.Classes.PlayerClass**: `NoirClass`
 
-A class that represents a player for the built-in PlayerService.
+Represents a player.
 
 ***
 
 ```lua
-Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth)
+Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions)
 ```
 
 Initializes player class objects.
@@ -19,34 +19,59 @@ Initializes player class objects.
 * `steam`: string
 * `admin`: boolean
 * `auth`: boolean
+* `permissions`: table\<string, boolean>
 
 ***
 
 ```lua
-Noir.Classes.PlayerClass:_Serialize()
+Noir.Classes.PlayerClass:SetPermission(permission)
 ```
 
-**⚠️ | Deprecated. Do not use.**
-
-Serializes this player for g\_savedata.
-
-***
-
-```lua
-Noir.Classes.PlayerClass._Deserialize(serializedPlayer)
-```
-
-**⚠️ | Deprecated. Do not use.**
-
-Deserializes a player from g\_savedata into a player class object.
+Give this player a permission.
 
 #### Parameters
 
-* `serializedPlayer`: NoirSerializedPlayer
+* `permission`: string
+
+***
+
+```lua
+Noir.Classes.PlayerClass:HasPermission(permission)
+```
+
+Returns whether or not this player has a permission.
+
+#### Parameters
+
+* `permission`: string
 
 #### Returns
 
-* `NoirPlayer`
+* `boolean`
+
+***
+
+```lua
+Noir.Classes.PlayerClass:RemovePermission(permission)
+```
+
+Remove a permission from this player.
+
+#### Parameters
+
+* `permission`: string
+
+***
+
+```lua
+Noir.Classes.PlayerClass:GetPermissions()
+```
+
+Returns a table containing the player's permissions.
+
+#### Returns
+
+* `table<integer, string>`
 
 ***
 
