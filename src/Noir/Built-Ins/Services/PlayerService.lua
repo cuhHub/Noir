@@ -44,10 +44,10 @@
     end)
 ]]
 ---@class NoirPlayerService: NoirService
----@field OnJoin NoirEvent player | Fired when a player joins the server
----@field OnLeave NoirEvent player | Fired when a player leaves the server
----@field OnDie NoirEvent player | Fired when a player dies
----@field OnRespawn NoirEvent player | Fired when a player respawns
+---@field OnJoin NoirEvent Arguments: player | Fired when a player joins the server
+---@field OnLeave NoirEvent Arguments: player | Fired when a player leaves the server
+---@field OnDie NoirEvent Arguments: player | Fired when a player dies
+---@field OnRespawn NoirEvent Arguments: player | Fired when a player respawns
 ---@field Players table<integer, NoirPlayer>
 ---@field JoinCallback NoirConnection A connection to the onPlayerDie event
 ---@field LeaveCallback NoirConnection A connection to the onPlayerLeave event
@@ -59,7 +59,6 @@ Noir.Services.PlayerService.InitPriority = 2
 Noir.Services.PlayerService.StartPriority = 2
 
 function Noir.Services.PlayerService:ServiceInit()
-    -- Create attributes
     self.OnJoin = Noir.Libraries.Events:Create()
     self.OnLeave = Noir.Libraries.Events:Create()
     self.OnDie = Noir.Libraries.Events:Create()
