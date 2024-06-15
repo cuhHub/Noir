@@ -204,7 +204,7 @@ function Noir.Class(name, parent)
 end
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Classes\init.lua
+-- // [File] ..\src\Noir\Classes.lua
 ----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes
@@ -240,12 +240,13 @@ end
 -------------------------------
 
 --[[
-    A table containing classes used through Noir.
+    A table containing classes used throughout Noir.<br>
+    This is a good place to store your classes.
 ]]
 Noir.Classes = {}
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Classes\Connection.lua
+-- // [File] ..\src\Noir\Built-Ins/Classes\Connection.lua
 ----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Connection
@@ -281,7 +282,7 @@ Noir.Classes = {}
 -------------------------------
 
 --[[
-    A class for event connections.
+    Represents a connection to an event.
 ]]
 ---@class NoirConnection: NoirClass
 ---@field New fun(self: NoirConnection, callback: function): NoirConnection
@@ -330,7 +331,7 @@ function Noir.Classes.ConnectionClass:Disconnect()
 end
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Classes\Event.lua
+-- // [File] ..\src\Noir\Built-Ins/Classes\Event.lua
 ----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Event
@@ -366,7 +367,7 @@ end
 -------------------------------
 
 --[[
-    A class for events.
+    Represents an event.
 ]]
 ---@class NoirEvent: NoirClass
 ---@field New fun(self: NoirEvent): NoirEvent
@@ -388,7 +389,6 @@ function Noir.Classes.EventClass:Init()
     self.ConnectionsOrder = {}
     self.ConnectionsToRemove = {}  -- Only used when IsFiring is true, should remain empty otherwise.
     self.ConnectionsToAdd = {}  -- Only used when IsFiring is true, should remain empty otherwise.
-    self.ConnectionsToAddMap = {}  -- Only used when IsFiring is true, should remain empty otherwise.
     self.IsFiring = false
     self.HasFiredOnce = false
 end
@@ -424,8 +424,8 @@ function Noir.Classes.EventClass:Fire(...)
 end
 
 --[[
-    Connects a function to the event. A connection is automatically made for the function.  
-    If connecting to an event that is currently being handled, it will be added afterwards and run the next time the event is fired.  
+    Connects a function to the event. A connection is automatically made for the function.<br>
+    If connecting to an event that is currently being handled, it will be added afterwards and run the next time the event is fired.
 
     local event = Noir.Libraries.Events:Create()
 
@@ -460,7 +460,7 @@ function Noir.Classes.EventClass:Connect(callback)
 end
 
 --[[
-    **Should only be used internally.**  
+    **Should only be used internally.**<br>
     Finalizes the connection to the event, allowing it to be run.  
 ]]
 ---@param connection NoirConnection
@@ -472,7 +472,7 @@ function Noir.Classes.EventClass:_ConnectFinalize(connection)
 end
 
 --[[
-    Connects a callback to the event that will automatically be disconnected upon the event being fired.  
+    Connects a callback to the event that will automatically be disconnected upon the event being fired.<br>
     If connecting to an event that is currently being handled, it will be added afterwards and run the next time the event is fired.  
 ]]
 ---@param callback function
@@ -489,7 +489,7 @@ function Noir.Classes.EventClass:Once(callback)
 end
 
 --[[
-    Disconnects the provided connection from the event.  
+    Disconnects the provided connection from the event.<br>
     The disconnection may be delayed if done while handling the event.  
 ]]
 ---@param connection NoirConnection
@@ -503,7 +503,7 @@ function Noir.Classes.EventClass:Disconnect(connection)
 end
 
 --[[
-    **Should only be used internally.**  
+    **Should only be used internally.**<br>
     Disconnects the provided connection from the event immediately.  
 ]]
 ---@param connection NoirConnection
@@ -524,7 +524,7 @@ end
 
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Classes\Service.lua
+-- // [File] ..\src\Noir\Built-Ins/Classes\Service.lua
 ----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Service
@@ -560,7 +560,7 @@ end
 -------------------------------
 
 --[[
-    A class that represents a service.
+    Represents a Noir service.
 ]]
 ---@class NoirService: NoirClass
 ---@field New fun(self: NoirService, name: string): NoirService
@@ -739,7 +739,7 @@ function Noir.Classes.ServiceClass:Remove(index)
 end
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Classes\Player.lua
+-- // [File] ..\src\Noir\Built-Ins/Classes\Player.lua
 ----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Player
@@ -775,7 +775,11 @@ end
 -------------------------------
 
 --[[
-    A class that represents a player for the built-in PlayerService.
+    Represents a player.
+
+    player:GetCharacter() -- NoirCharacter
+    player:SetPermission("Awesome")
+    player:HasPermission("Awesome") -- true
 ]]
 ---@class NoirPlayer: NoirClass
 ---@field New fun(self: NoirPlayer, name: string, ID: integer, steam: string, admin: boolean, auth: boolean, permissions: table<string, boolean>): NoirPlayer
@@ -806,45 +810,12 @@ function Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions
 end
 
 --[[
-    Serializes this player for g_savedata.
-]]
----@return NoirSerializedPlayer
-function Noir.Classes.PlayerClass:_Serialize()
-    return {
-        Name = self.Name,
-        ID = self.ID,
-        Steam = self.Steam,
-        Admin = self.Admin,
-        Auth = self.Auth,
-        Permissions = self.Permissions
-    }
-end
-
---[[
-    Deserializes a player from g_savedata into a player class object.
-]]
----@param serializedPlayer NoirSerializedPlayer
----@return NoirPlayer
-function Noir.Classes.PlayerClass._Deserialize(serializedPlayer)
-    local player = Noir.Classes.PlayerClass:New(
-        serializedPlayer.Name,
-        serializedPlayer.ID,
-        serializedPlayer.Steam,
-        serializedPlayer.Admin,
-        serializedPlayer.Auth,
-        serializedPlayer.Permissions
-    )
-
-    return player
-end
-
---[[
     Give this player a permission.
 ]]
 ---@param permission string
 function Noir.Classes.PlayerClass:SetPermission(permission)
     self.Permissions[permission] = true
-    Noir.Services.PlayerService:_SavePlayer(self)
+    Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
 end
 
 --[[
@@ -862,7 +833,7 @@ end
 ---@param permission string
 function Noir.Classes.PlayerClass:RemovePermission(permission)
     self.Permissions[permission] = nil
-    Noir.Services.PlayerService:_SavePlayer(self)
+    Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
 end
 
 --[[
@@ -969,23 +940,8 @@ function Noir.Classes.PlayerClass:GetLook()
     return x, y, z
 end
 
--------------------------------
--- // Intellisense
--------------------------------
-
---[[
-    Represents a player class that has been serialized.
-]]
----@class NoirSerializedPlayer
----@field Name string The name of the player
----@field ID integer The peer ID of the player
----@field Steam string The Steam ID of the player
----@field Admin boolean Whether or not the player is an admin
----@field Auth boolean Whether or not the player is authed
----@field Permissions table<string, boolean> The permissions of the player
-
 ----------------------------------------------
--- // [File] ..\src\Noir\Classes\Task.lua
+-- // [File] ..\src\Noir\Built-Ins/Classes\Task.lua
 ----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Task
@@ -1021,7 +977,14 @@ end
 -------------------------------
 
 --[[
-    Represents a task for the TaskService.
+    Represents a task.
+
+    task:SetRepeating(true)
+    task:SetDuration(1)
+
+    task.OnCompletion:Connect(function()
+        -- Do something
+    end)
 ]]
 ---@class NoirTask: NoirClass
 ---@field New fun(self: NoirTask, ID: integer, duration: number, isRepeating: boolean, arguments: table<integer, any>): NoirTask
@@ -1080,7 +1043,7 @@ function Noir.Classes.TaskClass:SetArguments(arguments)
 end
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Classes\Object.lua
+-- // [File] ..\src\Noir\Built-Ins/Classes\Object.lua
 ----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Object
@@ -1116,7 +1079,10 @@ end
 -------------------------------
 
 --[[
-    Represents a object for the ObjectService.
+    Represents a Stormworks object.
+
+    object:IsSimulating() -- true
+    object:Teleport(matrix.translation(0, 0, 0))
 ]]
 ---@class NoirObject: NoirClass
 ---@field New fun(self: NoirObject, ID: integer): NoirObject
@@ -2647,30 +2613,6 @@ function Noir.Services.PlayerService:ServiceStart()
         end
     end)
 
-    -- REMOVED: No need for this. I remembered about the onDestroy callback, and that callback makes the code below useless.
-    -- Load players from save data
-    -- local savedPlayers = Noir.AddonReason ~= "AddonReload" and {} or self:_GetSavedPlayers()
-    --  To explain the above:
-    --      If a server was to stop with players in it, these players would be re-added when the server starts back up due to save data.
-    --      This is bad, because if the players were to join back, their data wouldn't be added because it already exists.
-    --      This is why we make this table empty.
-
-    -- for _, player in pairs(savedPlayers) do
-    --     -- Log
-    --     Noir.Libraries.Logging:Info("PlayerService", "Loading player from save data: %s (%d, %s)", player.Name, player.ID, player.Steam)
-
-    --     -- Check if already loaded
-    --     if self:GetPlayer(player.ID) then
-    --         Noir.Libraries.Logging:Info("PlayerService", "(savedata load) %s already has data. Ignoring.", player.Name)
-    --         goto continue
-    --     end
-
-    --     -- Give data
-    --     self:_GivePlayerData(player.Steam, player.Name, player.ID, player.Admin, player.Auth)
-
-    --     ::continue::
-    -- end
-
     -- Load players in game
     if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
         for _, player in pairs(server.getPlayers()) do
@@ -2689,26 +2631,25 @@ function Noir.Services.PlayerService:ServiceStart()
             end
 
             -- Give data
-            local savedPlayer = self:_GetSavedPlayer(player.id)
             local createdPlayer = self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
 
-            if createdPlayer and savedPlayer then
-                -- Load attributes (permissions, etc) from g_savedata
-                createdPlayer.Permissions = savedPlayer.Permissions
+            if not createdPlayer then
+                Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
+                goto continue
+            end
+
+            -- Load saved properties
+            local savedProperties = self:_GetSavedPropertiesForPlayer(createdPlayer)
+
+            if savedProperties then
+                for property, value in pairs(savedProperties) do
+                    createdPlayer[property] = value
+                end
             end
 
             ::continue::
         end
     end
-end
-
---[[
-    Returns all players saved in g_savedata.<br>
-    Used internally.
-]]
----@return table<integer, NoirSerializedPlayer>
-function Noir.Services.PlayerService:_GetSavedPlayers()
-    return self:Load("players", {})
 end
 
 --[[
@@ -2740,10 +2681,33 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
 
     -- Save player
     self.Players[peer_id] = player
-    self:_SavePlayer(player)
+
+    -- Add properties savedata table
+    local properties = self:_GetSavedProperties()
+    properties[peer_id] = {}
+
+    self:_OverwriteSavedProperties(properties)
 
     -- Return
     return player
+end
+
+--[[
+    Overwrite saved properties.<br>
+    Used internally. Do not use in your code.
+]]
+---@param properties NoirSavedPlayerProperties
+function Noir.Services.PlayerService:_OverwriteSavedProperties(properties)
+    self:Save("PlayerProperties", properties)
+end
+
+--[[
+    Returns all saved player properties saved in g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@return NoirSavedPlayerProperties
+function Noir.Services.PlayerService:_GetSavedProperties()
+    return self:Load("PlayerProperties", {})
 end
 
 --[[
@@ -2761,39 +2725,49 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
 
     -- Remove player
     self.Players[player.ID] = nil
-    self:_RemovePlayer(player)
+
+    -- Remove saved properties
+    self:_RemoveSavedProperties(player)
 
     return true
 end
 
 --[[
-    Save a player to g_savedata.<br>
+    Save a player's property to g_savedata.<br>
     Used internally. Do not use in your code.
 ]]
 ---@param player NoirPlayer
-function Noir.Services.PlayerService:_SavePlayer(player)
-    self:_GetSavedPlayers()[player.ID] = player:_Serialize()
-    self:Save("players", self:_GetSavedPlayers())
+---@param property string
+function Noir.Services.PlayerService:_SaveProperty(player, property)
+    local properties = self:_GetSavedProperties()
+
+    if not properties[player.ID] then
+        Noir.Libraries.Logging:Error("PlayerService", "%s is missing a properties savedata table, causing PlayerService:_SaveProperty() to fail.", false, player.Name)
+        return
+    end
+
+    properties[player.ID][property] = player[property]
+    self:_OverwriteSavedProperties(properties)
 end
 
 --[[
-    Removes a player from g_savedata.<br>
+    Get a player's saved properties.<br>
     Used internally. Do not use in your code.
 ]]
 ---@param player NoirPlayer
-function Noir.Services.PlayerService:_RemovePlayer(player)
-    self:_GetSavedPlayers()[player.ID] = nil
-    self:Save("players", self:_GetSavedPlayers())
+function Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
+    return self:_GetSavedProperties()[player.ID]
 end
 
 --[[
-    Get a player from g_savedata.<br>
+    Removes a player's saved properties from g_savedata.<br>
     Used internally. Do not use in your code.
 ]]
----@param ID integer
----@return NoirSerializedPlayer|nil
-function Noir.Services.PlayerService:_GetSavedPlayer(ID)
-    return self:_GetSavedPlayers()[ID]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_RemoveSavedProperties(player)
+    local properties = self:_GetSavedProperties()
+    properties[player.ID] = nil
+    self:_OverwriteSavedProperties(properties)
 end
 
 --[[
@@ -2865,6 +2839,12 @@ end
 function Noir.Services.PlayerService:IsSamePlayer(playerA, playerB)
     return playerA.ID == playerB.ID
 end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+---@alias NoirSavedPlayerProperties table<integer, table<string, any>>
 
 ----------------------------------------------
 -- // [File] ..\src\Noir\Built-Ins/Services\ObjectService.lua
