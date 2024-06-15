@@ -109,7 +109,7 @@ function Noir.Classes.ServiceClass:_Start()
 
     -- Call ServiceStart
     if not self.ServiceStart then
-        Noir.Libraries.Logging:Warning("Service", "%s: This service is missing a ServiceStart method. You can ignore this if your service doesn't require it.", self.Name)
+        Noir.Libraries.Logging:Warning("Service", "%s: This service is missing a ServiceStart method. You can ignore this if this service doesn't require it.", self.Name)
         return
     end
 
