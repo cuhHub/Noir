@@ -222,11 +222,6 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
         {}
     )
 
-    -- Add properties table if it doesn't exist
-    if not self:Load("PlayerProperties") then
-        self:Save("PlayerProperties", {})
-    end
-
     -- Save player
     self.Players[peer_id] = player
 
@@ -284,8 +279,7 @@ function Noir.Services.PlayerService:_SaveProperty(player, property)
     local properties = self:_GetSavedProperties()
 
     if not properties[player.ID] then
-        Noir.Libraries.Logging:Error("PlayerService", "%s is missing a properties savedata table, causing PlayerService:_SaveProperty() to fail.", false, player.Name)
-        return
+        properties[player.ID] = {}
     end
 
     properties[player.ID][property] = player[property]
@@ -297,6 +291,7 @@ end
     Used internally. Do not use in your code.
 ]]
 ---@param player NoirPlayer
+---@return table<string, boolean>|nil
 function Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
     return self:_GetSavedProperties()[player.ID]
 end
@@ -386,4 +381,4 @@ end
 -- // Intellisense
 -------------------------------
 
----@alias NoirSavedPlayerProperties table<integer, table<string, any>>
+---@alias NoirSavedPlayerProperties table<integer, table<string, boolean>>
