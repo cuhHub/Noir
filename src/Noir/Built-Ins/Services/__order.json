@@ -3,6 +3,7 @@
         "TaskService.lua",
         "PlayerService.lua",
         "ObjectService.lua",
-        "GameSettingsService.lua"
+        "GameSettingsService.lua",
+        "CommandService.lua"
     ]
 }
