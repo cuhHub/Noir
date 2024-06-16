@@ -54,13 +54,17 @@ function Noir.Services.CommandService:ServiceInit()
 end
 
 function Noir.Services.CommandService:ServiceStart()
-    self.OnCustomCommand = Noir.Callbacks:Connect("onCustomCommand", function(message, peer_id, admin, auth, commandName, ...)
+    self.OnCustomCommand = Noir.Callbacks:Connect("onCustomCommand", function(message, peer_id, _, _, commandName, ...)
         -- Get the player
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)
 
         if not player then
+            Noir.Libraries.Logging:Error("CommandService", "A player ran a command, but they aren't recognized as a player in the PlayerService", false)
             return
         end
+
+        -- Remove ? prefix
+        commandName = commandName:sub(2)
 
         -- Get the command
         local command = self:FindCommand(commandName)
@@ -81,6 +85,7 @@ end
 ---@return NoirCommand|nil
 function Noir.Services.CommandService:FindCommand(query)
     for _, command in pairs(self:GetCommands()) do
+        Noir.Libraries.Logging:Info("g", ":FindCommand(): query: %s | command: %s | aliases: %s", query, command.Name, table.concat(command.Aliases, ", "))
         if command:_Matches(query) then
             return command
         end
