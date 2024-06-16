@@ -85,7 +85,6 @@ end
 ---@return NoirCommand|nil
 function Noir.Services.CommandService:FindCommand(query)
     for _, command in pairs(self:GetCommands()) do
-        Noir.Libraries.Logging:Info("g", ":FindCommand(): query: %s | command: %s | aliases: %s", query, command.Name, table.concat(command.Aliases, ", "))
         if command:_Matches(query) then
             return command
         end
