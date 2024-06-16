@@ -69,11 +69,6 @@ end
 
 function Noir.Services.PlayerService:ServiceStart()
     -- Create callbacks
-    ---@param steam_id string
-    ---@param name string
-    ---@param peer_id integer
-    ---@param admin boolean
-    ---@param auth boolean
     self.JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
         -- Check if player was loaded via save data. This happens because onPlayerJoin runs for the host after Noir fully starts
         if self:GetPlayer(peer_id) then
@@ -91,11 +86,6 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnJoin:Fire(player)
     end)
 
-    ---@param steam_id string
-    ---@param name string
-    ---@param peer_id integer
-    ---@param admin boolean
-    ---@param auth boolean
     self.LeaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
         -- Get player
         local player = self:GetPlayer(peer_id)
@@ -117,11 +107,6 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnLeave:Fire(player)
     end)
 
-    ---@param steam_id string
-    ---@param name string
-    ---@param peer_id integer
-    ---@param admin boolean
-    ---@param auth boolean
     self.DieCallback = Noir.Callbacks:Connect("onPlayerDie", function(steam_id, name, peer_id, admin, auth)
         -- Get player
         local player = self:GetPlayer(peer_id)
@@ -135,7 +120,6 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnDie:Fire(player)
     end)
 
-    ---@param peer_id integer
     self.RespawnCallback = Noir.Callbacks:Connect("onPlayerRespawn", function(peer_id)
         -- Get player
         local player = self:GetPlayer(peer_id)
@@ -174,7 +158,7 @@ function Noir.Services.PlayerService:ServiceStart()
             end
 
             -- Give data
-            local createdPlayer = self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
+            local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
 
             if not createdPlayer then
                 Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
@@ -199,7 +183,7 @@ end
     Gives data to a player.<br>
     Used internally.
 ]]
----@param steam_id string
+---@param steam_id integer
 ---@param name string
 ---@param peer_id integer
 ---@param admin boolean
