@@ -46,6 +46,7 @@ require("Noir.Built-Ins.Classes.Service")
 require("Noir.Built-Ins.Classes.Player")
 require("Noir.Built-Ins.Classes.Task")
 require("Noir.Built-Ins.Classes.Object")
+require("Noir.Built-Ins.Classes.Command")
 
 require("Noir.Libraries")
 
@@ -61,6 +62,7 @@ require("Noir.Built-Ins.Services.TaskService")
 require("Noir.Built-Ins.Services.PlayerService")
 require("Noir.Built-Ins.Services.ObjectService")
 require("Noir.Built-Ins.Services.GameSettingsService")
+require("Noir.Built-Ins.Services.CommandService")
 
 require("Noir.Callbacks")
 require("Noir.Bootstrapper")
