@@ -222,6 +222,11 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
         {}
     )
 
+    -- Add properties table if it doesn't exist
+    if not self:Load("PlayerProperties") then
+        self:Save("PlayerProperties", {})
+    end
+
     -- Save player
     self.Players[peer_id] = player
 
