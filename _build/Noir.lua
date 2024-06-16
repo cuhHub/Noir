@@ -1094,11 +1094,11 @@ end
 ]]
 ---@class NoirObject: NoirClass
 ---@field New fun(self: NoirObject, ID: integer): NoirObject
----@field ID integer
----@field Loaded boolean
----@field OnLoad NoirEvent
----@field OnUnload NoirEvent
----@field OnDespawn NoirEvent
+---@field ID integer The ID of this object
+---@field Loaded boolean Whether or not this object is loaded
+---@field OnLoad NoirEvent Fired when this object is loaded
+---@field OnUnload NoirEvent Fired when this object is unloaded
+---@field OnDespawn NoirEvent Fired when this object is despawned
 Noir.Classes.ObjectClass = Noir.Class("NoirObject")
 
 --[[
@@ -1393,6 +1393,147 @@ end
 ]]
 ---@class NoirSerializedObject
 ---@field ID integer The object ID
+
+----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Classes\Command.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Classes - Command
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author: @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a command.
+]]
+---@class NoirCommand: NoirClass
+---@field New fun(self: NoirCommand, name: string, aliases: table<integer, string>, requiredPermissions: table<integer, string>, requiresAuth: boolean, requiresAdmin: boolean, capsSensitive: boolean, description: string): NoirCommand
+---@field Name string The name of this command
+---@field Aliases table<integer, string> The aliases of this command
+---@field RequiredPermissions table<integer, string> The required permissions for this command. If this is empty, anyone can use this command
+---@field RequiresAuth boolean Whether or not this command requires auth
+---@field RequiresAdmin boolean Whether or not this command requires admin
+---@field CapsSensitive boolean Whether or not this command is case-sensitive
+---@field Description string The description of this command
+---@field OnUse NoirEvent Arguments: player, message, args, hasPermission | Fired when this command is used
+Noir.Classes.CommandClass = Noir.Class("NoirCommand")
+
+--[[
+    Initializes command class objects.
+]]
+---@param name string
+---@param aliases table<integer, string>
+---@param requiredPermissions table<integer, string>
+---@param requiresAuth boolean
+---@param requiresAdmin boolean
+---@param capsSensitive boolean
+---@param description string
+function Noir.Classes.CommandClass:Init(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description)
+    self.Name = name
+    self.Aliases = aliases
+    self.RequiredPermissions = requiredPermissions
+    self.RequiresAuth = requiresAuth
+    self.RequiresAdmin = requiresAdmin
+    self.CapsSensitive = capsSensitive
+    self.Description = description
+
+    self.OnUse = Noir.Libraries.Events:Create()
+end
+
+--[[
+    Trigger this command.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+---@param message string
+---@param args table
+function Noir.Classes.CommandClass:_Use(player, message, args)
+    self.OnUse:Fire(player, message, args, self:CanUse(player))
+end
+
+--[[
+    Returns whether or not the string matches this command.<br>
+    Used internally. Do not use in your code.
+]]
+---@param query string
+---@return boolean
+function Noir.Classes.CommandClass:_Matches(query)
+    if not self.CapsSensitive then
+        if self.Name:lower() == query:lower() then
+            return true
+        end
+
+        for _, alias in ipairs(self.Aliases) do
+            if alias:lower() == query:lower() then
+                return true
+            end
+        end
+
+        return false
+    else
+        if self.Name == query then
+            return true
+        end
+
+        for _, alias in ipairs(self.Aliases) do
+            if alias == query then
+                return true
+            end
+        end
+
+        return false
+    end
+end
+
+--[[
+    Returns whether or not the player can use this command.
+]]
+---@param player NoirPlayer
+---@return boolean
+function Noir.Classes.CommandClass:CanUse(player)
+    if self.RequiresAuth and not player.Auth then
+        return false
+    end
+
+    if self.RequiresAdmin and not player.Admin then
+        return false
+    end
+
+    for _, permission in ipairs(self.RequiredPermissions) do
+        if not player:HasPermission(permission) then
+            return false
+        end
+    end
+
+    return true
+end
 
 ----------------------------------------------
 -- // [File] ..\src\Noir\Libraries.lua
@@ -2529,11 +2670,6 @@ end
 
 function Noir.Services.PlayerService:ServiceStart()
     -- Create callbacks
-    ---@param steam_id string
-    ---@param name string
-    ---@param peer_id integer
-    ---@param admin boolean
-    ---@param auth boolean
     self.JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
         -- Check if player was loaded via save data. This happens because onPlayerJoin runs for the host after Noir fully starts
         if self:GetPlayer(peer_id) then
@@ -2551,11 +2687,6 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnJoin:Fire(player)
     end)
 
-    ---@param steam_id string
-    ---@param name string
-    ---@param peer_id integer
-    ---@param admin boolean
-    ---@param auth boolean
     self.LeaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
         -- Get player
         local player = self:GetPlayer(peer_id)
@@ -2577,11 +2708,6 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnLeave:Fire(player)
     end)
 
-    ---@param steam_id string
-    ---@param name string
-    ---@param peer_id integer
-    ---@param admin boolean
-    ---@param auth boolean
     self.DieCallback = Noir.Callbacks:Connect("onPlayerDie", function(steam_id, name, peer_id, admin, auth)
         -- Get player
         local player = self:GetPlayer(peer_id)
@@ -2595,7 +2721,6 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnDie:Fire(player)
     end)
 
-    ---@param peer_id integer
     self.RespawnCallback = Noir.Callbacks:Connect("onPlayerRespawn", function(peer_id)
         -- Get player
         local player = self:GetPlayer(peer_id)
@@ -2634,7 +2759,7 @@ function Noir.Services.PlayerService:ServiceStart()
             end
 
             -- Give data
-            local createdPlayer = self:_GivePlayerData(tostring(player.steam_id), player.name, player.id, player.admin, player.auth)
+            local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
 
             if not createdPlayer then
                 Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
@@ -2659,7 +2784,7 @@ end
     Gives data to a player.<br>
     Used internally.
 ]]
----@param steam_id string
+---@param steam_id integer
 ---@param name string
 ---@param peer_id integer
 ---@param admin boolean
@@ -2739,8 +2864,7 @@ function Noir.Services.PlayerService:_SaveProperty(player, property)
     local properties = self:_GetSavedProperties()
 
     if not properties[player.ID] then
-        Noir.Libraries.Logging:Error("PlayerService", "%s is missing a properties savedata table, causing PlayerService:_SaveProperty() to fail.", false, player.Name)
-        return
+        properties[player.ID] = {}
     end
 
     properties[player.ID][property] = player[property]
@@ -2752,6 +2876,7 @@ end
     Used internally. Do not use in your code.
 ]]
 ---@param player NoirPlayer
+---@return table<string, boolean>|nil
 function Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
     return self:_GetSavedProperties()[player.ID]
 end
@@ -2841,7 +2966,7 @@ end
 -- // Intellisense
 -------------------------------
 
----@alias NoirSavedPlayerProperties table<integer, table<string, any>>
+---@alias NoirSavedPlayerProperties table<integer, table<string, boolean>>
 
 ----------------------------------------------
 -- // [File] ..\src\Noir\Built-Ins/Services\ObjectService.lua
@@ -3346,6 +3471,147 @@ function Noir.Services.GameSettingsService:SetSetting(name, value)
 end
 
 ----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Services\CommandService.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Services - Command Service
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author: @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A service for easily creating commands with support for command aliases, permissions, etc.
+
+    Noir.Services.CommandService:CreateCommand("info", {"i"}, {"Nerd"}, false, false, false, "Shows random information.", function(player, message, args, hasPermission)
+        if not hasPermission then
+            server.announce("Server", "Sorry, you don't have permission to use this command. Try again though.", player.ID)
+            player:SetPermission("Nerd")
+            return
+        end
+
+        server.announce("Info", "This addon uses Noir!")
+    end)
+]]
+---@class NoirCommandService: NoirService
+---@field Commands table<string, NoirCommand>
+---@field OnCustomCommand NoirConnection Represents the connection to the OnCustomCommand game callback
+Noir.Services.CommandService = Noir.Services:CreateService("CommandService")
+
+function Noir.Services.CommandService:ServiceInit()
+    self.Commands = {}
+end
+
+function Noir.Services.CommandService:ServiceStart()
+    self.OnCustomCommand = Noir.Callbacks:Connect("onCustomCommand", function(message, peer_id, _, _, commandName, ...)
+        -- Get the player
+        local player = Noir.Services.PlayerService:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("CommandService", "A player ran a command, but they aren't recognized as a player in the PlayerService", false)
+            return
+        end
+
+        -- Remove ? prefix
+        commandName = commandName:sub(2)
+
+        -- Get the command
+        local command = self:FindCommand(commandName)
+
+        if not command then
+            return
+        end
+
+        -- Trigger the command
+        command:_Use(player, message, {...})
+    end)
+end
+
+--[[
+    Get a command by the name or alias.
+]]
+---@param query string
+---@return NoirCommand|nil
+function Noir.Services.CommandService:FindCommand(query)
+    for _, command in pairs(self:GetCommands()) do
+        if command:_Matches(query) then
+            return command
+        end
+    end
+end
+
+--[[
+    Create a new command.
+]]
+---@param name string The name of the command (eg: if you provided "help", the player would need to type "?help" in chat)
+---@param aliases table<integer, string> The aliases of the command
+---@param requiredPermissions table<integer, string>|nil The required permissions for this command
+---@param requiresAuth boolean|nil Whether or not this command requires auth
+---@param requiresAdmin boolean|nil Whether or not this command requires admin
+---@param capsSensitive boolean|nil Whether or not this command is case-sensitive
+---@param description string|nil The description of this command
+---@param callback fun(player: NoirPlayer, message: string, args: table<integer, string>, hasPermission: boolean)
+---@return NoirCommand
+function Noir.Services.CommandService:CreateCommand(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description, callback)
+    local command = Noir.Classes.CommandClass:New(name, aliases, requiredPermissions or {}, requiresAuth or false, requiresAdmin or false, capsSensitive or false, description or "")
+    command.OnUse:Connect(callback)
+
+    self.Commands[name] = command
+    return command
+end
+
+--[[
+    Get a command by the name.
+]]
+---@param name string
+---@return NoirCommand|nil
+function Noir.Services.CommandService:GetCommand(name)
+    return self.Commands[name]
+end
+
+--[[
+    Remove a command.
+]]
+---@param name string
+function Noir.Services.CommandService:RemoveCommand(name)
+    self.Commands[name] = nil
+end
+
+--[[
+    Returns all commands.
+]]
+---@return table<string, NoirCommand>
+function Noir.Services.CommandService:GetCommands()
+    return self.Commands
+end
+
+----------------------------------------------
 -- // [File] ..\src\Noir\Callbacks.lua
 ----------------------------------------------
 --------------------------------------------------------
@@ -3755,7 +4021,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.6.2"
+Noir.Version = "1.7.0"
 
 --[[
     This event is called when the framework is started.<br>
@@ -3787,7 +4053,7 @@ Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
 
 --[[
     Starts the framework.<br>
-    This will initalize all services, then upon completion, all services will be started.<br>
+    This will initialize all services, then upon completion, all services will be started.<br>
     Use the `Noir.Started` event to safely run your code.
 
     Noir.Started:Once(function()
