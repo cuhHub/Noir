@@ -39,11 +39,11 @@
 ]]
 ---@class NoirObject: NoirClass
 ---@field New fun(self: NoirObject, ID: integer): NoirObject
----@field ID integer
----@field Loaded boolean
----@field OnLoad NoirEvent
----@field OnUnload NoirEvent
----@field OnDespawn NoirEvent
+---@field ID integer The ID of this object
+---@field Loaded boolean Whether or not this object is loaded
+---@field OnLoad NoirEvent Fired when this object is loaded
+---@field OnUnload NoirEvent Fired when this object is unloaded
+---@field OnDespawn NoirEvent Fired when this object is despawned
 Noir.Classes.ObjectClass = Noir.Class("NoirObject")
 
 --[[
