@@ -188,7 +188,12 @@ function Noir.Classes.ServiceClass:Load(index, default)
 
     -- Load
     local value = g_savedata.Noir.Services[self.Name][index]
-    return value ~= nil and value or default
+
+    if value == nil then
+        return default
+    end
+
+    return value
 end
 
 --[[
