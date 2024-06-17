@@ -579,6 +579,7 @@ Noir.Classes.ServiceClass = Noir.Class("NoirService")
     Initializes service class objects.
 ]]
 ---@param name string
+---@param isBuiltIn boolean
 function Noir.Classes.ServiceClass:Init(name, isBuiltIn)
     -- Create attributes
     self.Name = name
@@ -2455,13 +2456,13 @@ function Noir.Services:GetService(name)
 
     -- Check if service exists
     if not service then
-        Noir.Libraries.Logging:Error(name, "Attempted to retrieve a service that doesn't exist ('%s').", true)
+        Noir.Libraries.Logging:Error(name, "Attempted to retrieve a service that doesn't exist ('%s').", true, name)
         return
     end
 
     -- Check if service has been initialized
     if not service.Initialized then
-        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that hasn't initialized yet ('%s').", false)
+        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that hasn't initialized yet ('%s').", false, service.Name)
         return
     end
 
@@ -2551,8 +2552,6 @@ end
 ---@field Tasks table<integer, NoirTask> A table containing active tasks
 ---@field OnTickConnection NoirConnection Represents the connection to the onTick game callback
 Noir.Services.TaskService = Noir.Services:CreateService("TaskService", true)
-Noir.Services.TaskService.InitPriority = 1
-Noir.Services.TaskService.StartPriority = 1
 
 function Noir.Services.TaskService:ServiceInit()
     -- Create attributes
@@ -4059,7 +4058,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.8.0"
+Noir.Version = "1.8.1"
 
 --[[
     This event is called when the framework is started.<br>
