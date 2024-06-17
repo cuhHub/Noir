@@ -205,15 +205,15 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
     -- For later
     local event = Noir.Callbacks.Events[name]
 
+    -- Stop here if the event already exists
+    if event then
+        return event
+    end
+
     -- Create event if it doesn't exist
     if not event then
         event = Noir.Libraries.Events:Create()
         self.Events[name] = event
-    end
-
-    -- Stop here if the event already exists
-    if event then
-        return event
     end
 
     -- Create function for game callback if it doesn't exist. If the user created the callback themselves, overwrite it
