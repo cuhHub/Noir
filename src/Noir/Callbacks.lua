@@ -204,7 +204,6 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
 
     -- For later
     local event = Noir.Callbacks.Events[name]
-    local eventAlreadyExists = event ~= nil -- If the event already exists, _ENV[name] will also exist unless the user does something stupid - but that's on them
 
     -- Create event if it doesn't exist
     if not event then
@@ -212,10 +211,15 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
         self.Events[name] = event
     end
 
+    -- Stop here if the event already exists
+    if event then
+        return event
+    end
+
     -- Create function for game callback if it doesn't exist. If the user created the callback themselves, overwrite it
     local existing = _ENV[name]
 
-    if existing and not eventAlreadyExists then
+    if existing then
         -- Inform developer that a function for a game callback already exists
         Noir.Libraries.Logging:Warning("Callbacks", "Your addon has a function for the game callback '%s'. Noir will wrap around it to prevent overwriting. Please use `Noir.Callbacks:Connect(\"%s\", function(...) end)` instead of `function %s(...) end` function to avoid this warning.", name, name, name)
 
@@ -224,7 +228,7 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
             existing(...)
             event:Fire(...)
         end
-    elseif not eventAlreadyExists then
+    else
         -- Create function for game callback
         _ENV[name] = function(...)
             event:Fire(...)
