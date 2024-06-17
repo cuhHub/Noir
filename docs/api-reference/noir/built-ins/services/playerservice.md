@@ -16,7 +16,7 @@ Used internally.
 
 #### Parameters
 
-* `steam_id`: string
+* `steam_id`: integer
 * `name`: string
 * `peer_id`: integer
 * `admin`: boolean
@@ -100,6 +100,10 @@ Used internally. Do not use in your code.
 #### Parameters
 
 * `player`: NoirPlayer
+
+#### Returns
+
+* `table<string, boolean>|nil`
 
 ***
 

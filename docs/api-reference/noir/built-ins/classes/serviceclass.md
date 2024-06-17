@@ -2,12 +2,12 @@
 
 **Noir.Classes.ServiceClass**: `NoirClass`
 
-A class that represents a service.
+Represents a Noir service.
 
 ***
 
 ```lua
-Noir.Classes.ServiceClass:Init(name)
+Noir.Classes.ServiceClass:Init(name, isBuiltIn)
 ```
 
 Initializes service class objects.
@@ -15,6 +15,7 @@ Initializes service class objects.
 #### Parameters
 
 * `name`: string
+* `isBuiltIn`: boolean
 
 ***
 
@@ -22,7 +23,9 @@ Initializes service class objects.
 Noir.Classes.ServiceClass:_Initialize()
 ```
 
-Start this service. Used internally.
+Start this service.
+
+Used internally.
 
 ***
 
@@ -30,7 +33,9 @@ Start this service. Used internally.
 Noir.Classes.ServiceClass:_Start()
 ```
 
-Start this service. Used internally.
+Start this service.
+
+Used internally.
 
 ***
 
@@ -38,7 +43,9 @@ Start this service. Used internally.
 Noir.Classes.ServiceClass:_CheckSaveData()
 ```
 
-Checks if g\_savedata is intact. Used internally.
+Checks if g\_savedata is intact.
+
+Used internally.
 
 #### Returns
 

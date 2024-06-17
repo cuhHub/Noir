@@ -35,18 +35,6 @@ Used internally. Do not use in your code.
 ***
 
 ```lua
-Noir.Services.ObjectService:GetObjects()
-```
-
-Get all objects.
-
-#### Returns
-
-* `table<integer, NoirObject>`
-
-***
-
-```lua
 Noir.Services.ObjectService:_SaveObjectSavedata(object)
 ```
 
@@ -71,6 +59,18 @@ Used internally. Do not use in your code.
 #### Parameters
 
 * `object_id`: integer
+
+***
+
+```lua
+Noir.Services.ObjectService:GetObjects()
+```
+
+Get all objects.
+
+#### Returns
+
+* `table<integer, NoirObject>`
 
 ***
 
