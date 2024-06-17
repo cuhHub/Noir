@@ -407,5 +407,8 @@ for value in values:
     valuesForFiles[value.path].append(markdown)
     
 for path, markdown in valuesForFiles.items():
-    with open(f"../apiref/{os.path.basename(path)}.md", "w", encoding="utf-8") as file:
+    writePath = f"../apiref/{os.path.relpath(path)}"
+    os.makedirs(os.path.dirname(writePath), exist_ok = True)
+    
+    with open(f"{writePath}.md", "w", encoding="utf-8") as file:
         file.write("\n\n---\n\n".join(markdown))
