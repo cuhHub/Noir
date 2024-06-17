@@ -715,7 +715,8 @@ function Noir.Classes.ServiceClass:Load(index, default)
     end
 
     -- Load
-    return g_savedata.Noir.Services[self.Name][index] or default
+    local value = g_savedata.Noir.Services[self.Name][index]
+    return value ~= nil and value or default
 end
 
 --[[
@@ -4021,7 +4022,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.7.0"
+Noir.Version = "1.7.1"
 
 --[[
     This event is called when the framework is started.<br>
