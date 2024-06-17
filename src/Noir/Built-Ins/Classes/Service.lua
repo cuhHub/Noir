@@ -51,6 +51,7 @@ Noir.Classes.ServiceClass = Noir.Class("NoirService")
     Initializes service class objects.
 ]]
 ---@param name string
+---@param isBuiltIn boolean
 function Noir.Classes.ServiceClass:Init(name, isBuiltIn)
     -- Create attributes
     self.Name = name
