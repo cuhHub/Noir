@@ -3860,7 +3860,7 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
 
     -- For later
     local event = Noir.Callbacks.Events[name]
-    local wasCreatedAlready = event ~= nil
+    local eventAlreadyExists = event ~= nil -- If the event already exists, _ENV[name] will also exist unless the user does something stupid - but that's on them
 
     -- Create event if it doesn't exist
     if not event then
@@ -3871,16 +3871,16 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
     -- Create function for game callback if it doesn't exist. If the user created the callback themselves, overwrite it
     local existing = _ENV[name]
 
-    if existing and not wasCreatedAlready then
+    if existing and not eventAlreadyExists then
         -- Inform developer that a function for a game callback already exists
-        Noir.Libraries.Logging:Warning("Callbacks", "Your addon has a function for the game callback '%s'. Noir will wrap around it to prevent overwriting. Please use Noir.Callbacks:Connect(\"%s\", function(...) end) to avoid this warning.", name, name)
+        Noir.Libraries.Logging:Warning("Callbacks", "Your addon has a function for the game callback '%s'. Noir will wrap around it to prevent overwriting. Please use `Noir.Callbacks:Connect(\"%s\", function(...) end)` instead of `function %s(...) end` function to avoid this warning.", name, name, name)
 
         -- Wrap around existing function
         _ENV[name] = function(...)
             existing(...)
             event:Fire(...)
         end
-    else
+    elseif not eventAlreadyExists then
         -- Create function for game callback
         _ENV[name] = function(...)
             event:Fire(...)
@@ -4058,7 +4058,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.8.1"
+Noir.Version = "1.8.2"
 
 --[[
     This event is called when the framework is started.<br>
