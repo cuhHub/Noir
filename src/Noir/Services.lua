@@ -105,13 +105,13 @@ function Noir.Services:GetService(name)
 
     -- Check if service exists
     if not service then
-        Noir.Libraries.Logging:Error(name, "Attempted to retrieve a service that doesn't exist ('%s').", true)
+        Noir.Libraries.Logging:Error(name, "Attempted to retrieve a service that doesn't exist ('%s').", true, name)
         return
     end
 
     -- Check if service has been initialized
     if not service.Initialized then
-        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that hasn't initialized yet ('%s').", false)
+        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that hasn't initialized yet ('%s').", false, service.Name)
         return
     end
 
