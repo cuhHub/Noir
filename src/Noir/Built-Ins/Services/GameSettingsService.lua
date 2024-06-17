@@ -40,9 +40,8 @@
 ---@class NoirGameSettingsService: NoirService
 Noir.Services.GameSettingsService = Noir.Services:CreateService("GameSettingsService")
 
-function Noir.Services.GameSettingsService:ServiceInit()
-
-end
+function Noir.Services.GameSettingsService:ServiceInit() end
+function Noir.Services.GameSettingsService:ServiceStart() end
 
 --[[
     Returns the value of the provided game setting.
