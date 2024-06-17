@@ -146,7 +146,7 @@ function Noir.Class(name, parent)
     ---@param other NoirClass
     ---@return boolean
     function class:IsSameType(other)
-        return other.ClassName ~= nil and self.ClassName == other.ClassName
+        return type(other) == "table" and other.ClassName ~= nil and self.ClassName == other.ClassName
     end
 
     return class
