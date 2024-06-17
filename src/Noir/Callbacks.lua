@@ -231,9 +231,6 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
         end
     end
 
-    -- Log
-    Noir.Libraries.Logging:Info("Callbacks", "Connected to game callback '%s'.", name)
-
     -- Return event
     return event
 end
