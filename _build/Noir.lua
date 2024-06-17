@@ -197,7 +197,7 @@ function Noir.Class(name, parent)
     ---@param other NoirClass
     ---@return boolean
     function class:IsSameType(other)
-        return other.ClassName ~= nil and self.ClassName == other.ClassName
+        return type(other) == "table" and other.ClassName ~= nil and self.ClassName == other.ClassName
     end
 
     return class
@@ -563,8 +563,9 @@ end
     Represents a Noir service.
 ]]
 ---@class NoirService: NoirClass
----@field New fun(self: NoirService, name: string): NoirService
+---@field New fun(self: NoirService, name: string, isBuiltIn: boolean): NoirService
 ---@field Name string The name of this service
+---@field IsBuiltIn boolean Whether or not this service comes with Noir
 ---@field Initialized boolean Whether or not this service has been initialized
 ---@field Started boolean Whether or not this service has been started
 ---@field InitPriority integer The priority of this service when it is initialized
@@ -578,9 +579,10 @@ Noir.Classes.ServiceClass = Noir.Class("NoirService")
     Initializes service class objects.
 ]]
 ---@param name string
-function Noir.Classes.ServiceClass:Init(name)
+function Noir.Classes.ServiceClass:Init(name, isBuiltIn)
     -- Create attributes
     self.Name = name
+    self.IsBuiltIn = isBuiltIn
     self.Initialized = false
     self.Started = false
 
@@ -2419,8 +2421,9 @@ Noir.Services.CreatedServices = {} ---@type table<string, NoirService>
     end
 ]]
 ---@param name string
+---@param isBuiltIn boolean|nil
 ---@return NoirService
-function Noir.Services:CreateService(name)
+function Noir.Services:CreateService(name, isBuiltIn)
     -- Check if service already exists
     if self.CreatedServices[name] then
         Noir.Libraries.Logging:Error("Service Creation", "Attempted to create a service that already exists. The already existing service has been returned instead.", false)
@@ -2428,7 +2431,7 @@ function Noir.Services:CreateService(name)
     end
 
     -- Create service
-    local service = Noir.Classes.ServiceClass:New(name)
+    local service = Noir.Classes.ServiceClass:New(name, isBuiltIn or false)
 
     -- Register service internally
     self.CreatedServices[name] = service
@@ -2463,6 +2466,39 @@ function Noir.Services:GetService(name)
     end
 
     return service
+end
+
+--[[
+    Returns all built-in Noir services.
+]]
+---@return table<string, NoirService>
+function Noir.Services:GetBuiltInServices()
+    local services = {}
+
+    for index, service in pairs(self.CreatedServices) do
+        if service.IsBuiltIn then
+            services[index] = service
+        end
+    end
+
+    return services
+end
+
+--[[
+    Removes built-in services from Noir. This may give a very slight performance increase.<br>
+    **Use before calling Noir:Start().**
+]]
+---@param exceptions table<integer, string> A table containing exact names of services to not remove
+function Noir.Services:RemoveBuiltInServices(exceptions)
+    for index, service in pairs(self:GetBuiltInServices()) do
+        if Noir.Libraries.Table:Find(exceptions, service.Name) then
+            goto continue
+        end
+
+        self.CreatedServices[index] = nil
+
+        ::continue::
+    end
 end
 
 ----------------------------------------------
@@ -2514,7 +2550,7 @@ end
 ---@field IncrementalID integer The ID of the next task
 ---@field Tasks table<integer, NoirTask> A table containing active tasks
 ---@field OnTickConnection NoirConnection Represents the connection to the onTick game callback
-Noir.Services.TaskService = Noir.Services:CreateService("TaskService")
+Noir.Services.TaskService = Noir.Services:CreateService("TaskService", true)
 Noir.Services.TaskService.InitPriority = 1
 Noir.Services.TaskService.StartPriority = 1
 
@@ -2661,7 +2697,7 @@ end
 ---@field DieCallback NoirConnection A connection to the onPlayerDie event
 ---@field RespawnCallback NoirConnection A connection to the onPlayerRespawn event
 ---@field DestroyCallback NoirConnection A connection to the onDestroy event
-Noir.Services.PlayerService = Noir.Services:CreateService("PlayerService")
+Noir.Services.PlayerService = Noir.Services:CreateService("PlayerService", true)
 Noir.Services.PlayerService.InitPriority = 2
 Noir.Services.PlayerService.StartPriority = 2
 
@@ -3038,7 +3074,7 @@ end
 ---
 ---@field OnLoadConnection NoirConnection A connection to the onObjectLoad game callback
 ---@field OnUnloadConnection NoirConnection A connection to the onObjectUnload game callback
-Noir.Services.ObjectService = Noir.Services:CreateService("ObjectService")
+Noir.Services.ObjectService = Noir.Services:CreateService("ObjectService", true)
 
 function Noir.Services.ObjectService:ServiceInit()
     self.Objects = {}
@@ -3435,7 +3471,7 @@ end
     Noir.Services.GameSettingsService:SetSetting("infinite_batteries", true)
 ]]
 ---@class NoirGameSettingsService: NoirService
-Noir.Services.GameSettingsService = Noir.Services:CreateService("GameSettingsService")
+Noir.Services.GameSettingsService = Noir.Services:CreateService("GameSettingsService", true)
 
 function Noir.Services.GameSettingsService:ServiceInit() end
 function Noir.Services.GameSettingsService:ServiceStart() end
@@ -3527,7 +3563,7 @@ end
 ---@class NoirCommandService: NoirService
 ---@field Commands table<string, NoirCommand>
 ---@field OnCustomCommand NoirConnection Represents the connection to the OnCustomCommand game callback
-Noir.Services.CommandService = Noir.Services:CreateService("CommandService")
+Noir.Services.CommandService = Noir.Services:CreateService("CommandService", true)
 
 function Noir.Services.CommandService:ServiceInit()
     self.Commands = {}
@@ -3852,9 +3888,6 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
         end
     end
 
-    -- Log
-    Noir.Libraries.Logging:Info("Callbacks", "Connected to game callback '%s'.", name)
-
     -- Return event
     return event
 end
@@ -4026,7 +4059,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.7.3"
+Noir.Version = "1.8.0"
 
 --[[
     This event is called when the framework is started.<br>
