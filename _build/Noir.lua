@@ -3437,9 +3437,8 @@ end
 ---@class NoirGameSettingsService: NoirService
 Noir.Services.GameSettingsService = Noir.Services:CreateService("GameSettingsService")
 
-function Noir.Services.GameSettingsService:ServiceInit()
-
-end
+function Noir.Services.GameSettingsService:ServiceInit() end
+function Noir.Services.GameSettingsService:ServiceStart() end
 
 --[[
     Returns the value of the provided game setting.
@@ -4027,7 +4026,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.7.2"
+Noir.Version = "1.7.3"
 
 --[[
     This event is called when the framework is started.<br>
