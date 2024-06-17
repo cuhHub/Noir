@@ -71,8 +71,9 @@ Noir.Services.CreatedServices = {} ---@type table<string, NoirService>
     end
 ]]
 ---@param name string
+---@param isBuiltIn boolean|nil
 ---@return NoirService
-function Noir.Services:CreateService(name)
+function Noir.Services:CreateService(name, isBuiltIn)
     -- Check if service already exists
     if self.CreatedServices[name] then
         Noir.Libraries.Logging:Error("Service Creation", "Attempted to create a service that already exists. The already existing service has been returned instead.", false)
@@ -80,7 +81,7 @@ function Noir.Services:CreateService(name)
     end
 
     -- Create service
-    local service = Noir.Classes.ServiceClass:New(name)
+    local service = Noir.Classes.ServiceClass:New(name, isBuiltIn or false)
 
     -- Register service internally
     self.CreatedServices[name] = service
@@ -115,4 +116,37 @@ function Noir.Services:GetService(name)
     end
 
     return service
+end
+
+--[[
+    Returns all built-in Noir services.
+]]
+---@return table<string, NoirService>
+function Noir.Services:GetBuiltInServices()
+    local services = {}
+
+    for index, service in pairs(self.CreatedServices) do
+        if service.IsBuiltIn then
+            services[index] = service
+        end
+    end
+
+    return services
+end
+
+--[[
+    Removes built-in services from Noir. This may give a very slight performance increase.<br>
+    **Use before calling Noir:Start().**
+]]
+---@param exceptions table<integer, string> A table containing exact names of services to not remove
+function Noir.Services:RemoveBuiltInServices(exceptions)
+    for index, service in pairs(self:GetBuiltInServices()) do
+        if Noir.Libraries.Table:Find(exceptions, service.Name) then
+            goto continue
+        end
+
+        self.CreatedServices[index] = nil
+
+        ::continue::
+    end
 end

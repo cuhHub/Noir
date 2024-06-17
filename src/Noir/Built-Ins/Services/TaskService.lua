@@ -44,7 +44,7 @@
 ---@field IncrementalID integer The ID of the next task
 ---@field Tasks table<integer, NoirTask> A table containing active tasks
 ---@field OnTickConnection NoirConnection Represents the connection to the onTick game callback
-Noir.Services.TaskService = Noir.Services:CreateService("TaskService")
+Noir.Services.TaskService = Noir.Services:CreateService("TaskService", true)
 Noir.Services.TaskService.InitPriority = 1
 Noir.Services.TaskService.StartPriority = 1
 

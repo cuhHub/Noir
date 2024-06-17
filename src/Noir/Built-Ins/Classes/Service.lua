@@ -35,8 +35,9 @@
     Represents a Noir service.
 ]]
 ---@class NoirService: NoirClass
----@field New fun(self: NoirService, name: string): NoirService
+---@field New fun(self: NoirService, name: string, isBuiltIn: boolean): NoirService
 ---@field Name string The name of this service
+---@field IsBuiltIn boolean Whether or not this service comes with Noir
 ---@field Initialized boolean Whether or not this service has been initialized
 ---@field Started boolean Whether or not this service has been started
 ---@field InitPriority integer The priority of this service when it is initialized
@@ -50,9 +51,10 @@ Noir.Classes.ServiceClass = Noir.Class("NoirService")
     Initializes service class objects.
 ]]
 ---@param name string
-function Noir.Classes.ServiceClass:Init(name)
+function Noir.Classes.ServiceClass:Init(name, isBuiltIn)
     -- Create attributes
     self.Name = name
+    self.IsBuiltIn = isBuiltIn
     self.Initialized = false
     self.Started = false
 

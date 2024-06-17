@@ -59,7 +59,7 @@
 ---
 ---@field OnLoadConnection NoirConnection A connection to the onObjectLoad game callback
 ---@field OnUnloadConnection NoirConnection A connection to the onObjectUnload game callback
-Noir.Services.ObjectService = Noir.Services:CreateService("ObjectService")
+Noir.Services.ObjectService = Noir.Services:CreateService("ObjectService", true)
 
 function Noir.Services.ObjectService:ServiceInit()
     self.Objects = {}

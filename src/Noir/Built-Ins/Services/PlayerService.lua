@@ -54,7 +54,7 @@
 ---@field DieCallback NoirConnection A connection to the onPlayerDie event
 ---@field RespawnCallback NoirConnection A connection to the onPlayerRespawn event
 ---@field DestroyCallback NoirConnection A connection to the onDestroy event
-Noir.Services.PlayerService = Noir.Services:CreateService("PlayerService")
+Noir.Services.PlayerService = Noir.Services:CreateService("PlayerService", true)
 Noir.Services.PlayerService.InitPriority = 2
 Noir.Services.PlayerService.StartPriority = 2
 

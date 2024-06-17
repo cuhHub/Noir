@@ -38,7 +38,7 @@
     Noir.Services.GameSettingsService:SetSetting("infinite_batteries", true)
 ]]
 ---@class NoirGameSettingsService: NoirService
-Noir.Services.GameSettingsService = Noir.Services:CreateService("GameSettingsService")
+Noir.Services.GameSettingsService = Noir.Services:CreateService("GameSettingsService", true)
 
 function Noir.Services.GameSettingsService:ServiceInit() end
 function Noir.Services.GameSettingsService:ServiceStart() end
