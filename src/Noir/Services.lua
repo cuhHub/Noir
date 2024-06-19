@@ -50,7 +50,7 @@ Noir.Services = {}
 
 --[[
     A table containing created services.<br>
-    Do not modify this table directly. Please use `Noir.Services:GetService(name)` instead.
+    You probably do need to not modify or access this table directly. Please use `Noir.Services:GetService(name)` instead.
 ]]
 Noir.Services.CreatedServices = {} ---@type table<string, NoirService>
 
