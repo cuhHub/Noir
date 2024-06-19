@@ -15,7 +15,7 @@ Noir contains built-in libraries that provide helpful functions to use throughou
 
 Noir also contains built-in services which can be found in `Noir.Services` or fetched directly via `Noir.Services:GetService(name)`.
 
-Finally, examples can be found in the `examples` directory. You can see a quick example below however.
+Finally, examples can be found in the `examples` directory.
 
 ## 📜 Documentation
 Documentation can be found [here](https://cuhhub.gitbook.io/noir/).
