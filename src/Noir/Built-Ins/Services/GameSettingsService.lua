@@ -62,7 +62,7 @@ function Noir.Services.GameSettingsService:GetSetting(name)
     local settings = self:GetSettings()
     local setting = settings[name]
 
-    if not setting then
+    if setting == nil then
         return
     end
 
