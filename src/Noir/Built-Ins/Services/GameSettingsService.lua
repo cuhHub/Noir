@@ -44,6 +44,14 @@ function Noir.Services.GameSettingsService:ServiceInit() end
 function Noir.Services.GameSettingsService:ServiceStart() end
 
 --[[
+    Returns a list of all game settings.
+]]
+---@return table<integer, SWGameSettingEnum>
+function Noir.Services.GameSettingsService:GetSettings()
+    return server.getGameSettings()
+end
+
+--[[
     Returns the value of the provided game setting.
 
     Noir.Services.GameSettingsService:GetSetting("infinite_batteries") -- false
@@ -51,11 +59,10 @@ function Noir.Services.GameSettingsService:ServiceStart() end
 ---@param name SWGameSettingEnum
 ---@return any
 function Noir.Services.GameSettingsService:GetSetting(name)
-    local settings = server.getGameSettings()
+    local settings = self:GetSettings()
     local setting = settings[name]
 
     if not setting then
-        Noir.Libraries.Logging:Error("GameSettingsService", "GetSetting(): %s is not a valid game setting.", false, name)
         return
     end
 
