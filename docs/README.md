@@ -28,7 +28,7 @@ layout:
 
 ## What is Noir?
 
-Noir is a framework that helps Stormworks addon developers create addons in a neat, modular structure.
+Noir is a framework that helps Stormworks addon developers create addons with a neat, modular structure.
 
 Noir also comes with built-in [services](tutorials/services.md) and [libraries](tutorials/libraries.md) to reduce the amount of code you have to write.
 
