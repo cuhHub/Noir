@@ -174,10 +174,10 @@ function Noir.Callbacks:Once(name, callback, hideStartWarning)
 end
 
 --[[
-    Get a game callback event.<br>
+    Get a game callback event. These events may not exist if `Noir.Callbacks:Connect()` or `Noir.Callbacks:Once()` was not called for them.<br>
     It's best to use `Noir.Callbacks:Connect()` or `Noir.Callbacks:Once()` instead of getting a callback event directly and connecting to it.
 
-    local event = Noir.Callbacks:Get("onPlayerJoin")
+    local event = Noir.Callbacks:Get("onPlayerJoin") -- can be nil! use Noir.Callbacks:Connect() or Noir.Callbacks:Once() instead to guarantee an event
 
     event:Connect(function()
         server.announce("Server", "A player joined!")
