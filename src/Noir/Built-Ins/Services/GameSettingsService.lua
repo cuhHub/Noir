@@ -77,7 +77,7 @@ end
 ---@param name SWGameSettingEnum
 ---@param value any
 function Noir.Services.GameSettingsService:SetSetting(name, value)
-    if not self:GetSetting(name) then
+    if self:GetSetting(name) == nil then
         Noir.Libraries.Logging:Error("GameSettingsService", "SetSetting(): %s is not a valid game setting.", false, name)
         return
     end
