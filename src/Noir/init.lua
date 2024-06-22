@@ -35,6 +35,7 @@
 -------------------------------
 -- // Main
 -------------------------------
+
 require("Noir.Definition")
 require("Noir.Class")
 
