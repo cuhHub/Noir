@@ -38,6 +38,15 @@
 Noir.Version = "1.8.4"
 
 --[[
+    Returns the MAJOR, MINOR, and PATCH of the current Noir version.
+
+    major, minor, patch = Noir:GetVersion()
+]]
+function Noir:GetVersion()
+    return table.unpack(Noir.Libraries.String:Split(self.Version, "."))
+end
+
+--[[
     This event is called when the framework is started.<br>
     Use this event to safely run your code.
 
