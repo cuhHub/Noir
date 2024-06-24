@@ -2,13 +2,17 @@
 
 **Noir.Version**: `string`
 
-The current version of Noir. Follows [Semantic Versioning.](https://semver.org)
+The current version of Noir.
+
+Follows [Semantic Versioning.](https://semver.org)
 
 ***
 
 **Noir.Started**: `NoirEvent`
 
-This event is called when the framework is started. Use this event to safely run your code.
+This event is called when the framework is started.
+
+Use this event to safely run your code.
 
 ***
 
@@ -29,8 +33,22 @@ This represents whether or not the framework is starting.
 This represents whether or not the addon was:
 
 * Reloaded
-* Started via a save being loaded into
+* Started via a save being loaded
 * Started via a save creation
+
+***
+
+```lua
+Noir:GetVersion()
+```
+
+Returns the MAJOR, MINOR, and PATCH of the current Noir version.
+
+#### Returns
+
+* `string`: major - The MAJOR part of the version
+* `string`: minor - The MINOR part of the version
+* `string`: patch - The PATCH part of the version
 
 ***
 
@@ -38,4 +56,8 @@ This represents whether or not the addon was:
 Noir:Start()
 ```
 
-Starts the framework. This will initialize all services, then upon completion, all services will be started. Use the `Noir.Started` event to safely run your code.
+Starts the framework.
+
+This will initialize all services, then upon completion, all services will be started.
+
+Use the `Noir.Started` event to safely run your code.
