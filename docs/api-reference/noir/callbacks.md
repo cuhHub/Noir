@@ -48,7 +48,7 @@ Connect to a game callback, but disconnect after the game callback has been call
 Noir.Callbacks:Get(name)
 ```
 
-Get a game callback event.
+Get a game callback event. These events may not exist if `Noir.Callbacks:Connect()` or `Noir.Callbacks:Once()` was not called for them.
 
 It's best to use `Noir.Callbacks:Connect()` or `Noir.Callbacks:Once()` instead of getting a callback event directly and connecting to it.
 

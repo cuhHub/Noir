@@ -12,7 +12,7 @@ These services can be used to hold methods that are all designed for a specific 
 
 A table containing created services.
 
-Do not modify this table directly. Please use `Noir.Services:GetService(name)` instead.
+You probably do need to not modify or access this table directly. Please use `Noir.Services:GetService(name)` instead.
 
 ***
 

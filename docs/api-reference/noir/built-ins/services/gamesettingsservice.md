@@ -7,6 +7,18 @@ A service for changing and accessing the game's settings.
 ***
 
 ```lua
+Noir.Services.GameSettingsService:GetSettings()
+```
+
+Returns a list of all game settings.
+
+#### Returns
+
+* `SWGameSettings`
+
+***
+
+```lua
 Noir.Services.GameSettingsService:GetSetting(name)
 ```
 
