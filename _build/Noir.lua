@@ -2401,7 +2401,7 @@ Noir.Services = {}
 
 --[[
     A table containing created services.<br>
-    Do not modify this table directly. Please use `Noir.Services:GetService(name)` instead.
+    You probably do need to not modify or access this table directly. Please use `Noir.Services:GetService(name)` instead.
 ]]
 Noir.Services.CreatedServices = {} ---@type table<string, NoirService>
 
@@ -3476,6 +3476,14 @@ function Noir.Services.GameSettingsService:ServiceInit() end
 function Noir.Services.GameSettingsService:ServiceStart() end
 
 --[[
+    Returns a list of all game settings.
+]]
+---@return SWGameSettings
+function Noir.Services.GameSettingsService:GetSettings()
+    return server.getGameSettings()
+end
+
+--[[
     Returns the value of the provided game setting.
 
     Noir.Services.GameSettingsService:GetSetting("infinite_batteries") -- false
@@ -3483,11 +3491,10 @@ function Noir.Services.GameSettingsService:ServiceStart() end
 ---@param name SWGameSettingEnum
 ---@return any
 function Noir.Services.GameSettingsService:GetSetting(name)
-    local settings = server.getGameSettings()
+    local settings = self:GetSettings()
     local setting = settings[name]
 
-    if not setting then
-        Noir.Libraries.Logging:Error("GameSettingsService", "GetSetting(): %s is not a valid game setting.", false, name)
+    if setting == nil then
         return
     end
 
@@ -3502,7 +3509,7 @@ end
 ---@param name SWGameSettingEnum
 ---@param value any
 function Noir.Services.GameSettingsService:SetSetting(name, value)
-    if not self:GetSetting(name) then
+    if self:GetSetting(name) == nil then
         Noir.Libraries.Logging:Error("GameSettingsService", "SetSetting(): %s is not a valid game setting.", false, name)
         return
     end
@@ -3830,10 +3837,10 @@ function Noir.Callbacks:Once(name, callback, hideStartWarning)
 end
 
 --[[
-    Get a game callback event.<br>
+    Get a game callback event. These events may not exist if `Noir.Callbacks:Connect()` or `Noir.Callbacks:Once()` was not called for them.<br>
     It's best to use `Noir.Callbacks:Connect()` or `Noir.Callbacks:Once()` instead of getting a callback event directly and connecting to it.
 
-    local event = Noir.Callbacks:Get("onPlayerJoin")
+    local event = Noir.Callbacks:Get("onPlayerJoin") -- can be nil! use Noir.Callbacks:Connect() or Noir.Callbacks:Once() instead to guarantee an event
 
     event:Connect(function()
         server.announce("Server", "A player joined!")
@@ -4062,7 +4069,19 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.8.4"
+Noir.Version = "1.8.5"
+
+--[[
+    Returns the MAJOR, MINOR, and PATCH of the current Noir version.
+
+    major, minor, patch = Noir:GetVersion()
+]]
+---@return string major The MAJOR part of the version
+---@return string minor The MINOR part of the version
+---@return string patch The PATCH part of the version
+function Noir:GetVersion()
+    return table.unpack(Noir.Libraries.String:Split(self.Version, "."))
+end
 
 --[[
     This event is called when the framework is started.<br>
