@@ -46,7 +46,7 @@ function Noir.Services.GameSettingsService:ServiceStart() end
 --[[
     Returns a list of all game settings.
 ]]
----@return table<integer, SWGameSettingEnum>
+---@return SWGameSettings
 function Noir.Services.GameSettingsService:GetSettings()
     return server.getGameSettings()
 end
