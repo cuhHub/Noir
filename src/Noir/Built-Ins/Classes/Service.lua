@@ -64,7 +64,7 @@ function Noir.Classes.ServiceClass:Init(name, isBuiltIn)
 end
 
 --[[
-    Start this service.<br>
+    Initialize this service.<br>
     Used internally.
 ]]
 function Noir.Classes.ServiceClass:_Initialize()
