@@ -50,6 +50,7 @@
 ]]
 ---@param name string
 ---@param parent NoirClass|nil
+---@return NoirClass
 function Noir.Class(name, parent)
     --[[
         A class that objects can be created from.
