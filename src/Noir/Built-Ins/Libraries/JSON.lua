@@ -95,7 +95,8 @@ end
 ---@param pos integer
 ---@param delim string
 ---@param errIfMissing boolean|nil
----@return integer, boolean
+---@return integer
+---@return boolean
 function Noir.Libraries.JSON:SkipDelim(str, pos, delim, errIfMissing)
     pos = pos + #str:match("^%s*", pos)
 
@@ -118,7 +119,8 @@ end
 ---@param str string
 ---@param pos integer
 ---@param val string|nil
----@return string, integer
+---@return string
+---@return integer
 function Noir.Libraries.JSON:ParseStringValue(str, pos, val)
     val = val or ""
 
@@ -156,7 +158,8 @@ end
 ]]
 ---@param str string
 ---@param pos integer
----@return integer, integer
+---@return integer
+---@return integer
 function Noir.Libraries.JSON:ParseNumberValue(str, pos)
     local numStr = str:match("^-?%d+%.?%d*[eE]?[+-]?%d*", pos)
     local val = tonumber(numStr)
@@ -247,7 +250,8 @@ end
 ---@param str string
 ---@param pos integer|nil
 ---@param endDelim string|nil
----@return any, integer
+---@return any
+---@return integer
 function Noir.Libraries.JSON:Decode(str, pos, endDelim)
     pos = pos or 1
 
