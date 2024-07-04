@@ -4,6 +4,8 @@
         "Logging.lua",
         "Table.lua",
         "Number.lua",
-        "String.lua"
+        "String.lua",
+        "JSON.lua",
+        "Base64.lua"
     ]
 }
