@@ -23,7 +23,7 @@ Initializes service class objects.
 Noir.Classes.ServiceClass:_Initialize()
 ```
 
-Start this service.
+Initialize this service.
 
 Used internally.
 

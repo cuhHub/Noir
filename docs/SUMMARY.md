@@ -24,6 +24,8 @@
         * [Events](api-reference/noir/built-ins/libraries/events.md)
         * [Logging](api-reference/noir/built-ins/libraries/logging.md)
         * [Number](api-reference/noir/built-ins/libraries/number.md)
+        * [JSON](api-reference/noir/built-ins/libraries/json.md)
+        * [Base64](api-reference/noir/built-ins/libraries/base64.md)
         * [String](api-reference/noir/built-ins/libraries/string.md)
         * [Table](api-reference/noir/built-ins/libraries/table.md)
       * [Services](api-reference/noir/built-ins/services/README.md)

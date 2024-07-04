@@ -12,3 +12,7 @@ Note that classes can inherit from other classes.
 
 * `name`: string
 * `parent`: NoirClass|nil
+
+#### Returns
+
+* `NoirClass`
