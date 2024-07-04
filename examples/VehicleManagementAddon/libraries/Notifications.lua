@@ -31,6 +31,7 @@
 -- // Main
 -------------------------------
 
+---@class NotificationsLib: NoirLibrary
 Notifications = Noir.Libraries:Create("Notifications")
 
 ---@param title string

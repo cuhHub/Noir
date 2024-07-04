@@ -87,6 +87,7 @@ end
 
 -- Get the vehicles belonging to a player
 ---@param player NoirPlayer
+---@return table<integer, integer>
 function VehicleService:GetVehicles(player)
     return Noir.Libraries.Table:Keys(self.vehicles[player] or {})
 end

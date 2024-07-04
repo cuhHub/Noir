@@ -32,10 +32,14 @@
 -------------------------------
 
 -- Create ?vehicles command
-local CommandService = Noir.Services:GetService("CommandService") ---@type CommandService
 local VehicleService = Noir.Services:GetService("VehicleService") ---@type VehicleService
 
-CommandService:CreateCommand("vehicles", function(player, args)
+Noir.Services.CommandService:CreateCommand("vehicles", {"v", "veh"}, {}, true, false, false, "Returns your vehicles", function (player, message, args, hasPermission)
+    if not hasPermission then
+        Notifications:SendErrorNotification("Permissions", "You do not have permission to run this command.", player)
+        return
+    end
+
     -- Get the player's vehicles
     local vehicles = VehicleService:GetVehicles(player)
 

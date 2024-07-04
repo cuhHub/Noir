@@ -32,16 +32,15 @@
 -------------------------------
 
 -- Create ?despawn command
-local CommandService = Noir.Services:GetService("CommandService") ---@type CommandService
 local VehicleService = Noir.Services:GetService("VehicleService") ---@type VehicleService
 
-CommandService:CreateCommand("despawn", function(player, args)
+Noir.Services.CommandService:CreateCommand("despawn", {"d", "clear", "clean", "c"}, {}, true, false, false, "Despawns your vehicles", function (player, message, args, hasPermission)
     if args[1] then
         -- Get the player's vehicles
         local vehicles = VehicleService:GetVehicles(player)
 
         -- Get the requested vehicle to despawn
-        local vehicle_id = vehicles[tonumber(args[1])]
+        local vehicle_id = vehicles[tonumber(args[1]) or -1]
 
         -- Nil check
         if not vehicle_id then
