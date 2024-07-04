@@ -35,7 +35,12 @@
     A library containing helper methods relating to strings.
 ]]
 ---@class NoirStringLib: NoirLibrary
-Noir.Libraries.String = Noir.Libraries:Create("NoirString")
+Noir.Libraries.String = Noir.Libraries:Create(
+    "NoirString",
+    "A library containing helper methods relating to strings.",
+    nil,
+    {"Cuh4"}
+)
 
 --[[
     Splits a string by the provided separator (defaults to " ").

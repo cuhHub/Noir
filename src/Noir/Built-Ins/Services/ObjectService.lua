@@ -59,7 +59,13 @@
 ---
 ---@field OnLoadConnection NoirConnection A connection to the onObjectLoad game callback
 ---@field OnUnloadConnection NoirConnection A connection to the onObjectUnload game callback
-Noir.Services.ObjectService = Noir.Services:CreateService("ObjectService", true)
+Noir.Services.ObjectService = Noir.Services:CreateService(
+    "ObjectService",
+    true,
+    "A service for wrapping SW objects in classes.",
+    "A service for wrapping SW objects in classes as well as providing useful object-related utilities.",
+    {"Cuh4"}
+)
 
 function Noir.Services.ObjectService:ServiceInit()
     self.Objects = {}

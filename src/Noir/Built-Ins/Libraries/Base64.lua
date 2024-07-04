@@ -36,7 +36,12 @@
     This code is from https://gist.github.com/To0fan/ca3ebb9c029bb5df381e4afc4d27b4a6
 ]]
 ---@class NoirBase64Lib: NoirLibrary
-Noir.Libraries.Base64 = Noir.Libraries:Create("NoirBase64")
+Noir.Libraries.Base64 = Noir.Libraries:Create(
+    "NoirBase64",
+    "A library containing helper methods to serialize strings into Base64 and back.",
+    "",
+    {"Cuh4"}
+)
 
 --[[
     Character table as a string.<br>

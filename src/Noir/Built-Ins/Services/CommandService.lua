@@ -47,7 +47,13 @@
 ---@class NoirCommandService: NoirService
 ---@field Commands table<string, NoirCommand>
 ---@field OnCustomCommand NoirConnection Represents the connection to the OnCustomCommand game callback
-Noir.Services.CommandService = Noir.Services:CreateService("CommandService", true)
+Noir.Services.CommandService = Noir.Services:CreateService(
+    "CommandService",
+    true,
+    "A service that allows you to create commands.",
+    "A service that allows you to create commands with support for aliases, permissions, etc.",
+    {"Cuh4"}
+)
 
 function Noir.Services.CommandService:ServiceInit()
     self.Commands = {}

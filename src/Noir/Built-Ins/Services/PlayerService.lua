@@ -54,9 +54,15 @@
 ---@field DieCallback NoirConnection A connection to the onPlayerDie event
 ---@field RespawnCallback NoirConnection A connection to the onPlayerRespawn event
 ---@field DestroyCallback NoirConnection A connection to the onDestroy event
-Noir.Services.PlayerService = Noir.Services:CreateService("PlayerService", true)
-Noir.Services.PlayerService.InitPriority = 2
-Noir.Services.PlayerService.StartPriority = 2
+Noir.Services.PlayerService = Noir.Services:CreateService(
+    "PlayerService",
+    true,
+    "A service that wraps SW players in a class.",
+    "A service that wraps SW players in a class following an OOP format. Player data persistence across addon reloads is also handled, and player-related events are provided.",
+    {"Cuh4"}
+)
+
+Noir.Services.PlayerService.InitPriority = 1
 
 function Noir.Services.PlayerService:ServiceInit()
     self.OnJoin = Noir.Libraries.Events:Create()

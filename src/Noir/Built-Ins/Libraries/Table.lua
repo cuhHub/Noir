@@ -35,7 +35,12 @@
     A library containing helper methods relating to tables.
 ]]
 ---@class NoirTableLib: NoirLibrary
-Noir.Libraries.Table = Noir.Libraries:Create("NoirTable")
+Noir.Libraries.Table = Noir.Libraries:Create(
+    "NoirTable",
+    "A library containing helper methods relating to tables.",
+    nil,
+    {"Cuh4"}
+)
 
 --[[
     Returns the length of the provided table.

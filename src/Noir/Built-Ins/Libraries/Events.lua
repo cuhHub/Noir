@@ -47,7 +47,12 @@
     MyEvent:Fire()
 ]]
 ---@class NoirEventsLib: NoirLibrary
-Noir.Libraries.Events = Noir.Libraries:Create("NoirEvents")
+Noir.Libraries.Events = Noir.Libraries:Create(
+    "NoirEvents",
+    "A library that allows you to create events.",
+    "A library that allows you to create events. Functions can then be connected or disconnected from these events. Events can be fired which calls all connected functions with the provided arguments.",
+    {"Cuh4", "Avril112113"}
+)
 
 --[[
     Create an event. This event can then be fired with the :Fire() method.

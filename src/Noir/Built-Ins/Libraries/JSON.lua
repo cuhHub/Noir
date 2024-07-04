@@ -36,7 +36,12 @@
     This code is from https://gist.github.com/tylerneylon/59f4bcf316be525b30ab
 ]]
 ---@class NoirJSONLib: NoirLibrary
-Noir.Libraries.JSON = Noir.Libraries:Create("NoirJSON")
+Noir.Libraries.JSON = Noir.Libraries:Create(
+    "NoirJSON",
+    "A library containing helper methods to serialize Lua objects into JSON and back.",
+    nil,
+    {"Cuh4"}
+)
 
 --[[
     Represents a null value.

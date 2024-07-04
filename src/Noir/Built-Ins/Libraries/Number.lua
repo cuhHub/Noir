@@ -35,7 +35,12 @@
     A library containing helper methods relating to numbers.
 ]]
 ---@class NoirNumberLib: NoirLibrary
-Noir.Libraries.Number = Noir.Libraries:Create("NoirNumber")
+Noir.Libraries.Number = Noir.Libraries:Create(
+    "NoirNumber",
+    "Provides helper methods relating to numbers.",
+    nil,
+    {"Cuh4"}
+)
 
 --[[
     Returns whether or not the provided number is between the two provided values.

@@ -35,7 +35,12 @@
     A library containing methods related to logging.
 ]]
 ---@class NoirLoggingLib: NoirLibrary
-Noir.Libraries.Logging = Noir.Libraries:Create("NoirLogging")
+Noir.Libraries.Logging = Noir.Libraries:Create(
+    "NoirLogging",
+    "A library containing methods related to logging.",
+    nil,
+    {"Cuh4"}
+)
 
 --[[
     The mode to use when logging.<br>
