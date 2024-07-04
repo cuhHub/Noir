@@ -34,6 +34,7 @@
 --[[
     A library containing helper methods relating to tables.
 ]]
+---@class NoirTableLib: NoirLibrary
 Noir.Libraries.Table = Noir.Libraries:Create("NoirTable")
 
 --[[

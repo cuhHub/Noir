@@ -34,6 +34,7 @@
 --[[
     A library containing helper methods relating to strings.
 ]]
+---@class NoirStringLib: NoirLibrary
 Noir.Libraries.String = Noir.Libraries:Create("NoirString")
 
 --[[

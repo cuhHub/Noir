@@ -35,6 +35,7 @@
     A library containing helper methods to serialize Lua objects into JSON and back.<br>
     This code is from https://gist.github.com/tylerneylon/59f4bcf316be525b30ab
 ]]
+---@class NoirJSONLib: NoirLibrary
 Noir.Libraries.JSON = Noir.Libraries:Create("NoirJSON")
 
 --[[

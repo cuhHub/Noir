@@ -6,6 +6,7 @@
         "Player.lua",
         "Task.lua",
         "Object.lua",
-        "Command.lua"
+        "Command.lua",
+        "Library.lua"
     ]
 }

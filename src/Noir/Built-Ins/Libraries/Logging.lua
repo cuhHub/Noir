@@ -34,6 +34,7 @@
 --[[
     A library containing methods related to logging.
 ]]
+---@class NoirLoggingLib: NoirLibrary
 Noir.Libraries.Logging = Noir.Libraries:Create("NoirLogging")
 
 --[[

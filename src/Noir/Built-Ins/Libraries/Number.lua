@@ -34,6 +34,7 @@
 --[[
     A library containing helper methods relating to numbers.
 ]]
+---@class NoirNumberLib: NoirLibrary
 Noir.Libraries.Number = Noir.Libraries:Create("NoirNumber")
 
 --[[

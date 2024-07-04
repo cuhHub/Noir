@@ -46,6 +46,7 @@
 
     MyEvent:Fire()
 ]]
+---@class NoirEventsLib: NoirLibrary
 Noir.Libraries.Events = Noir.Libraries:Create("NoirEvents")
 
 --[[

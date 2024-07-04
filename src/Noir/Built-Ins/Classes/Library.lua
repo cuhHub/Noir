@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Libraries
+-- [Noir] Classes - Library
 --------------------------------------------------------
 
 --[[
@@ -32,28 +32,26 @@
 -------------------------------
 
 --[[
-    A module of Noir that allows you to create your own libraries to use throughout your code.
-
-    MyLibrary = Noir.Libraries:Create("MyLibrary")
-
-    function MyLibrary:add(num1, num2)
-        return num1 + num2
-    end
+    Represents a library.
 ]]
-Noir.Libraries = {}
+---@class NoirLibrary: NoirClass
+---@field New fun(self: NoirLibrary, name: string, shortDescription: string, longDescription: string, author: string): NoirLibrary
+---@field Name string
+---@field ShortDescription string
+---@field LongDescription string
+---@field Author string
+Noir.Classes.LibraryClass = Noir.Class("NoirLibrary")
 
 --[[
-    Returns a library starter pack for you to use when creating libraries for your addon.
-
-    MyLibrary = Noir.Libraries:Create("MyLibrary")
-
-    function MyLibrary:add(num1, num2)
-        return num1 + num2
-    end
+    Initializes library class objects.
 ]]
 ---@param name string
----@return NoirLibrary
-function Noir.Libraries:Create(name, shortDescription, longDescription, author)
-    local library = Noir.Classes.LibraryClass:New(name, shortDescription or "N/A", longDescription or "N/A", author or "Unknown")
-    return library
+---@param shortDescription string
+---@param longDescription string
+---@param author string
+function Noir.Classes.LibraryClass:Init(name, shortDescription, longDescription, author)
+    self.Name = name
+    self.ShortDescription = shortDescription
+    self.LongDescription = longDescription
+    self.Author = author
 end
