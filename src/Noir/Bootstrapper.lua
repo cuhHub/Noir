@@ -75,6 +75,8 @@ function Noir.Bootstrapper:InitializeServices()
         end
     end
 
+    ---@param serviceA NoirService
+    ---@param serviceB NoirService
     table.sort(servicesToInit, function(serviceA, serviceB)
         return serviceA.InitPriority < serviceB.InitPriority
     end)
@@ -111,6 +113,8 @@ function Noir.Bootstrapper:StartServices()
         end
     end
 
+    ---@param serviceA NoirService
+    ---@param serviceB NoirService
     table.sort(servicesToStart, function(serviceA, serviceB)
         return serviceA.StartPriority < serviceB.StartPriority
     end)
