@@ -56,6 +56,8 @@ require("Noir.Built-Ins.Libraries.Logging")
 require("Noir.Built-Ins.Libraries.Table")
 require("Noir.Built-Ins.Libraries.String")
 require("Noir.Built-Ins.Libraries.Number")
+require("Noir.Built-Ins.Libraries.JSON")
+require("Noir.Built-Ins.Libraries.Base64")
 
 require("Noir.Services")
 
