@@ -35,13 +35,16 @@
     Represents a Noir service.
 ]]
 ---@class NoirService: NoirClass
----@field New fun(self: NoirService, name: string, isBuiltIn: boolean): NoirService
+---@field New fun(self: NoirService, name: string, isBuiltIn: boolean, shortDescription: string, longDescription: string, authors: table<integer, string>): NoirService
 ---@field Name string The name of this service
 ---@field IsBuiltIn boolean Whether or not this service comes with Noir
 ---@field Initialized boolean Whether or not this service has been initialized
 ---@field Started boolean Whether or not this service has been started
 ---@field InitPriority integer The priority of this service when it is initialized
 ---@field StartPriority integer The priority of this service when it is started
+---@field ShortDescription string A short description of this service
+---@field LongDescription string A long description of this service
+---@field Authors table<integer, string> The authors of this service
 ---
 ---@field ServiceInit fun(self: NoirService) A method that is called when the service is initialized
 ---@field ServiceStart fun(self: NoirService) A method that is called when the service is started
@@ -52,7 +55,10 @@ Noir.Classes.ServiceClass = Noir.Class("NoirService")
 ]]
 ---@param name string
 ---@param isBuiltIn boolean
-function Noir.Classes.ServiceClass:Init(name, isBuiltIn)
+---@param shortDescription string
+---@param longDescription string
+---@param authors table<integer, string>
+function Noir.Classes.ServiceClass:Init(name, isBuiltIn, shortDescription, longDescription, authors)
     -- Create attributes
     self.Name = name
     self.IsBuiltIn = isBuiltIn
@@ -61,6 +67,10 @@ function Noir.Classes.ServiceClass:Init(name, isBuiltIn)
 
     self.InitPriority = nil
     self.StartPriority = nil
+
+    self.ShortDescription = shortDescription
+    self.LongDescription = longDescription
+    self.Authors = authors
 end
 
 --[[
