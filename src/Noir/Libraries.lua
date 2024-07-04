@@ -52,8 +52,11 @@ Noir.Libraries = {}
     end
 ]]
 ---@param name string
+---@param shortDescription string|nil
+---@param longDescription string|nil
+---@param authors table<integer, string>|nil
 ---@return NoirLibrary
-function Noir.Libraries:Create(name, shortDescription, longDescription, author)
-    local library = Noir.Classes.LibraryClass:New(name, shortDescription or "N/A", longDescription or "N/A", author or "Unknown")
+function Noir.Libraries:Create(name, shortDescription, longDescription, authors)
+    local library = Noir.Classes.LibraryClass:New(name, shortDescription or "N/A", longDescription or "N/A", authors or {})
     return library
 end
