@@ -89,3 +89,15 @@ function Noir.Libraries.Number:Round(number, decimalPlaces)
     local mult = 10 ^ (decimalPlaces or 0)
     return math.floor(number * mult + 0.5) / mult
 end
+
+--[[
+    Returns whether or not the provided number is an integer.
+
+    Noir.Libraries.Number:IsInteger(5) -- true
+    Noir.Libraries.Number:IsInteger(5.5) -- false
+]]
+---@param number number
+---@return boolean
+function Noir.Libraries.Number:IsInteger(number)
+    return math.floor(number) == number
+end
