@@ -35,11 +35,11 @@
     Represents a library.
 ]]
 ---@class NoirLibrary: NoirClass
----@field New fun(self: NoirLibrary, name: string, shortDescription: string, longDescription: string, author: string): NoirLibrary
+---@field New fun(self: NoirLibrary, name: string, shortDescription: string, longDescription: string, authors: table<integer, string>): NoirLibrary
 ---@field Name string
 ---@field ShortDescription string
 ---@field LongDescription string
----@field Author string
+---@field Authors table<integer, string>
 Noir.Classes.LibraryClass = Noir.Class("NoirLibrary")
 
 --[[
@@ -48,10 +48,10 @@ Noir.Classes.LibraryClass = Noir.Class("NoirLibrary")
 ---@param name string
 ---@param shortDescription string
 ---@param longDescription string
----@param author string
-function Noir.Classes.LibraryClass:Init(name, shortDescription, longDescription, author)
+---@param authors table<integer, string>
+function Noir.Classes.LibraryClass:Init(name, shortDescription, longDescription, authors)
     self.Name = name
     self.ShortDescription = shortDescription
     self.LongDescription = longDescription
-    self.Author = author
+    self.Authors = authors
 end
