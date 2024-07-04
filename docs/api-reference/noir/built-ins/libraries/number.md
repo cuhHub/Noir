@@ -56,3 +56,19 @@ Rounds the number to the provided number of decimal places (defaults to 0).
 #### Returns
 
 * `number`
+
+***
+
+```lua
+Noir.Libraries.Number:IsInteger(number)
+```
+
+Returns whether or not the provided number is an integer.
+
+#### Parameters
+
+* `number`: number
+
+#### Returns
+
+* `boolean`
