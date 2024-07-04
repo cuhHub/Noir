@@ -139,7 +139,7 @@ class Parser():
                 param = line.split("---@param ")[1]
                 split = param.split(" ")
                 
-                if len(split) >= 2 and split[1].endswith(",") and split[0].startswith("table<"): # table<integer*,* etc> annotation
+                if len(split) >= 2 and split[1].endswith(","): # table<integer*,* etc> annotation
                     name = split[0]
                     type = (split[1] + " " + split[2]) if len(split) >= 3 else None
                     description = " ".join(split[3:])
@@ -176,7 +176,7 @@ class Parser():
                 returnValue = line.split("---@return ")[1]
                 split = returnValue.split(" ")
 
-                if len(split) >= 2 and split[1].endswith(",") and split[0].startswith("table<"): # table<integer*,* etc> annotation
+                if len(split) >= 2 and split[0].startswith("table<"): # table<integer*,* etc> annotation
                     type = split[0] + " " + split[1]
                     name = split[2] if len(split) >= 3 else None
                     description = " ".join(split[3:])
