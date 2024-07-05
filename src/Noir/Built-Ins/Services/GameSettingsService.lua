@@ -46,9 +46,6 @@ Noir.Services.GameSettingsService = Noir.Services:CreateService(
     {"Cuh4"}
 )
 
-function Noir.Services.GameSettingsService:ServiceInit() end
-function Noir.Services.GameSettingsService:ServiceStart() end
-
 --[[
     Returns a list of all game settings.
 ]]
