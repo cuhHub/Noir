@@ -83,7 +83,6 @@ function Noir.Services.ObjectService:ServiceStart()
     end
 
     -- Listen for object loading/unloading
-    ---@param object_id integer
     self.OnLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
         -- Get object
         local object = self:GetObject(object_id)
@@ -102,7 +101,6 @@ function Noir.Services.ObjectService:ServiceStart()
         self:_SaveObjectSavedata(object)
     end)
 
-    ---@param object_id integer
     self.OnUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
         -- Get object
         local object = self:GetObject(object_id)
