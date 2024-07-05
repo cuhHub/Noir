@@ -94,7 +94,6 @@ function Noir.Classes.ServiceClass:_Initialize()
 
     -- Call ServiceInit
     if not self.ServiceInit then
-        Noir.Libraries.Logging:Error("Service", "%s: This service is missing a ServiceInit method.", true, self.Name)
         return
     end
 
@@ -122,7 +121,6 @@ function Noir.Classes.ServiceClass:_Start()
 
     -- Call ServiceStart
     if not self.ServiceStart then
-        Noir.Libraries.Logging:Warning("Service", "%s: This service is missing a ServiceStart method. You can ignore this if this service doesn't require it.", self.Name)
         return
     end
 
@@ -137,17 +135,17 @@ end
 function Noir.Classes.ServiceClass:_CheckSaveData()
     -- Checks
     if not g_savedata then
-        Noir.Libraries.Logging:Error("Service", "_CheckSaveData(): g_savedata is nil.", true)
+        Noir.Libraries.Logging:Error("Service", "_CheckSaveData(): g_savedata is nil.", false)
         return false
     end
 
     if not g_savedata.Noir then
-        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir is nil.", true)
+        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir is nil.", false)
         return false
     end
 
     if not g_savedata.Noir.Services then
-        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir.Services is nil.", true)
+        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir.Services is nil.", false)
         return false
     end
 
@@ -166,19 +164,13 @@ end
     local MyService = Noir.Services:CreateService("MyService")
 
     function MyService:ServiceInit()
-        MyService:Save("MyKey", "MyValue")
+        self:Save("MyKey", "MyValue")
     end
 ]]
 ---@param index string
 ---@param data any
 function Noir.Classes.ServiceClass:Save(index, data)
-    -- Check g_savedata
-    if not self:_CheckSaveData() then
-        return
-    end
-
-    -- Save
-    g_savedata.Noir.Services[self.Name][index] = data
+    self:GetSaveData()[index] = data
 end
 
 --[[
@@ -187,20 +179,14 @@ end
     local MyService = Noir.Services:CreateService("MyService")
 
     function MyService:ServiceInit()
-        local MyValue = MyService:Load("MyKey")
+        local MyValue = self:Load("MyKey")
     end
 ]]
 ---@param index string
 ---@param default any
 ---@return any
 function Noir.Classes.ServiceClass:Load(index, default)
-    -- Check g_savedata
-    if not self:_CheckSaveData() then
-        return
-    end
-
-    -- Load
-    local value = g_savedata.Noir.Services[self.Name][index]
+    local value = self:GetSaveData()[index]
 
     if value == nil then
         return default
@@ -220,11 +206,26 @@ end
 ]]
 ---@param index string
 function Noir.Classes.ServiceClass:Remove(index)
+    self:GetSaveData()[index] = nil
+end
+
+--[[
+    Returns this service's g_savedata table for direct modification.<br>
+
+    local MyService = Noir.Services:CreateService("MyService")
+
+    function MyService:ServiceInit()
+        self:GetSaveData().MyKey = "MyValue"
+        -- Equivalent to: self:Save("MyKey", "MyValue")
+    end
+]]
+---@return table
+function Noir.Classes.ServiceClass:GetSaveData()
     -- Check g_savedata
     if not self:_CheckSaveData() then
-        return
+        return {}
     end
 
-    -- Remove
-    g_savedata.Noir.Services[self.Name][index] = nil
+    -- Return
+    return g_savedata.Noir.Services[self.Name]
 end
