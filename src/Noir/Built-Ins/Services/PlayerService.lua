@@ -154,9 +154,6 @@ function Noir.Services.PlayerService:ServiceStart()
                 goto continue
             end
 
-            -- Log
-            Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): Loading player in game: %s (%d, %s)", player.name, player.id, player.steam_id)
-
             -- Check if already loaded
             if self:GetPlayer(player.id) then
                 Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): %s already has data. Ignoring.", player.name)
