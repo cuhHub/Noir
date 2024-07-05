@@ -78,14 +78,14 @@ end
 
 function Noir.Services.ObjectService:ServiceStart()
     -- Load saved objects
-    for _, object in pairs(self:_GetSavedObjects()) do -- important to copy, because :RegisterObject() modifies the saved objects table
+    for _, object in pairs(self:_GetSavedObjects()) do
         self:RegisterObject(object.ID)
     end
 
     -- Listen for object loading/unloading
     self.OnLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
         -- Get object
-        local object = self:GetObject(object_id)
+        local object = self:GetObject(object_id) -- creates an object if it doesn't already exist
 
         if not object then
             Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnLoadConnection callback.", false)
@@ -116,7 +116,7 @@ function Noir.Services.ObjectService:ServiceStart()
         self.OnUnload:Fire(object)
 
         -- Save
-        self:_SaveObjectSavedata(object)
+        self:_RemoveObjectSavedata(object.ID)
     end)
 end
 
