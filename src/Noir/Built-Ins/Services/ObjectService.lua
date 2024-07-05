@@ -35,7 +35,7 @@
     A service for wrapping SW objects in classes.
 
     local object_id = 5
-    local object = Service:GetObject(object_id)
+    local object = Noir.Services.ObjectService:GetObject(object_id)
 
     object:GetData()
     object:Despawn()
