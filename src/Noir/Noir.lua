@@ -136,7 +136,6 @@ function Noir:Start()
     self.IsStarting = true
 
     -- Wait for onCreate, then setup
-    ---@param isSaveCreate boolean
     self.Callbacks:Once("onCreate", function(isSaveCreate)
         setup(server.getTimeMillisec(), isSaveCreate)
     end, true)
