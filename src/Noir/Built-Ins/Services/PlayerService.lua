@@ -368,4 +368,4 @@ end
 -- // Intellisense
 -------------------------------
 
----@alias NoirSavedPlayerProperties table<integer, table<string, boolean>>
+---@alias NoirSavedPlayerProperties table<integer, table<string, any>>
