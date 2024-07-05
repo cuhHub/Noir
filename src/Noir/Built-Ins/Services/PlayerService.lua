@@ -139,7 +139,7 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnRespawn:Fire(player)
     end)
 
-    -- Remove all players when the world exists
+    -- Remove all players when the world exits
     self.DestroyCallback = Noir.Callbacks:Connect("onDestroy", function()
         for _, player in pairs(self:GetPlayers()) do
             self.LeaveCallback:Fire(nil, nil, player.ID) -- TODO: probably add service methods that handles onPlayerJoin and onPlayerLeave, that way we can trigger the onPlayerLeave handler code cleanly here
