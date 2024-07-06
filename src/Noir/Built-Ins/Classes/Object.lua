@@ -106,6 +106,15 @@ function Noir.Classes.ObjectClass:IsSimulating()
 end
 
 --[[
+    Returns whether or not this object exists.
+]]
+---@return boolean
+function Noir.Classes.ObjectClass:Exists()
+    local _, exists = server.getObjectSimulating(self.ID)
+    return exists
+end
+
+--[[
     Despawn this object.
 ]]
 function Noir.Classes.ObjectClass:Despawn()
