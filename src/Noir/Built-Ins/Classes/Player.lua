@@ -204,3 +204,13 @@ function Noir.Classes.PlayerClass:GetLook()
 
     return x, y, z
 end
+
+--[[
+    Send this player a notification.
+]]
+---@param title string
+---@param message string
+---@param notificationType SWNotifiationTypeEnum
+function Noir.Classes.PlayerClass:Notify(title, message, notificationType)
+    server.notify(self.ID, title, message, notificationType)
+end
