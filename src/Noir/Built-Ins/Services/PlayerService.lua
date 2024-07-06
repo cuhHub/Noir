@@ -352,7 +352,7 @@ end
 
 --[[
     Returns a player by their exact name.<br>
-    Consider using `:SearchPlayerByName()` if you want to search and not directly fetch.
+    Consider using `:SearchPlayerByName()` if the player name only needs to match partially.
 ]]
 ---@param name string
 ---@return NoirPlayer|nil
