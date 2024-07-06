@@ -99,6 +99,16 @@ end
 
 --[[
     Create a new command.
+
+    Noir.Services.CommandService:CreateCommand("help", {"h"}, {"Nerd"}, false, false, false, "Example Command", function(player, message, args, hasPermission)
+        if not hasPermission then
+            player:Notify("Lacking Permissions", "Sorry, you don't have permission to run this command. Try again.", 3)
+            player:SetPermission("Nerd")
+            return
+        end
+
+        player:Notify("Help", "TODO: Add a help message", 4)
+    end)
 ]]
 ---@param name string The name of the command (eg: if you provided "help", the player would need to type "?help" in chat)
 ---@param aliases table<integer, string> The aliases of the command
