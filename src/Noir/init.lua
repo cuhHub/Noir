@@ -48,6 +48,7 @@ require("Noir.Built-Ins.Classes.Player")
 require("Noir.Built-Ins.Classes.Task")
 require("Noir.Built-Ins.Classes.Object")
 require("Noir.Built-Ins.Classes.Command")
+require("Noir.Built-Ins.Classes.Library")
 
 require("Noir.Libraries")
 
