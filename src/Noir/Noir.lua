@@ -107,7 +107,7 @@ function Noir:Start()
         -- Wait until onTick is first called to determine if the addon was reloaded, or if a save with the addon was loaded/created
         self.Callbacks:Once("onTick", function()
             local took = server.getTimeMillisec() - startTime
-            Noir.AddonReason = isSaveCreate and "SaveCreate" or (took < 1000 and "AddonReload" or "SaveLoad")
+            self.AddonReason = isSaveCreate and "SaveCreate" or (took < 1000 and "AddonReload" or "SaveLoad")
 
             self.IsStarting = false
             self.HasStarted = true
