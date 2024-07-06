@@ -53,7 +53,6 @@
 ---@field LeaveCallback NoirConnection A connection to the onPlayerLeave event
 ---@field DieCallback NoirConnection A connection to the onPlayerDie event
 ---@field RespawnCallback NoirConnection A connection to the onPlayerRespawn event
----@field DestroyCallback NoirConnection A connection to the onDestroy event
 Noir.Services.PlayerService = Noir.Services:CreateService(
     "PlayerService",
     true,
@@ -71,6 +70,9 @@ function Noir.Services.PlayerService:ServiceInit()
     self.OnRespawn = Noir.Libraries.Events:Create()
 
     self.Players = {}
+
+    self:GetSaveData().PlayerProperties = self:_GetSavedProperties() or {}
+    self:GetSaveData().RecognizedIDs = self:GetSaveData().RecognizedIDs or {}
 end
 
 function Noir.Services.PlayerService:ServiceStart()
@@ -139,13 +141,6 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnRespawn:Fire(player)
     end)
 
-    -- Remove all players when the world exits
-    self.DestroyCallback = Noir.Callbacks:Connect("onDestroy", function()
-        for _, player in pairs(self:GetPlayers()) do
-            self.LeaveCallback:Fire(nil, nil, player.ID) -- TODO: probably add service methods that handles onPlayerJoin and onPlayerLeave, that way we can trigger the onPlayerLeave handler code cleanly here
-        end
-    end)
-
     -- Load players in game
     if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
         for _, player in pairs(server.getPlayers()) do
@@ -168,13 +163,18 @@ function Noir.Services.PlayerService:ServiceStart()
                 goto continue
             end
 
-            -- Load saved properties
+            -- Load saved properties (eg: permissions)
             local savedProperties = self:_GetSavedPropertiesForPlayer(createdPlayer)
 
             if savedProperties then
                 for property, value in pairs(savedProperties) do
                     createdPlayer[property] = value
                 end
+            end
+
+            -- Call onJoin if unrecognized
+            if not self:_IsRecognized(createdPlayer) then
+                self.OnJoin:Fire(createdPlayer)
             end
 
             ::continue::
@@ -212,26 +212,11 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
     -- Save player
     self.Players[peer_id] = player
 
+    -- Save peer ID so we know if we can call onJoin for this player or not if the addon reloads
+    self:_MarkRecognized(player)
+
     -- Return
     return player
-end
-
---[[
-    Overwrite saved properties.<br>
-    Used internally. Do not use in your code.
-]]
----@param properties NoirSavedPlayerProperties
-function Noir.Services.PlayerService:_OverwriteSavedProperties(properties)
-    self:Save("PlayerProperties", properties)
-end
-
---[[
-    Returns all saved player properties saved in g_savedata.<br>
-    Used internally. Do not use in your code.
-]]
----@return NoirSavedPlayerProperties
-function Noir.Services.PlayerService:_GetSavedProperties()
-    return self:Load("PlayerProperties", {})
 end
 
 --[[
@@ -253,7 +238,47 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
     -- Remove saved properties
     self:_RemoveSavedProperties(player)
 
+    -- Unmark as recognized
+    self:_UnmarkRecognized(player)
+
     return true
+end
+
+--[[
+    Mark a player as recognized to prevent onJoin being called for them after an addon reload.<br>
+    Used internally.
+]]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_MarkRecognized(player)
+    self:GetSaveData().RecognizedIDs[player.ID] = true
+end
+
+--[[
+    Returns whether or not a player is recognized.<br>
+    Used internally.
+]]
+---@param player NoirPlayer
+---@return boolean
+function Noir.Services.PlayerService:_IsRecognized(player)
+    return self:GetSaveData().RecognizedIDs[player.ID] ~= nil
+end
+
+--[[
+    Mark a player as not recognized.<br>
+    Used internally.
+]]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_UnmarkRecognized(player)
+    self:GetSaveData().RecognizedIDs[player.ID] = nil
+end
+
+--[[
+    Returns all saved player properties saved in g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@return NoirSavedPlayerProperties
+function Noir.Services.PlayerService:_GetSavedProperties()
+    return self:GetSaveData().PlayerProperties
 end
 
 --[[
@@ -270,7 +295,6 @@ function Noir.Services.PlayerService:_SaveProperty(player, property)
     end
 
     properties[player.ID][property] = player[property]
-    self:_OverwriteSavedProperties(properties)
 end
 
 --[[
@@ -291,7 +315,6 @@ end
 function Noir.Services.PlayerService:_RemoveSavedProperties(player)
     local properties = self:_GetSavedProperties()
     properties[player.ID] = nil
-    self:_OverwriteSavedProperties(properties)
 end
 
 --[[
