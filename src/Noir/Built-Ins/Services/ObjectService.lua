@@ -79,7 +79,7 @@ end
 function Noir.Services.ObjectService:ServiceStart()
     -- Load saved objects
     for _, object in pairs(self:_GetSavedObjects()) do
-        self:RegisterObject(object.ID)
+        self:RegisterObject(object.ID, true)
     end
 
     -- Listen for object loading/unloading
@@ -115,8 +115,14 @@ function Noir.Services.ObjectService:ServiceStart()
         object.OnUnload:Fire()
         self.OnUnload:Fire(object)
 
-        -- Save
-        self:_RemoveObjectSavedata(object.ID)
+        -- Remove from g_savedata if the object was removed and unloaded, otherwise save
+        Noir.Services.TaskService:AddTask(function()
+            if not object:Exists() then
+                self:_RemoveObjectSavedata(object.ID)
+            else
+                self:_SaveObjectSavedata(object)
+            end
+        end, 0.01) -- untested, but this delay might be needed in case the object is unloaded first, then removed
     end)
 end
 
@@ -174,8 +180,9 @@ end
     Registers an object by ID.
 ]]
 ---@param object_id integer
+---@param _preventEventTrigger boolean|nil
 ---@return NoirObject|nil
-function Noir.Services.ObjectService:RegisterObject(object_id)
+function Noir.Services.ObjectService:RegisterObject(object_id, _preventEventTrigger)
     -- Check if the object exists and is loaded
     local loaded, exists = server.getObjectSimulating(object_id)
 
@@ -189,7 +196,11 @@ function Noir.Services.ObjectService:RegisterObject(object_id)
     object.Loaded = loaded
 
     self.Objects[object_id] = object
-    self.OnRegister:Fire(object)
+
+    -- Fire event
+    if not _preventEventTrigger then -- this is here for objects that are being registered from g_savedata
+        self.OnRegister:Fire(object)
+    end
 
     -- Save to g_savedata
     self:_SaveObjectSavedata(object)
