@@ -67,7 +67,7 @@ function Noir.Class(name, parent)
     ---@class NoirClass
     ---@field ClassName string The name of this class/object
     ---@field _Parent NoirClass|nil The parent class that this class inherits from
-    ---@field _IsObject boolean
+    ---@field _IsObject boolean Represents whether or not this is a class (objects are created from a class via class:New()) or a class object (an object created from a class due to class:New() call)
     ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
     local class = {} ---@diagnostic disable-line
     class.ClassName = name
@@ -147,7 +147,16 @@ function Noir.Class(name, parent)
     ---@param other NoirClass
     ---@return boolean
     function class:IsSameType(other)
-        return type(other) == "table" and other.ClassName ~= nil and self.ClassName == other.ClassName
+        return self:IsClass(other) and self.ClassName == other.ClassName
+    end
+
+    --[[
+        Returns if a table is a class.
+    ]]
+    ---@param other any
+    ---@return boolean
+    function class:IsClass(other)
+        return type(other) == "table" and other.ClassName ~= nil
     end
 
     return class
