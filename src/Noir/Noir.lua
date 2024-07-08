@@ -70,6 +70,20 @@ Noir.HasStarted = false
 Noir.IsStarting = false
 
 --[[
+    This represents whether or not the addon is being ran in a dedicated server.<br>
+    This needs to be manually set.
+]]
+Noir.IsDedicatedServer = false
+
+--[[
+    Set whether or not the addon is being ran in a dedicated server.
+]]
+---@param isDedicatedServer boolean
+function Noir:SetIsDedicatedServer(isDedicatedServer)
+    self.IsDedicatedServer = isDedicatedServer
+end
+
+--[[
     This represents whether or not the addon was:<br>
     - Reloaded<br>
     - Started via a save being loaded<br>
