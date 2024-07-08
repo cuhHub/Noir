@@ -78,7 +78,7 @@ end
 ]]
 ---@param logType string
 ---@param title string
----@param message string
+---@param message any
 ---@param ... any
 function Noir.Libraries.Logging:Log(logType, title, message, ...)
     -- Format
@@ -104,7 +104,7 @@ end
 ]]
 ---@param logType string
 ---@param title string
----@param message string
+---@param message any
 ---@param ... any
 function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
     -- Validate args
@@ -126,7 +126,7 @@ end
     Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", true, "something.")
 ]]
 ---@param title string
----@param message string
+---@param message any
 ---@param triggerError boolean
 ---@param ... any
 function Noir.Libraries.Logging:Error(title, message, triggerError, ...)
@@ -143,7 +143,7 @@ end
     Noir.Libraries.Logging:Warning("Title", "Something went unexpected relating to %s", "something.")
 ]]
 ---@param title string
----@param message string
+---@param message any
 ---@param ... any
 function Noir.Libraries.Logging:Warning(title, message, ...)
     self:Log("Warning", title, message, ...)
@@ -155,7 +155,7 @@ end
     Noir.Libraries.Logging:Info("Title", "Something went okay relating to %s", "something.")
 ]]
 ---@param title string
----@param message string
+---@param message any
 ---@param ... any
 function Noir.Libraries.Logging:Info(title, message, ...)
     self:Log("Info", title, message, ...)
@@ -167,7 +167,7 @@ end
     Noir.Libraries.Logging:Success("Title", "Something went right relating to %s", "something.")
 ]]
 ---@param title string
----@param message string
+---@param message any
 ---@param ... any
 function Noir.Libraries.Logging:Success(title, message, ...)
     self:Log("Success", title, message, ...)
