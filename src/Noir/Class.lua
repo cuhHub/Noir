@@ -98,9 +98,15 @@ function Noir.Class(name, parent)
         Used internally. Do not use in your code.
     ]]
     ---@param from NoirClass
-    ---@param object NoirClass
+    ---@param object NoirClass|table
     ---@param exceptions table<integer, string>
     function class._Descend(from, object, exceptions)
+        -- Type checking
+        Noir.TypeChecking:Assert("Noir.Class()._Descend()", "from", from, "class")
+        Noir.TypeChecking:Assert("Noir.Class()._Descend()", "object", object, "class", "table")
+        Noir.TypeChecking:Assert("Noir.Class()._Descend()", "exceptions", exceptions, "table")
+
+        -- Perform value descending
         for index, value in pairs(from) do
             if exceptions[index] then
                 goto continue
@@ -142,18 +148,19 @@ function Noir.Class(name, parent)
     end
 
     --[[
-        Returns if a class/object is the same type as another.
+        Returns if a class/object is the same type as another.<br>
+        If 'other' is not a class, it will return false.
     ]]
-    ---@param other NoirClass
+    ---@param other NoirClass|any
     ---@return boolean
     function class:IsSameType(other)
         return self:IsClass(other) and self.ClassName == other.ClassName
     end
 
     --[[
-        Returns if a table is a class.
+        Returns if a table is a class or not.
     ]]
-    ---@param other any
+    ---@param other NoirClass|any
     ---@return boolean
     function class:IsClass(other)
         return type(other) == "table" and other.ClassName ~= nil

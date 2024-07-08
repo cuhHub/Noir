@@ -181,13 +181,20 @@ end
     Gives data to a player.<br>
     Used internally.
 ]]
----@param steam_id integer
+---@param steam_id integer|string
 ---@param name string
 ---@param peer_id integer
 ---@param admin boolean
 ---@param auth boolean
 ---@return NoirPlayer|nil
 function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, admin, auth)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "steam_id", steam_id, "number", "string")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "peer_id", peer_id, "number")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "admin", admin, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "auth", auth, "boolean")
+
     -- Check if the player is the server itself (applies to dedicated servers)
     if self:_IsHost(peer_id) then
         return
@@ -226,6 +233,9 @@ end
 ---@param player NoirPlayer
 ---@return boolean success Whether or not the operation was successful
 function Noir.Services.PlayerService:_RemovePlayerData(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemovePlayerData()", "player", player, Noir.Classes.PlayerClass)
+
     -- Check if player exists in this service
     if not self:GetPlayer(player.ID) then
         Noir.Libraries.Logging:Error("PlayerService", "Attempted to remove player data from a non-existent player.", false)
@@ -251,6 +261,10 @@ end
 ---@param peer_id integer
 ---@return boolean
 function Noir.Services.PlayerService:_IsHost(peer_id)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_IsHost()", "peer_id", peer_id, "number")
+
+    -- Return true if the provided peer_id is that of the server host player
     return peer_id == 0 and Noir.IsDedicatedServer
 end
 
@@ -260,6 +274,10 @@ end
 ]]
 ---@param player NoirPlayer
 function Noir.Services.PlayerService:_MarkRecognized(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_MarkRecognized()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Mark as recognized
     self:GetSaveData().RecognizedIDs[player.ID] = true
 end
 
@@ -270,6 +288,10 @@ end
 ---@param player NoirPlayer
 ---@return boolean
 function Noir.Services.PlayerService:_IsRecognized(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_IsRecognized()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Return true if recognized
     return self:GetSaveData().RecognizedIDs[player.ID] ~= nil
 end
 
@@ -279,6 +301,10 @@ end
 ]]
 ---@param player NoirPlayer
 function Noir.Services.PlayerService:_UnmarkRecognized(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_UnmarkRecognized()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Remove from recognized
     self:GetSaveData().RecognizedIDs[player.ID] = nil
 end
 
@@ -298,6 +324,11 @@ end
 ---@param player NoirPlayer
 ---@param property string
 function Noir.Services.PlayerService:_SaveProperty(player, property)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "property", property, "string")
+
+    -- Property saving
     local properties = self:_GetSavedProperties()
 
     if not properties[player.ID] then
@@ -314,6 +345,10 @@ end
 ---@param player NoirPlayer
 ---@return table<string, boolean>|nil
 function Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GetSavedPropertiesForPlayer()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Return saved properties for player
     return self:_GetSavedProperties()[player.ID]
 end
 
@@ -323,6 +358,10 @@ end
 ]]
 ---@param player NoirPlayer
 function Noir.Services.PlayerService:_RemoveSavedProperties(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemoveSavedProperties()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Remove saved properties
     local properties = self:_GetSavedProperties()
     properties[player.ID] = nil
 end
@@ -343,6 +382,10 @@ end
 ---@param ID integer
 ---@return NoirPlayer|nil
 function Noir.Services.PlayerService:GetPlayer(ID)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayer()", "ID", ID, "number")
+
+    -- Get player
     return self:GetPlayers()[ID]
 end
 
@@ -353,6 +396,10 @@ end
 ---@param steam string
 ---@return NoirPlayer|nil
 function Noir.Services.PlayerService:GetPlayerBySteam(steam)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerBySteam()", "steam", steam, "string")
+
+    -- Get player
     for _, player in pairs(self:GetPlayers()) do
         if player.Steam == steam then
             return player
@@ -367,6 +414,10 @@ end
 ---@param name string
 ---@return NoirPlayer|nil
 function Noir.Services.PlayerService:GetPlayerByName(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerByName()", "name", name, "string")
+
+    -- Get player
     for _, player in pairs(self:GetPlayers()) do
         if player.Name == name then
             return player
@@ -380,6 +431,10 @@ end
 ---@param name string
 ---@return NoirPlayer|nil
 function Noir.Services.PlayerService:SearchPlayerByName(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:SearchPlayerByName()", "name", name, "string")
+
+    -- Get player
     for _, player in pairs(self:GetPlayers()) do
         if player.Name:lower():gsub(" ", ""):find(name:lower():gsub(" ", "")) then
             return player
@@ -394,6 +449,11 @@ end
 ---@param playerB NoirPlayer
 ---@return boolean
 function Noir.Services.PlayerService:IsSamePlayer(playerA, playerB)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:IsSamePlayer()", "playerA", playerA, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:IsSamePlayer()", "playerB", playerB, Noir.Classes.PlayerClass)
+
+    -- Return if both players are the same
     return playerA.ID == playerB.ID
 end
 

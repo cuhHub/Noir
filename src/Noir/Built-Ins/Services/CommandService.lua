@@ -90,6 +90,10 @@ end
 ---@param query string
 ---@return NoirCommand|nil
 function Noir.Services.CommandService:FindCommand(query)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:FindCommand()", "query", query, "string")
+
+    -- Find the command
     for _, command in pairs(self:GetCommands()) do
         if command:_Matches(query) then
             return command
@@ -120,9 +124,23 @@ end
 ---@param callback fun(player: NoirPlayer, message: string, args: table<integer, string>, hasPermission: boolean)
 ---@return NoirCommand
 function Noir.Services.CommandService:CreateCommand(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description, callback)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "aliases", aliases, "table")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiredPermissions", requiredPermissions, "table", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiresAuth", requiresAuth, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiresAdmin", requiresAdmin, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "capsSensitive", capsSensitive, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "description", description, "string", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "callback", callback, "function")
+
+    -- Create command
     local command = Noir.Classes.CommandClass:New(name, aliases, requiredPermissions or {}, requiresAuth or false, requiresAdmin or false, capsSensitive or false, description or "")
+
+    -- Connect to event
     command.OnUse:Connect(callback)
 
+    -- Save and return
     self.Commands[name] = command
     return command
 end
@@ -133,6 +151,10 @@ end
 ---@param name string
 ---@return NoirCommand|nil
 function Noir.Services.CommandService:GetCommand(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:GetCommand()", "name", name, "string")
+
+    -- Return the command
     return self.Commands[name]
 end
 
@@ -141,6 +163,10 @@ end
 ]]
 ---@param name string
 function Noir.Services.CommandService:RemoveCommand(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:RemoveCommand()", "name", name, "string")
+
+    -- Remove the command
     self.Commands[name] = nil
 end
 

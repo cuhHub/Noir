@@ -62,10 +62,15 @@ end
 ---@param name SWGameSettingEnum
 ---@return any
 function Noir.Services.GameSettingsService:GetSetting(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.GameSettingsService:GetSetting()", "name", name, "string")
+
+    -- Get a setting
     local settings = self:GetSettings()
     local setting = settings[name]
 
     if setting == nil then
+        Noir.Libraries.Logging:Error("GameSettingsService", "GetSetting(): %s is not a valid game setting.", false, name)
         return
     end
 
@@ -80,7 +85,11 @@ end
 ---@param name SWGameSettingEnum
 ---@param value any
 function Noir.Services.GameSettingsService:SetSetting(name, value)
-    if self:GetSetting(name) == nil then
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.GameSettingsService:SetSetting()", "name", name, "string")
+
+    -- Set the setting
+    if self:GetSettings()[name] == nil then
         Noir.Libraries.Logging:Error("GameSettingsService", "SetSetting(): %s is not a valid game setting.", false, name)
         return
     end

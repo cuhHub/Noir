@@ -38,19 +38,16 @@
 Noir.TypeChecking = {}
 
 --[[
-    A dummy class.<br>
-    Used internally.
-]]
-Noir.TypeChecking.DummyClass = Noir.Class("NoirTypeCheckingDummyClass")
-
---[[
     Raises an error if the value is not any of the provided types.<br>
     This has basic support for classes. It will check if the provided value is a Noir class if needed, but it will not check if it's the right class.
 ]]
----@param origin string The name of the method that called this so the user can find out where something went wrong
+---@param origin string The location of the thing (method, function, etc) that called this so the user can find out where something went wrong
+---@param parameterName string The name of the parameter that is being type checked
 ---@param value any
 ---@param ... NoirTypeCheckingType
-function Noir.TypeChecking:Assert(origin, value, ...)
+function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
+    -- Type checking can't be performed here otherwise we get a stack overflow :-( TODO: very small priority but might want to get this sorted in the future
+
     -- Pack types into a table
     local types = {...}
 
@@ -62,20 +59,55 @@ function Noir.TypeChecking:Assert(origin, value, ...)
 
     for _, typeToCheck in pairs(types) do
         if not isClassWhileCheckTable then
-            isClassWhileCheckTable = typeToCheck == "table" and self.DummyClass:IsClass(value)
+            isClassWhileCheckTable = typeToCheck == "table" and self._DummyClass:IsClass(value)
         end
 
-        if (valueType == typeToCheck) and not isClassWhileCheckTable then -- classes should not count as tables, hence the weird check at the end
+        -- Value == ExactType
+        if (valueType == typeToCheck) and not isClassWhileCheckTable then
             return
         end
 
-        if typeToCheck == "class" and self.DummyClass:IsClass(value) then
+        -- Value == AnyClass
+        if typeToCheck == "class" and self._DummyClass:IsClass(value) then
+            return
+        end
+
+        -- Value == ExactClass
+        if self._DummyClass:IsClass(typeToCheck) and typeToCheck:IsSameType(value) then ---@diagnostic disable-line
             return
         end
     end
 
     -- Otherwise, raise an error
-    Noir.Libraries.Logging:Error("Invalid Type", "%s: Expected %s, but got '%s'.", true, origin, self:FormatTypes(types), isClassWhileCheckTable and "class" or valueType)
+    Noir.Libraries.Logging:Error(
+        "Invalid Type",
+        "%s: Expected %s for parameter '%s', but got '%s'.",
+        true,
+        origin,
+        self:FormatTypes(types),
+        parameterName,
+        self._DummyClass:IsClass(value) and value.ClassName or (isClassWhileCheckTable and "class" or valueType)
+    )
+end
+
+--[[
+    Raises an error if any of the provided values are not any of the provided types.
+]]
+---@param origin string The location of the thing (method, function, etc) that called this so the user can find out where something went wrong
+---@param parameterName string The name of the parameter that is being type checked
+---@param values table<integer, any>
+---@param ... NoirTypeCheckingType
+function Noir.TypeChecking:AssertMany(origin, parameterName, values, ...)
+    -- Perform type checking on the provided parameters
+    self:Assert("Noir.TypeChecking:AssertMany()", "origin", origin, "string")
+    self:Assert("Noir.TypeChecking:AssertMany()", "parameterName", parameterName, "string")
+    self:Assert("Noir.TypeChecking:AssertMany()", "values", values, "table")
+    self:AssertMany("Noir.TypeChecking:AssertMany()", "...", {...}, "string", "class")
+
+    -- Perform type checking for provided values
+    for _, value in pairs(values) do
+        self:Assert(origin, parameterName, value, ...)
+    end
 end
 
 --[[
@@ -85,15 +117,29 @@ end
 ---@param types table<integer, NoirTypeCheckingType>
 ---@return string
 function Noir.TypeChecking:FormatTypes(types)
+    -- Perform type checking
+    self:Assert("Noir.TypeChecking:FormatTypes()", "types", types, "table")
+
+    -- Format types
     local formatted = ""
 
     for index, typeToFormat in pairs(types) do
+        if self._DummyClass:IsClass(typeToFormat) then
+            typeToFormat = typeToFormat.ClassName
+        end
+
         local formattedType = ("'%s'%s"):format(typeToFormat, index ~= #types and (index == #types - 1 and " or " or ", ") or "")
         formatted = formatted..formattedType
     end
 
     return formatted
 end
+
+--[[
+    A dummy class for checking if a value is a class or not.<br>
+    Used internally.
+]]
+Noir.TypeChecking._DummyClass = Noir.Class("NoirTypeCheckingDummyClass")
 
 -------------------------------
 -- // Intellisense
@@ -107,3 +153,4 @@ end
 ---| "table"
 ---| "function"
 ---| "class"
+---| NoirClass

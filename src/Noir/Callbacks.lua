@@ -105,6 +105,11 @@ Noir.Callbacks.Events = {} ---@type table<string, NoirEvent>
 ---@overload fun(self, name: "onVolcano", callback: fun(transform: SWMatrix), hideStartWarning: boolean?): NoirConnection
 ---@overload fun(self, name: "onOilSpill", callback: fun(tile_x: number, tile_z: number, delta: number, total: number, vehicle_id: integer), hideStartWarning: boolean?): NoirConnection
 function Noir.Callbacks:Connect(name, callback, hideStartWarning)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Callbacks:Connect()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Callbacks:Connect()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Callbacks:Connect()", "hideStartWarning", hideStartWarning, "boolean", "nil")
+
     -- Get or create event
     local event = self:_InstantiateCallback(name, hideStartWarning or false)
 
@@ -166,6 +171,11 @@ end
 ---@overload fun(self, name: "onVolcano", callback: fun(transform: SWMatrix), hideStartWarning: boolean?): NoirConnection
 ---@overload fun(self, name: "onOilSpill", callback: fun(tile_x: number, tile_z: number, delta: number, total: number, vehicle_id: integer), hideStartWarning: boolean?): NoirConnection
 function Noir.Callbacks:Once(name, callback, hideStartWarning)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Callbacks:Once()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Callbacks:Once()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Callbacks:Once()", "hideStartWarning", hideStartWarning, "boolean", "nil")
+
     -- Get or create event
     local event = self:_InstantiateCallback(name, hideStartWarning or false)
 
@@ -186,6 +196,10 @@ end
 ---@param name string
 ---@return NoirEvent
 function Noir.Callbacks:Get(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Callbacks:Get()", "name", name, "string")
+
+    -- Return
     return self.Events[name]
 end
 
@@ -197,6 +211,10 @@ end
 ---@param hideStartWarning boolean
 ---@return NoirEvent
 function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Callbacks:_InstantiateCallback()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Callbacks:_InstantiateCallback()", "hideStartWarning", hideStartWarning, "boolean")
+
     -- Check if Noir has started
     if not Noir.HasStarted and not hideStartWarning then
         Noir.Libraries.Logging:Warning("Callbacks", "Noir has not started yet. It is not recommended to connect to callbacks before `Noir:Start()` is called and finalized. Please connect to the `Noir.Started` event and attach to game callbacks in that.")

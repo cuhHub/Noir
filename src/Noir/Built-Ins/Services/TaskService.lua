@@ -111,6 +111,12 @@ end
 ---@param isRepeating boolean|nil
 ---@return NoirTask
 function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepeating)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "duration", duration, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "arguments", arguments, "table", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "isRepeating", isRepeating, "boolean", "nil")
+
     -- Defaults
     arguments = arguments or {}
     isRepeating = isRepeating or false
@@ -133,5 +139,9 @@ end
 ]]
 ---@param task NoirTask
 function Noir.Services.TaskService:RemoveTask(task)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTask()", "task", task, Noir.Classes.TaskClass)
+
+    -- Remove task
     self.Tasks[task.ID] = nil
 end

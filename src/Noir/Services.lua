@@ -77,6 +77,13 @@ Noir.Services.CreatedServices = {} ---@type table<string, NoirService>
 ---@param authors table<integer, string>|nil
 ---@return NoirService
 function Noir.Services:CreateService(name, isBuiltIn, shortDescription, longDescription, authors)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services:CreateService()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Services:CreateService()", "isBuiltIn", isBuiltIn, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Services:CreateService()", "shortDescription", shortDescription, "string", "nil")
+    Noir.TypeChecking:Assert("Noir.Services:CreateService()", "longDescription", longDescription, "string", "nil")
+    Noir.TypeChecking:Assert("Noir.Services:CreateService()", "authors", authors, "table", "nil")
+
     -- Check if service already exists
     if self.CreatedServices[name] then
         Noir.Libraries.Logging:Error("Service Creation", "Attempted to create a service that already exists. The already existing service has been returned instead.", false)
@@ -103,6 +110,9 @@ end
 ---@param name string
 ---@return NoirService|nil
 function Noir.Services:GetService(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services:GetService()", "name", name, "string")
+
     -- Get service
     local service = self.CreatedServices[name]
 
@@ -126,6 +136,9 @@ end
 ]]
 ---@param name string
 function Noir.Services:RemoveService(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services:RemoveService()", "name", name, "string")
+
     -- Check if service exists
     if not self.CreatedServices[name] then
         Noir.Libraries.Logging:Error("Service Removal", "Attempted to remove a service that doesn't exist ('%s').", true, name)
@@ -158,7 +171,11 @@ end
 ]]
 ---@param exceptions table<integer, string> A table containing exact names of services to not remove
 function Noir.Services:RemoveBuiltInServices(exceptions)
-    for index, service in pairs(self:GetBuiltInServices()) do
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services:RemoveBuiltInServices()", "exceptions", exceptions, "table")
+
+    -- Remove built-in services
+    for _, service in pairs(self:GetBuiltInServices()) do
         if Noir.Libraries.Table:Find(exceptions, service.Name) then
             goto continue
         end

@@ -80,6 +80,7 @@ Noir.IsDedicatedServer = false
 ]]
 ---@param isDedicatedServer boolean
 function Noir:SetIsDedicatedServer(isDedicatedServer)
+    self.TypeChecking:Assert("Noir:SetIsDedicatedServer()", "isDedicatedServer", isDedicatedServer, "boolean")
     self.IsDedicatedServer = isDedicatedServer
 end
 

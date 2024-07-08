@@ -132,6 +132,10 @@ end
 ]]
 ---@param objects table<integer, NoirSerializedObject>
 function Noir.Services.ObjectService:_SaveObjects(objects)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_SaveObjects()", "objects", objects, "table")
+
+    -- Save to g_savedata
     self:Save("objects", objects)
 end
 
@@ -150,6 +154,10 @@ end
 ]]
 ---@param object NoirObject
 function Noir.Services.ObjectService:_SaveObjectSavedata(object)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_SaveObjectSavedata()", "object", object, Noir.Classes.ObjectClass)
+
+    -- Save to g_savedata
     local saved = self:_GetSavedObjects()
     saved[object.ID] = object:_Serialize()
 
@@ -162,6 +170,10 @@ end
 ]]
 ---@param object_id integer
 function Noir.Services.ObjectService:_RemoveObjectSavedata(object_id)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_RemoveObjectSavedata()", "object_id", object_id, "number")
+
+    -- Remove from g_savedata
     local saved = self:_GetSavedObjects()
     saved[object_id] = nil
 
@@ -183,6 +195,10 @@ end
 ---@param _preventEventTrigger boolean|nil
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:RegisterObject(object_id, _preventEventTrigger)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:RegisterObject()", "object_id", object_id, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:RegisterObject()", "_preventEventTrigger", _preventEventTrigger, "boolean", "nil")
+
     -- Check if the object exists and is loaded
     local loaded, exists = server.getObjectSimulating(object_id)
 
@@ -220,6 +236,10 @@ end
 ---@param object_id integer
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:GetObject(object_id)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:GetObject()", "object_id", object_id, "number")
+
+    -- Get object
     return self.Objects[object_id] or self:RegisterObject(object_id)
 end
 
@@ -228,6 +248,9 @@ end
 ]]
 ---@param object_id integer
 function Noir.Services.ObjectService:RemoveObject(object_id)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:RemoveObject()", "object_id", object_id, "number")
+
     -- Get object
     local object = self:GetObject(object_id)
 
@@ -253,6 +276,10 @@ end
 ---@param position SWMatrix
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:SpawnObject(objectType, position)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnObject()", "objectType", objectType, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnObject()", "position", position, "table")
+
     -- Spawn the object
     local object_id, success = server.spawnObject(position, objectType)
 
@@ -280,6 +307,10 @@ end
 ---@param position SWMatrix
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:SpawnCharacter(outfitType, position)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnCharacter()", "outfitType", outfitType, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnCharacter()", "position", position, "table")
+
     -- Spawn the character
     local object_id, success = server.spawnCharacter(position, outfitType)
 
@@ -308,6 +339,11 @@ end
 ---@param sizeMultiplier number|nil Default: 1
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:SpawnCreature(creatureType, position, sizeMultiplier)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnCreature()", "creatureType", creatureType, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnCreature()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnCreature()", "sizeMultiplier", sizeMultiplier, "number", "nil")
+
     -- Spawn the creature
     local object_id, success = server.spawnCreature(position, creatureType, sizeMultiplier or 1)
 
@@ -336,6 +372,11 @@ end
 ---@param sizeMultiplier number|nil Default: 1
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:SpawnAnimal(animalType, position, sizeMultiplier)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnAnimal()", "animalType", animalType, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnAnimal()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnAnimal()", "sizeMultiplier", sizeMultiplier, "number", "nil")
+
     -- Spawn the animal
     local object_id, success = server.spawnAnimal(position, animalType, sizeMultiplier or 1)
 
@@ -365,6 +406,12 @@ end
 ---@param float integer
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:SpawnEquipment(equipmentType, position, int, float)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnEquipment()", "equipmentType", equipmentType, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnEquipment()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnEquipment()", "int", int, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnEquipment()", "float", float, "number")
+
     -- Spawn the equipment
     local object_id, success = server.spawnEquipment(position, equipmentType, int, float)
 
@@ -397,6 +444,15 @@ end
 ---@param explosionMagnitude number The size of the explosion (0-5)
 ---@return NoirObject|nil
 function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit, isExplosive, parentVehicleID, explosionMagnitude)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "size", size, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "magnitude", magnitude, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "isLit", isLit, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "isExplosive", isExplosive, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "parentVehicleID", parentVehicleID, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "explosionMagnitude", explosionMagnitude, "number")
+
     -- Spawn the fire
     local object_id, success = server.spawnFire(position, size, magnitude, isLit, isExplosive, parentVehicleID or 0, explosionMagnitude)
 
