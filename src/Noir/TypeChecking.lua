@@ -58,8 +58,14 @@ function Noir.TypeChecking:Assert(origin, value, ...)
     local valueType = type(value)
 
     -- Check if the value is of the correct type
+    local isClassWhileCheckTable = false -- sorry for the horrendous variable name. this is here so the error doesn't say "expected 'table' but got 'table'"
+
     for _, typeToCheck in pairs(types) do
-        if valueType == typeToCheck then -- classes are tables, hence this weird check at the end
+        if not isClassWhileCheckTable then
+            isClassWhileCheckTable = typeToCheck == "table" and self.DummyClass:IsClass(value)
+        end
+
+        if (valueType == typeToCheck) and not isClassWhileCheckTable then -- classes should not count as tables, hence the weird check at the end
             return
         end
 
@@ -69,7 +75,24 @@ function Noir.TypeChecking:Assert(origin, value, ...)
     end
 
     -- Otherwise, raise an error
-    Noir.Libraries.Logging:Error("Type", "%s: Expected %s, got %s.", true, origin, table.concat(types, ", "), valueType)
+    Noir.Libraries.Logging:Error("Invalid Type", "%s: Expected %s, but got '%s'.", true, origin, self:FormatTypes(types), isClassWhileCheckTable and "class" or valueType)
+end
+
+--[[
+    Format required types for an error message.<br>
+    Used internally.
+]]
+---@param types table<integer, NoirTypeCheckingType>
+---@return string
+function Noir.TypeChecking:FormatTypes(types)
+    local formatted = ""
+
+    for index, typeToFormat in pairs(types) do
+        local formattedType = ("'%s'%s"):format(typeToFormat, index ~= #types and (index == #types - 1 and " or " or ", ") or "")
+        formatted = formatted..formattedType
+    end
+
+    return formatted
 end
 
 -------------------------------
