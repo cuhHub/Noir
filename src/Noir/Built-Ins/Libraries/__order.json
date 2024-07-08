@@ -6,6 +6,7 @@
         "Number.lua",
         "String.lua",
         "JSON.lua",
-        "Base64.lua"
+        "Base64.lua",
+        "Matrix.lua"
     ]
 }
