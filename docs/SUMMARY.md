@@ -21,6 +21,7 @@
         * [TaskClass](api-reference/noir/built-ins/classes/taskclass.md)
         * [CommandClass](api-reference/noir/built-ins/classes/commandclass.md)
       * [Libraries](api-reference/noir/built-ins/libraries/README.md)
+        * [Matrix](api-reference/noir/built-ins/libraries/matrix.md)
         * [Events](api-reference/noir/built-ins/libraries/events.md)
         * [Logging](api-reference/noir/built-ins/libraries/logging.md)
         * [Number](api-reference/noir/built-ins/libraries/number.md)
@@ -40,3 +41,5 @@
     * [Services](api-reference/noir/services.md)
     * [Libraries](api-reference/noir/libraries.md)
     * [Classes](api-reference/noir/classes.md)
+    * [TypeChecking](api-reference/noir/typechecking.md)
+    * [Noir](api-reference/noir/noir.md)

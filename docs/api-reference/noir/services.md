@@ -12,12 +12,12 @@ These services can be used to hold methods that are all designed for a specific 
 
 A table containing created services.
 
-You probably do need to not modify or access this table directly. Please use `Noir.Services:GetService(name)` instead.
+You probably do not need to modify or access this table directly. Please use `Noir.Services:GetService(name)` instead.
 
 ***
 
 ```lua
-Noir.Services:CreateService(name, isBuiltIn)
+Noir.Services:CreateService(name, isBuiltIn, shortDescription, longDescription, authors)
 ```
 
 Create a service.
@@ -28,6 +28,9 @@ This service will be initialized and started after `Noir:Start()` is called.
 
 * `name`: string
 * `isBuiltIn`: boolean|nil
+* `shortDescription`: string|nil
+* `longDescription`: string|nil
+* `authors`: table\<integer, string>|nil
 
 #### Returns
 
@@ -50,6 +53,18 @@ This will error if the service hasn't initialized yet.
 #### Returns
 
 * `NoirService|nil`
+
+***
+
+```lua
+Noir.Services:RemoveService(name)
+```
+
+Remove a service.
+
+#### Parameters
+
+* `name`: string
 
 ***
 

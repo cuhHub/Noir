@@ -79,8 +79,8 @@ Get a portion of a table between two points.
 #### Parameters
 
 * `tbl`: tbl
-* `start`: number
-* `finish`: number
+* `start`: number|nil
+* `finish`: number|nil
 
 #### Returns
 

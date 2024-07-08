@@ -7,7 +7,7 @@ Represents a Noir service.
 ***
 
 ```lua
-Noir.Classes.ServiceClass:Init(name, isBuiltIn)
+Noir.Classes.ServiceClass:Init(name, isBuiltIn, shortDescription, longDescription, authors)
 ```
 
 Initializes service class objects.
@@ -16,6 +16,9 @@ Initializes service class objects.
 
 * `name`: string
 * `isBuiltIn`: boolean
+* `shortDescription`: string
+* `longDescription`: string
+* `authors`: table\<integer, string>
 
 ***
 
@@ -92,3 +95,15 @@ Remove data from g\_savedata that was saved via the :Save() method.
 #### Parameters
 
 * `index`: string
+
+***
+
+```lua
+Noir.Classes.ServiceClass:GetSaveData()
+```
+
+Returns this service's g\_savedata table for direct modification.
+
+#### Returns
+
+* `table`

@@ -53,7 +53,7 @@ Sends a log.
 
 * `logType`: string
 * `title`: string
-* `message`: string
+* `message`: any
 * `...`: any
 
 ***
@@ -70,7 +70,7 @@ Used internally.
 
 * `logType`: string
 * `title`: string
-* `message`: string
+* `message`: any
 * `...`: any
 
 ***
@@ -86,7 +86,7 @@ Passing true to the third argument will intentionally cause an addon error to be
 #### Parameters
 
 * `title`: string
-* `message`: string
+* `message`: any
 * `triggerError`: boolean
 * `...`: any
 
@@ -101,7 +101,7 @@ Sends a warning log.
 #### Parameters
 
 * `title`: string
-* `message`: string
+* `message`: any
 * `...`: any
 
 ***
@@ -115,7 +115,7 @@ Sends an info log.
 #### Parameters
 
 * `title`: string
-* `message`: string
+* `message`: any
 * `...`: any
 
 ***
@@ -129,5 +129,5 @@ Sends a success log.
 #### Parameters
 
 * `title`: string
-* `message`: string
+* `message`: any
 * `...`: any

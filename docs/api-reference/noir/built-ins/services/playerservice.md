@@ -16,7 +16,7 @@ Used internally.
 
 #### Parameters
 
-* `steam_id`: integer
+* `steam_id`: integer|string
 * `name`: string
 * `peer_id`: integer
 * `admin`: boolean
@@ -25,34 +25,6 @@ Used internally.
 #### Returns
 
 * `NoirPlayer|nil`
-
-***
-
-```lua
-Noir.Services.PlayerService:_OverwriteSavedProperties(properties)
-```
-
-Overwrite saved properties.
-
-Used internally. Do not use in your code.
-
-#### Parameters
-
-* `properties`: NoirSavedPlayerProperties
-
-***
-
-```lua
-Noir.Services.PlayerService:_GetSavedProperties()
-```
-
-Returns all saved player properties saved in g\_savedata.
-
-Used internally. Do not use in your code.
-
-#### Returns
-
-* `NoirSavedPlayerProperties`
 
 ***
 
@@ -71,6 +43,84 @@ Used internally.
 #### Returns
 
 * `boolean`: success - Whether or not the operation was successful
+
+***
+
+```lua
+Noir.Services.PlayerService:_IsHost(peer_id)
+```
+
+Returns whether or not a player is the server's host. Only applies in dedicated servers.
+
+Used internally.
+
+#### Parameters
+
+* `peer_id`: integer
+
+#### Returns
+
+* `boolean`
+
+***
+
+```lua
+Noir.Services.PlayerService:_MarkRecognized(player)
+```
+
+Mark a player as recognized to prevent onJoin being called for them after an addon reload.
+
+Used internally.
+
+#### Parameters
+
+* `player`: NoirPlayer
+
+***
+
+```lua
+Noir.Services.PlayerService:_IsRecognized(player)
+```
+
+Returns whether or not a player is recognized.
+
+Used internally.
+
+#### Parameters
+
+* `player`: NoirPlayer
+
+#### Returns
+
+* `boolean`
+
+***
+
+```lua
+Noir.Services.PlayerService:_UnmarkRecognized(player)
+```
+
+Mark a player as not recognized.
+
+Used internally.
+
+#### Parameters
+
+* `player`: NoirPlayer
+
+***
+
+```lua
+Noir.Services.PlayerService:_GetSavedProperties()
+```
+
+Returns all saved player properties saved in g\_savedata.
+
+Used internally. Do not use in your code.
+
+#### Returns
+
+* `NoirSavedPlayerProperties`
 
 ***
 
@@ -177,7 +227,7 @@ Noir.Services.PlayerService:GetPlayerByName(name)
 
 Returns a player by their exact name.
 
-Consider using `:SearchPlayerByName()` if you want to search and not directly fetch.
+Consider using `:SearchPlayerByName()` if the player name only needs to match partially.
 
 #### Parameters
 

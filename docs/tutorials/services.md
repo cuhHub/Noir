@@ -54,9 +54,11 @@ You probably noticed in the example that there are two strange methods - `Servic
 
 Here's a quick rundown:
 
-`ServiceInit` is called when the service is initialized by Noir after `Noir:Start()` is called. This service method is **required**.
+`ServiceInit` is called when the service is initialized by Noir after `Noir:Start()` is called.
 
-`ServiceStart` is called when the service is started by Noir after `Noir:Start()` is called. This service method is **optional**.
+`ServiceStart` is called when the service is started by Noir after `Noir:Start()` is called.
+
+Both of these methods are optional, but be sure to use `ServiceInit` if you need to store data within your service or setup things like events.
 
 Services can be stored as a variable and retrieved at anytime throughout your code, but you can also use `Noir.Services:GetService("MyService")` to retrieve a service. Note that this method only works if the service has been initialized (always the case after Noir has started).
 
@@ -64,7 +66,7 @@ Services can be stored as a variable and retrieved at anytime throughout your co
 
 Noir comes with built-in services to prevent you from writing a lot of code. They can be found under `Noir.Services` along with everything else relating to services.
 
-A very notable built-in service is `Noir.Services.PlayerService` that wraps players in classes to make interacting with players more OOP than not. It also handles players more reliably than Stormworks. For example: Triggering a service `OnLeave` event when the server shuts down with players in it. Stormworks does not do this.
+A very notable built-in service is `Noir.Services.PlayerService` that wraps players in classes to make interacting with players more OOP than not.
 
 ## Creating A Service
 
@@ -82,7 +84,7 @@ It is recommended to create a separate .lua file for each service you create. Th
 
 ### :ServiceInit()
 
-Now, we're not all done. We need to add a [method](https://www.lua.org/pil/16.html) to our service called `ServiceInit`. This is required for all services.
+Now, we're not all done. We can optionally add a [method](https://www.lua.org/pil/16.html) to our service called `ServiceInit`. This isn't required but is often used to setup events and generally store attributes. See the code sample below.
 
 {% code title="MyService.lua" lineNumbers="true" %}
 ```lua
@@ -119,6 +121,23 @@ end
 
 {% hint style="info" %}
 `Noir.Callbacks` will be talked about in a future page.
+{% endhint %}
+
+## Adding Credit
+
+This is not necessary, but if you would like to add credit to your service for whatever reason. You can add a few extra parameters to `:CreateService()`.
+
+<pre class="language-lua"><code class="lang-lua">Noir.Services:CreateService(
+<strong>    "Name", -- The name of your service
+</strong>    false, -- Whether or not this service is built into Noir. Always have this set to false
+    "Short Description", -- A short description of your service
+    "Loooongg description", -- A long description of your service
+    {"Cuh4"} -- The authors of your service
+)
+</code></pre>
+
+{% hint style="info" %}
+Note that everything beyond the `"Name"` is optional. See [services.md](../api-reference/noir/services.md "mention").
 {% endhint %}
 
 ## What's The Point?
