@@ -59,6 +59,10 @@ Noir.Libraries.Table = Noir.Libraries:Create(
 ---@param tbl table
 ---@return integer
 function Noir.Libraries.Table:Length(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Length()", "tbl", tbl, "table")
+
+    -- Calculate the length of the table
     local length = 0
 
     for _ in pairs(tbl) do
@@ -78,11 +82,15 @@ end
 ---@param tbl table
 ---@return any
 function Noir.Libraries.Table:Random(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Random()", "tbl", tbl, "table")
+
+    -- Prevent an error if the table is empty
     if #tbl == 0 then
-        Noir.Libraries.Logging:Warning("TableLibrary", ":Random() - The provided table is empty, nil has been returned instead.")
         return
     end
 
+    -- Return a random value
     return tbl[math.random(1, #tbl)]
 end
 
@@ -100,6 +108,10 @@ end
 ---@param tbl table
 ---@return tbl
 function Noir.Libraries.Table:Keys(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Keys()", "tbl", tbl, "table")
+
+    -- Create a new table with the keys of the provided table
     local keys = {}
 
     for index, _ in pairs(tbl) do
@@ -123,6 +135,10 @@ end
 ---@param tbl tbl
 ---@return tbl
 function Noir.Libraries.Table:Values(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Values()", "tbl", tbl, "table")
+
+    -- Create a new table with the values of the provided table
     local values = {}
 
     for _, value in pairs(tbl) do
@@ -141,10 +157,16 @@ end
 ]]
 ---@generic tbl: table
 ---@param tbl tbl
----@param start number
----@param finish number
+---@param start number|nil
+---@param finish number|nil
 ---@return tbl
 function Noir.Libraries.Table:Slice(tbl, start, finish)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Slice()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Slice()", "start", start, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Slice()", "finish", finish, "number", "nil")
+
+    -- Slice the table
     return {table.unpack(tbl, start, finish)}
 end
 
@@ -160,6 +182,10 @@ end
 ---@param indent integer|nil
 ---@return string
 function Noir.Libraries.Table:ToString(tbl, indent)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "indent", indent, "number", "nil")
+
     -- Set default indent
     if not indent then
         indent = 0
@@ -218,6 +244,10 @@ end
 ---@param tbl tbl
 ---@return tbl
 function Noir.Libraries.Table:Copy(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Copy()", "tbl", tbl, "table")
+
+    -- Perform a shallow copy
     local new = {}
 
     for index, value in pairs(tbl) do
@@ -237,6 +267,10 @@ end
 ---@param tbl tbl
 ---@return tbl
 function Noir.Libraries.Table:DeepCopy(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:DeepCopy()", "tbl", tbl, "table")
+
+    -- Perform a deep copy
     local new = {}
 
     for index, value in pairs(tbl) do
@@ -262,6 +296,11 @@ end
 ---@param other table
 ---@return table
 function Noir.Libraries.Table:Merge(tbl, other)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Merge()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Merge()", "other", other, "table")
+
+    -- Merge the tables
     local new = self:Copy(tbl)
 
     for _, value in pairs(other) do
@@ -283,6 +322,11 @@ end
 ---@param other table
 ---@return table
 function Noir.Libraries.Table:ForceMerge(tbl, other)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:ForceMerge()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:ForceMerge()", "other", other, "table")
+
+    -- Merge the tables forcefully
     local new = self:Copy(tbl)
 
     for index, value in pairs(other) do
@@ -304,6 +348,10 @@ end
 ---@param value any
 ---@return any|nil
 function Noir.Libraries.Table:Find(tbl, value)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Find()", "tbl", tbl, "table")
+
+    -- Find the value
     for index, iterValue in pairs(tbl) do
         if iterValue == value then
             return index

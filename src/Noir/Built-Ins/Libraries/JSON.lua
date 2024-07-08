@@ -83,6 +83,10 @@ end
 ---@param str string
 ---@return string
 function Noir.Libraries.JSON:EscapeString(str)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:EscapeString()", "str", str, "string")
+
+    -- Escape the string
     local inChar  = { "\\", "\"", "/", "\b", "\f", "\n", "\r", "\t" }
     local outChar = { "\\", "\"", "/", "b", "f", "n", "r", "t" }
 
@@ -104,6 +108,12 @@ end
 ---@return integer
 ---@return boolean
 function Noir.Libraries.JSON:SkipDelim(str, pos, delim, errIfMissing)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:SkipDelim()", "str", str, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:SkipDelim()", "pos", pos, "number")
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:SkipDelim()", "delim", delim, "string")
+
+    -- Main logic
     pos = pos + #str:match("^%s*", pos)
 
     if str:sub(pos, pos) ~= delim then
@@ -128,6 +138,12 @@ end
 ---@return string
 ---@return integer
 function Noir.Libraries.JSON:ParseStringValue(str, pos, val)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:ParseStringValue()", "str", str, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:ParseStringValue()", "pos", pos, "number")
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:ParseStringValue()", "val", val, "string", "nil")
+
+    -- Parsing
     val = val or ""
 
     local earlyEndError = "End of input found while parsing string."
@@ -167,6 +183,11 @@ end
 ---@return integer
 ---@return integer
 function Noir.Libraries.JSON:ParseNumberValue(str, pos)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:ParseNumberValue()", "str", str, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:ParseNumberValue()", "pos", pos, "number")
+
+    -- Parse number
     local numStr = str:match("^-?%d+%.?%d*[eE]?[+-]?%d*", pos)
     local val = tonumber(numStr)
 
@@ -184,10 +205,15 @@ end
     local str = {1, 2, 3}
     Noir.Libraries.JSON:Encode(str) -- "{1, 2, 3}"
 ]]
----@param obj any
+---@param obj table|number|string|boolean|nil
 ---@param asKey boolean|nil
 ---@return string
 function Noir.Libraries.JSON:Encode(obj, asKey)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:Encode()", "obj", obj, "table", "number", "string", "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:Encode()", "asKey", asKey, "boolean", "nil")
+
+    -- Encode the object into a JSON string
     local s = {}
     local kind = self:KindOf(obj)
 
@@ -199,7 +225,7 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
 
         s[#s + 1] = "["
 
-        for i, val in ipairs(obj) do
+        for i, val in ipairs(obj --[[@as table]]) do
             if i > 1 then
                 s[#s + 1] = ", "
             end
@@ -216,7 +242,7 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
 
         s[#s + 1] = "{"
 
-        for k, v in pairs(obj) do
+        for k, v in pairs(obj --[[@as table]]) do
             if #s > 1 then
                 s[#s + 1] = ", "
             end
@@ -228,7 +254,7 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
 
         s[#s + 1] = "}"
     elseif kind == "string" then
-        return "\""..self:EscapeString(obj).."\""
+        return "\""..self:EscapeString(obj --[[@as string]]).."\""
     elseif kind == "number" then
         if asKey then
             return "\"" .. tostring(obj) .. "\""
@@ -259,6 +285,12 @@ end
 ---@return any
 ---@return integer
 function Noir.Libraries.JSON:Decode(str, pos, endDelim)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:Decode()", "str", str, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:Decode()", "pos", pos, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Libraries.JSON:Decode()", "endDelim", endDelim, "string", "nil")
+
+    -- Decode a JSON string into a Lua object
     pos = pos or 1
 
     if pos > #str then

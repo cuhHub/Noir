@@ -59,7 +59,12 @@ Noir.Classes.ServiceClass = Noir.Class("NoirService")
 ---@param longDescription string
 ---@param authors table<integer, string>
 function Noir.Classes.ServiceClass:Init(name, isBuiltIn, shortDescription, longDescription, authors)
-    -- Create attributes
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "isBuiltIn", isBuiltIn, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "shortDescription", shortDescription, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "longDescription", longDescription, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "authors", authors, "table")
+
     self.Name = name
     self.IsBuiltIn = isBuiltIn
     self.Initialized = false
@@ -80,12 +85,12 @@ end
 function Noir.Classes.ServiceClass:_Initialize()
     -- Checks
     if self.Initialized then
-        Noir.Libraries.Logging:Error("Service", "%s: Attempted to initialize this service when it has already initialized.", true, self.Name)
+        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to initialize this service when it has already initialized.", true, self.Name)
         return
     end
 
     if self.Started then
-        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has already started.", true, self.Name)
+        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has already started.", true, self.Name)
         return
     end
 
@@ -107,12 +112,12 @@ end
 function Noir.Classes.ServiceClass:_Start()
     -- Checks
     if self.Started then
-        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has already started.", true, self.Name)
+        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has already started.", true, self.Name)
         return
     end
 
     if not self.Initialized then
-        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has not initialized yet.", true, self.Name)
+        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has not initialized yet.", true, self.Name)
         return
     end
 
@@ -135,22 +140,22 @@ end
 function Noir.Classes.ServiceClass:_CheckSaveData()
     -- Checks
     if not g_savedata then
-        Noir.Libraries.Logging:Error("Service", "_CheckSaveData(): g_savedata is nil.", false)
+        Noir.Libraries.Logging:Error("NoirService", "_CheckSaveData(): g_savedata is nil.", false)
         return false
     end
 
     if not g_savedata.Noir then
-        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir is nil.", false)
+        Noir.Libraries.Logging:Error("NoirService", "._CheckSaveData(): g_savedata.Noir is nil.", false)
         return false
     end
 
     if not g_savedata.Noir.Services then
-        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir.Services is nil.", false)
+        Noir.Libraries.Logging:Error("NoirService", "._CheckSaveData(): g_savedata.Noir.Services is nil.", false)
         return false
     end
 
     if not g_savedata.Noir.Services[self.Name] then
-        Noir.Libraries.Logging:Info("Service", "_CheckSaveData(): %s is missing a table in g_savedata.Noir.Services. Creating one.", self.Name)
+        Noir.Libraries.Logging:Info("NoirService", "_CheckSaveData(): %s is missing a table in g_savedata.Noir.Services. Creating one.", self.Name)
         g_savedata.Noir.Services[self.Name] = {}
     end
 
@@ -170,6 +175,7 @@ end
 ---@param index string
 ---@param data any
 function Noir.Classes.ServiceClass:Save(index, data)
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Save()", "index", index, "string")
     self:GetSaveData()[index] = data
 end
 
@@ -186,12 +192,18 @@ end
 ---@param default any
 ---@return any
 function Noir.Classes.ServiceClass:Load(index, default)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Load()", "index", index, "string")
+
+    -- Get the value
     local value = self:GetSaveData()[index]
 
+    -- Return the default if it's nil
     if value == nil then
         return default
     end
 
+    -- Return the value
     return value
 end
 
@@ -206,6 +218,7 @@ end
 ]]
 ---@param index string
 function Noir.Classes.ServiceClass:Remove(index)
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Remove()", "index", index, "string")
     self:GetSaveData()[index] = nil
 end
 

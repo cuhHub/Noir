@@ -60,6 +60,11 @@ Noir.Classes.TaskClass = Noir.Class("NoirTask")
 ---@param isRepeating boolean
 ---@param arguments table<integer, any>
 function Noir.Classes.TaskClass:Init(ID, duration, isRepeating, arguments)
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "duration", duration, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "isRepeating", isRepeating, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "arguments", arguments, "table")
+
     self.ID = ID
     self.StartedAt = Noir.Services.TaskService:GetTimeSeconds()
 
@@ -77,6 +82,7 @@ end
 ]]
 ---@param isRepeating boolean
 function Noir.Classes.TaskClass:SetRepeating(isRepeating)
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetRepeating()", "isRepeating", isRepeating, "boolean")
     self.IsRepeating = isRepeating
 end
 
@@ -85,6 +91,8 @@ end
 ]]
 ---@param duration number
 function Noir.Classes.TaskClass:SetDuration(duration)
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetDuration()", "duration", duration, "number")
+
     self.Duration = duration
     self.StopsAt = self.StartedAt + duration
 end
@@ -94,5 +102,6 @@ end
 ]]
 ---@param arguments table<integer, any>
 function Noir.Classes.TaskClass:SetArguments(arguments)
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetArguments()", "arguments", arguments, "table")
     self.Arguments = arguments
 end

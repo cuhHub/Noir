@@ -51,6 +51,8 @@ Noir.Classes.ObjectClass = Noir.Class("NoirObject")
 ]]
 ---@param ID integer
 function Noir.Classes.ObjectClass:Init(ID)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Init()", "ID", ID, "number")
+
     self.ID = ID
     self.Loaded = false
 
@@ -77,7 +79,13 @@ end
 ---@param serializedObject NoirSerializedObject
 ---@return NoirObject
 function Noir.Classes.ObjectClass._Deserialize(serializedObject)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass._Deserialize()", "serializedObject", serializedObject, "table")
+
+    -- Create object from serialized object
     local object = Noir.Classes.ObjectClass:New(serializedObject.ID)
+
+    -- Return it
     return object
 end
 
@@ -86,13 +94,15 @@ end
 ]]
 ---@return SWObjectData|nil
 function Noir.Classes.ObjectClass:GetData()
+    -- Get the data
     local data = server.getObjectData(self.ID)
 
     if not data then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetData() failed for object %d. Data is nil", false, self.ID)
+        Noir.Libraries.Logging:Error("NoirObject", ":GetData() failed for object %d. Data is nil", false, self.ID)
         return
     end
 
+    -- Return the data
     return data
 end
 
@@ -135,6 +145,7 @@ end
 ]]
 ---@param position SWMatrix
 function Noir.Classes.ObjectClass:Teleport(position)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Teleport()", "position", position, "table")
     server.setObjectPos(self.ID, position)
 end
 
@@ -152,6 +163,12 @@ end
 ---@param interactable boolean
 ---@param AI boolean
 function Noir.Classes.ObjectClass:SetData(hp, interactable, AI)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetData()", "hp", hp, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetData()", "interactable", interactable, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetData()", "AI", AI, "boolean")
+
+    -- Set data
     server.setCharacterData(self.ID, hp, interactable, AI)
 end
 
@@ -164,7 +181,7 @@ function Noir.Classes.ObjectClass:GetHealth()
     local data = self:GetData()
 
     if not data then
-        Noir.Libraries.Logging:Error("Object", ":GetHealth() failed as data is nil. Returning 100 as default.", false)
+        Noir.Libraries.Logging:Error("NoirObject", ":GetHealth() failed as data is nil. Returning 100 as default.", false)
         return 100
     end
 
@@ -177,6 +194,7 @@ end
 ]]
 ---@param tooltip string
 function Noir.Classes.ObjectClass:SetTooltip(tooltip)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetTooltip()", "tooltip", tooltip, "string")
     server.setCharacterTooltip(self.ID, tooltip)
 end
 
@@ -185,6 +203,7 @@ end
 ]]
 ---@param state integer 0 = none, 1 = path to destination
 function Noir.Classes.ObjectClass:SetAIState(state)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIState()", "state", state, "number")
     server.setAIState(self.ID, state)
 end
 
@@ -193,6 +212,7 @@ end
 ]]
 ---@param target NoirObject
 function Noir.Classes.ObjectClass:SetAICharacterTarget(target)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAICharacterTarget()", "target", target, Noir.Classes.ObjectClass)
     server.setAITargetCharacter(self.ID, target.ID)
 end
 
@@ -201,6 +221,7 @@ end
 ]]
 ---@param vehicle_id integer
 function Noir.Classes.ObjectClass:SetAIVehicleTarget(vehicle_id)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIVehicleTarget()", "vehicle_id", vehicle_id, "number")
     server.setAITargetVehicle(self.ID, vehicle_id)
 end
 
@@ -219,7 +240,7 @@ function Noir.Classes.ObjectClass:GetVehicle()
     local vehicle_id, success = server.getCharacterVehicle(self.ID)
 
     if not success then
-        Noir.Libraries.Logging:Error("Object", "server.getCharacterVehicle(...) was unsuccessful.", false)
+        Noir.Libraries.Logging:Error("NoirObject", "server.getCharacterVehicle(...) was unsuccessful.", false)
         return
     end
 
@@ -232,14 +253,39 @@ end
 ---@param slot SWSlotNumberEnum
 ---@return integer|nil
 function Noir.Classes.ObjectClass:GetItem(slot)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GetItem()", "slot", slot, "number")
+
+    -- Get the item
     local item, success = server.getCharacterItem(self.ID, slot)
 
     if not success then
-        Noir.Libraries.Logging:Error("Object", "server.getCharacterItem(...) was unsuccessful.", false)
+        Noir.Libraries.Logging:Error("NoirObject", "server.getCharacterItem(...) was unsuccessful.", false)
         return
     end
 
+    -- Return it
     return item
+end
+
+--[[
+    Give this character an item (if character).
+]]
+---@param slot SWSlotNumberEnum
+---@param equipmentID SWEquipmentTypeEnum
+---@param isActive boolean|nil
+---@param int integer|nil
+---@param float number|nil
+function Noir.Classes.ObjectClass:GiveItem(slot, equipmentID, isActive, int, float)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GiveItem()", "slot", slot, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GiveItem()", "equipmentID", equipmentID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GiveItem()", "isActive", isActive, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GiveItem()", "int", int, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GiveItem()", "float", float, "number", "nil")
+
+    -- Give the item
+    server.setCharacterItem(self.ID, slot, equipmentID, isActive or false, int or 0, float or 0)
 end
 
 --[[
@@ -251,7 +297,7 @@ function Noir.Classes.ObjectClass:IsDowned()
     local data = self:GetData()
 
     if not data then
-        Noir.Libraries.Logging:Error("Object", ":IsDowned() failed due to data being nil.", false)
+        Noir.Libraries.Logging:Error("NoirObject", ":IsDowned() failed due to data being nil.", false)
         return false
     end
 
@@ -268,12 +314,20 @@ end
 ---@param voxelY integer|nil
 ---@param voxelZ integer|nil
 function Noir.Classes.ObjectClass:Seat(vehicle_id, name, voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "vehicle_id", vehicle_id, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "name", name, "string", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "voxelX", voxelX, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "voxelY", voxelY, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "voxelZ", voxelZ, "number", "nil")
+
+    -- Set seated
     if name then
         server.setSeated(self.ID, vehicle_id, name)
     elseif voxelX and voxelY and voxelZ then
         server.setSeated(self.ID, vehicle_id, voxelX, voxelY, voxelZ)
     else
-        Noir.Libraries.Logging:Error("Object", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().", true)
+        Noir.Libraries.Logging:Error("NoirObject", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().", true)
     end
 end
 
@@ -282,6 +336,7 @@ end
 ]]
 ---@param position SWMatrix
 function Noir.Classes.ObjectClass:SetMoveTarget(position)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetMoveTarget()", "position", position, "table")
     server.setCreatureMoveTarget(self.ID, position)
 end
 
@@ -290,6 +345,9 @@ end
 ]]
 ---@param amount number
 function Noir.Classes.ObjectClass:Damage(amount)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Damage()", "amount", amount, "number")
+
     -- Get health
     local health = self:GetHealth()
 
@@ -302,6 +360,9 @@ end
 ]]
 ---@param amount number
 function Noir.Classes.ObjectClass:Heal(amount)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Heal()", "amount", amount, "number")
+
     -- Get health
     local health = self:GetHealth()
 
@@ -319,13 +380,15 @@ end
 ]]
 ---@return boolean isLit
 function Noir.Classes.ObjectClass:GetFireData()
+    -- Get fire data
     local isLit, success = server.getFireData(self.ID)
 
     if not success then
-        Noir.Libraries.Logging:Error("Object", "server.getFireData(...) was unsuccessful. Returning false.", false)
+        Noir.Libraries.Logging:Error("NoirObject", "server.getFireData(...) was unsuccessful. Returning false.", false)
         return false
     end
 
+    -- Return
     return isLit
 end
 
@@ -335,6 +398,11 @@ end
 ---@param isLit boolean
 ---@param isExplosive boolean
 function Noir.Classes.ObjectClass:SetFireData(isLit, isExplosive)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetFireData()", "isLit", isLit, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetFireData()", "isExplosive", isExplosive, "boolean")
+
+    -- Set fire data
     server.setFireData(self.ID, isLit, isExplosive)
 end
 

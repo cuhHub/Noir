@@ -58,6 +58,13 @@ Noir.Classes.PlayerClass = Noir.Class("NoirPlayer")
 ---@param auth boolean
 ---@param permissions table<string, boolean>
 function Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions)
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "steam", steam, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "admin", admin, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "auth", auth, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "permissions", permissions, "table")
+
     self.Name = name
     self.ID = ID
     self.Steam = steam
@@ -71,7 +78,13 @@ end
 ]]
 ---@param permission string
 function Noir.Classes.PlayerClass:SetPermission(permission)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetPermission()", "permission", permission, "string")
+
+    -- Set permission
     self.Permissions[permission] = true
+
+    -- Save changes
     Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
 end
 
@@ -81,6 +94,7 @@ end
 ---@param permission string
 ---@return boolean
 function Noir.Classes.PlayerClass:HasPermission(permission)
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:HasPermission()", "permission", permission, "string")
     return self.Permissions[permission] ~= nil
 end
 
@@ -89,7 +103,13 @@ end
 ]]
 ---@param permission string
 function Noir.Classes.PlayerClass:RemovePermission(permission)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:RemovePermission()", "permission", permission, "string")
+
+    -- Remove permission
     self.Permissions[permission] = nil
+
+    -- Save changes
     Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
 end
 
@@ -106,6 +126,10 @@ end
 ]]
 ---@param auth boolean
 function Noir.Classes.PlayerClass:SetAuth(auth)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetAuth()", "auth", auth, "boolean")
+
+    -- Add/remove auth
     if auth then
         server.addAuth(self.ID)
     else
@@ -120,6 +144,10 @@ end
 ]]
 ---@param admin boolean
 function Noir.Classes.PlayerClass:SetAdmin(admin)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetAdmin()", "admin", admin, "boolean")
+
+    -- Add/remove admin
     if admin then
         server.addAdmin(self.ID)
     else
@@ -146,7 +174,12 @@ end
 --[[
     Teleports this player.
 ]]
+---@param pos SWMatrix
 function Noir.Classes.PlayerClass:Teleport(pos)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Teleport()", "pos", pos, "table")
+
+    -- Teleport the player
     server.setPlayerPos(self.ID, pos)
 end
 
@@ -173,7 +206,7 @@ function Noir.Classes.PlayerClass:GetCharacter()
     local character = server.getPlayerCharacterID(self.ID)
 
     if not character then
-        Noir.Libraries.Logging:Error("Player", ":GetCharacter() failed for player %s (%d, %s)", false, self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("NoirPlayer", ":GetCharacter() failed for player %s (%d, %s)", false, self.Name, self.ID, self.Steam)
         return
     end
 
@@ -181,7 +214,7 @@ function Noir.Classes.PlayerClass:GetCharacter()
     local object = Noir.Services.ObjectService:GetObject(character)
 
     if not object then
-        Noir.Libraries.Logging:Error("Player", ":GetCharacter() failed for player %s (%d, %s) due to object being nil", false, self.Name, self.ID, self.Steam)
+        Noir.Libraries.Logging:Error("NoirPlayer", ":GetCharacter() failed for player %s (%d, %s) due to object being nil", false, self.Name, self.ID, self.Steam)
         return
     end
 
@@ -212,5 +245,11 @@ end
 ---@param message string
 ---@param notificationType SWNotifiationTypeEnum
 function Noir.Classes.PlayerClass:Notify(title, message, notificationType)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Notify()", "title", title, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Notify()", "message", message, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Notify()", "notificationType", notificationType, "number")
+
+    -- Send notification
     server.notify(self.ID, title, message, notificationType)
 end

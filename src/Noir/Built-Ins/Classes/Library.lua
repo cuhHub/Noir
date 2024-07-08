@@ -50,6 +50,11 @@ Noir.Classes.LibraryClass = Noir.Class("NoirLibrary")
 ---@param longDescription string
 ---@param authors table<integer, string>
 function Noir.Classes.LibraryClass:Init(name, shortDescription, longDescription, authors)
+    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "shortDescription", shortDescription, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "longDescription", longDescription, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "authors", authors, "table")
+
     self.Name = name
     self.ShortDescription = shortDescription
     self.LongDescription = longDescription

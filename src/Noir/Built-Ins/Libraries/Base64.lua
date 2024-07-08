@@ -55,6 +55,10 @@ Noir.Libraries.Base64.Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr
 ---@param data string
 ---@return string
 function Noir.Libraries.Base64:Encode(data)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:Encode()", "data", data, "string")
+
+    -- Encode the string into Base64
     ---@param str string
     local encoded = (data:gsub(".", function(str)
         return self:_EncodeInitial(str)
@@ -72,6 +76,10 @@ end
 ---@param data string
 ---@return string
 function Noir.Libraries.Base64:_EncodeInitial(data)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_EncodeInitial()", "data", data, "string")
+
+    -- Main logic
     local r, b = "", data:byte()
 
     for i = 8, 1, -1 do
@@ -87,6 +95,10 @@ end
 ---@param data string
 ---@return string
 function Noir.Libraries.Base64:_EncodeFinal(data)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_EncodeFinal()", "data", data, "string")
+
+    -- Main logic
     if (#data < 6) then
         return ""
     end
@@ -106,6 +118,10 @@ end
 ---@param data string
 ---@return string
 function Noir.Libraries.Base64:Decode(data)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:Decode()", "data", data, "string")
+
+    -- Decode the Base64 string into a normal string
     local decoded = data:gsub("[^"..self.Characters.."=]", "")
 
     ---@param str string
@@ -125,6 +141,10 @@ end
 ---@param str string
 ---@return string
 function Noir.Libraries.Base64:_DecodeInitial(str)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_DecodeInitial()", "str", str, "string")
+
+    -- Main logic
     if str == "=" then
         return ""
     end
@@ -144,6 +164,10 @@ end
 ---@param str string
 ---@return string
 function Noir.Libraries.Base64:_DecodeFinal(str)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_DecodeFinal()", "str", str, "string")
+
+    -- Main logic
     if #str ~= 8 then
         return ""
     end

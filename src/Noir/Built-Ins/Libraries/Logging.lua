@@ -68,6 +68,7 @@ Noir.Libraries.Logging.Layout = "[Noir] [%s] [%s]: "
 ]]
 ---@param mode NoirLoggingMode
 function Noir.Libraries.Logging:SetMode(mode)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:SetMode()", "mode", mode, "string")
     self.LoggingMode = mode
 end
 
@@ -81,6 +82,10 @@ end
 ---@param message any
 ---@param ... any
 function Noir.Libraries.Logging:Log(logType, title, message, ...)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Log()", "logType", logType, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Log()", "title", title, "string")
+
     -- Format
     local formattedText = self:_FormatLog(logType, title, message, ...)
 
@@ -107,6 +112,10 @@ end
 ---@param message any
 ---@param ... any
 function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:_FormatLog()", "logType", logType, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:_FormatLog()", "title", title, "string")
+
     -- Validate args
     local validatedLogType = tostring(logType)
     local validatedTitle = tostring(title)
@@ -130,6 +139,9 @@ end
 ---@param triggerError boolean
 ---@param ... any
 function Noir.Libraries.Logging:Error(title, message, triggerError, ...)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "title", title, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "triggerError", triggerError, "boolean")
+
     self:Log("Error", title, message, ...)
 
     if triggerError then
@@ -146,6 +158,7 @@ end
 ---@param message any
 ---@param ... any
 function Noir.Libraries.Logging:Warning(title, message, ...)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Warning()", "title", title, "string")
     self:Log("Warning", title, message, ...)
 end
 
@@ -158,6 +171,7 @@ end
 ---@param message any
 ---@param ... any
 function Noir.Libraries.Logging:Info(title, message, ...)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Info()", "title", title, "string")
     self:Log("Info", title, message, ...)
 end
 
@@ -170,6 +184,7 @@ end
 ---@param message any
 ---@param ... any
 function Noir.Libraries.Logging:Success(title, message, ...)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Success()", "title", title, "string")
     self:Log("Success", title, message, ...)
 end
 

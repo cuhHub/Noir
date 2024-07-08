@@ -48,6 +48,8 @@ Noir.Classes.ConnectionClass = Noir.Class("NoirConnection")
 ]]
 ---@param callback function
 function Noir.Classes.ConnectionClass:Init(callback)
+    Noir.TypeChecking:Assert("Noir.Classes.ConnectionClass:Init()", "callback", callback, "function")
+
     self.Callback = callback
     self.ParentEvent = nil
     self.ID = nil
@@ -61,7 +63,7 @@ end
 ---@param ... any
 function Noir.Classes.ConnectionClass:Fire(...)
     if not self.Connected then
-        Noir.Libraries.Logging:Error("Event Connection", "Attempted to fire an event connection when it is not connected.", true)
+        Noir.Libraries.Logging:Error("NoirConnection", "Attempted to fire an event connection when it is not connected.", true)
         return
     end
 
@@ -73,7 +75,7 @@ end
 ]]
 function Noir.Classes.ConnectionClass:Disconnect()
     if not self.Connected then
-        Noir.Libraries.Logging:Error("Event Connection", "Attempted to disconnect an event connection when it is not connected.", true)
+        Noir.Libraries.Logging:Error("NoirConnection", "Attempted to disconnect an event connection when it is not connected.", true)
         return
     end
 

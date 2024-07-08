@@ -53,6 +53,10 @@ Noir.Libraries.String = Noir.Libraries:Create(
 ---@param separator string|nil
 ---@return table<integer, string>
 function Noir.Libraries.String:Split(str, separator)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.String:Split()", "str", str, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.String:Split()", "separator", separator, "string", "nil")
+
     -- Default separator
     separator = separator or " "
 
@@ -76,5 +80,9 @@ end
 ---@param str string
 ---@return table<integer, string>
 function Noir.Libraries.String:SplitLines(str)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.String:SplitLines()", "str", str, "string")
+
+    -- Split the string by newlines
     return self:Split(str, "\n")
 end

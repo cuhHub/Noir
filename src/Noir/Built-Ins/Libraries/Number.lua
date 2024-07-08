@@ -56,6 +56,12 @@ Noir.Libraries.Number = Noir.Libraries:Create(
 ---@param stop number
 ---@return boolean
 function Noir.Libraries.Number:IsWithin(number, start, stop)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsWithin()", "number", number, "number")
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsWithin()", "start", start, "number")
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsWithin()", "stop", stop, "number")
+
+    -- Clamp the number
     return number >= start and number <= stop
 end
 
@@ -73,6 +79,12 @@ end
 ---@param max number
 ---@return number
 function Noir.Libraries.Number:Clamp(number, min, max)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:Clamp()", "number", number, "number")
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:Clamp()", "min", min, "number")
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:Clamp()", "max", max, "number")
+
+    -- Clamp the number
     return math.min(math.max(number, min), max)
 end
 
@@ -92,6 +104,10 @@ end
 ---@param decimalPlaces number|nil
 ---@return number
 function Noir.Libraries.Number:Round(number, decimalPlaces)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:Round()", "number", number, "number")
+
+    -- Round the number
     local mult = 10 ^ (decimalPlaces or 0)
     return math.floor(number * mult + 0.5) / mult
 end
@@ -105,5 +121,6 @@ end
 ---@param number number
 ---@return boolean
 function Noir.Libraries.Number:IsInteger(number)
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsInteger()", "number", number, "number")
     return math.floor(number) == number
 end
