@@ -125,3 +125,13 @@ function Noir.Bootstrapper:StartServices()
         service:_Start()
     end
 end
+
+--[[
+    Determines whether or not the server this addon is being ran in is a dedicated server.<br>
+    This evaluation is then used to set `Noir.IsDedicatedServer`.<br>
+    Do not use this in your code. This is used internally.
+]]
+function Noir.Bootstrapper:SetIsDedicatedServer()
+    local host = server.getPlayers()[1]
+    Noir.IsDedicatedServer = host and (host.steam_id == 0 and host.object_id == nil)
+end

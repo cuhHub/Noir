@@ -70,19 +70,9 @@ Noir.HasStarted = false
 Noir.IsStarting = false
 
 --[[
-    This represents whether or not the addon is being ran in a dedicated server.<br>
-    This needs to be manually set.
+    This represents whether or not the addon is being ran in a dedicated server.
 ]]
 Noir.IsDedicatedServer = false
-
---[[
-    Set whether or not the addon is being ran in a dedicated server.
-]]
----@param isDedicatedServer boolean
-function Noir:SetIsDedicatedServer(isDedicatedServer)
-    self.TypeChecking:Assert("Noir:SetIsDedicatedServer()", "isDedicatedServer", isDedicatedServer, "boolean")
-    self.IsDedicatedServer = isDedicatedServer
-end
 
 --[[
     This represents whether or not the addon was:<br>
@@ -121,11 +111,15 @@ function Noir:Start()
     local function setup(startTime, isSaveCreate)
         -- Wait until onTick is first called to determine if the addon was reloaded, or if a save with the addon was loaded/created
         self.Callbacks:Once("onTick", function()
+            -- Determine the addon reason
             local took = server.getTimeMillisec() - startTime
             self.AddonReason = isSaveCreate and "SaveCreate" or (took < 1000 and "AddonReload" or "SaveLoad")
 
             self.IsStarting = false
             self.HasStarted = true
+
+            -- Set Noir.IsDedicatedServer
+            self.Bootstrapper:SetIsDedicatedServer()
 
             -- Initialize g_savedata
             self.Bootstrapper:InitializeSavedata()
