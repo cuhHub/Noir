@@ -78,11 +78,6 @@ end
 function Noir.Services.PlayerService:ServiceStart()
     -- Create callbacks
     self.JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
-        -- Check if player was loaded via save data. This happens because onPlayerJoin runs for the host after Noir fully starts
-        if self:GetPlayer(peer_id) then
-            return
-        end
-
         -- Give data
         local player = self:_GivePlayerData(steam_id, name, peer_id, admin, auth)
 
@@ -193,6 +188,11 @@ end
 ---@param auth boolean
 ---@return NoirPlayer|nil
 function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, admin, auth)
+    -- Check if the player is the server itself (applies to dedicated servers)
+    if self:_IsHost(peer_id) then
+        return
+    end
+
     -- Check if player already exists
     if self:GetPlayer(peer_id) then
         Noir.Libraries.Logging:Error("PlayerService", "Attempted to give player data to an existing player. This player has been ignored.", false)
@@ -242,6 +242,16 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
     self:_UnmarkRecognized(player)
 
     return true
+end
+
+--[[
+    Returns whether or not a player is the server's host. Only applies in dedicated servers.<br>
+    Used internally.
+]]
+---@param peer_id integer
+---@return boolean
+function Noir.Services.PlayerService:_IsHost(peer_id)
+    return peer_id == 0 and Noir.IsDedicatedServer
 end
 
 --[[
