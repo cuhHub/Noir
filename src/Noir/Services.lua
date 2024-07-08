@@ -150,6 +150,20 @@ function Noir.Services:RemoveService(name)
 end
 
 --[[
+    Format a service into a string.<br>
+    Returns the service name as well as the author(s) if any.
+]]
+---@param service NoirService
+---@return string
+function Noir.Services:FormatService(service)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services:FormatService()", "service", service, Noir.Classes.ServiceClass)
+
+    -- Format service
+    return ("'%s'%s%s"):format(service.Name, #service.Authors >= 1 and " by "..table.concat(service.Authors, ", ") or "", service.IsBuiltIn and " (Built-In)" or "")
+end
+
+--[[
     Returns all built-in Noir services.
 ]]
 ---@return table<string, NoirService>
