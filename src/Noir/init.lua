@@ -38,6 +38,7 @@
 
 require("Noir.Definition")
 require("Noir.Class")
+require("Noir.TypeChecking")
 
 require("Noir.Classes")
 
