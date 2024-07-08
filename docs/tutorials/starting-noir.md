@@ -80,6 +80,10 @@ Noir:Start()
 ```
 {% endcode %}
 
+## Noir.IsDedicatedServer
+
+This attribute can either be `true` or `false` and represents whether or not this addon is being ran in a dedicated server. This attribute is set to `true` or `false` by Noir's bootstrapper which automatically determines if the addon is being ran in a dedicated server or not.
+
 ## Noir.Version Attribute
 
 Finally, Noir has an attribute called `Version` which represents the current version of Noir.

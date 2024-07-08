@@ -164,3 +164,20 @@ _ENV.x -- 0
 ```
 {% endcode %}
 {% endhint %}
+
+## Adding Credit
+
+If you create a library and you would like to credit yourself or others, you can provide extra parameters to `Noir.Libraries:Create()`.
+
+```lua
+Noir.Libraries:Create(
+    "Name", -- The name of your library
+    "Short Description", -- Short description of your library
+    "Loooongg description", -- Long description of your library
+    {"Cuh4"} -- A table of authors
+)
+```
+
+{% hint style="info" %}
+Note that everything after `"Name"` is optional. See [libraries.md](../api-reference/noir/libraries.md "mention").
+{% endhint %}

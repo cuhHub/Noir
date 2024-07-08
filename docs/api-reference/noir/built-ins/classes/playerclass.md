@@ -121,6 +121,10 @@ Noir.Classes.PlayerClass:Teleport(pos)
 
 Teleports this player.
 
+#### Parameters
+
+* `pos`: SWMatrix
+
 ***
 
 ```lua
@@ -158,3 +162,17 @@ Returns this player's look direction.
 * `number`: LookX
 * `number`: LookY
 * `number`: LookZ
+
+***
+
+```lua
+Noir.Classes.PlayerClass:Notify(title, message, notificationType)
+```
+
+Send this player a notification.
+
+#### Parameters
+
+* `title`: string
+* `message`: string
+* `notificationType`: SWNotifiationTypeEnum

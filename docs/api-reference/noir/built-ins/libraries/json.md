@@ -121,7 +121,7 @@ Encodes a Lua object as a JSON string.
 
 #### Parameters
 
-* `obj`: any
+* `obj`: table|number|string|boolean|nil
 * `asKey`: boolean|nil
 
 #### Returns
