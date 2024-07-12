@@ -78,13 +78,14 @@ connection:Fire()
 
 ## Creating A Library
 
-Unlike services-ish, libraries are very simple to setup. Libraries are also fully intellisense supported and don't require any funky `---@class` definitions as the Lua VSCode extension can infer what is going on.
+Unlike services-ish, libraries are very simple to setup. Libraries are also fully intellisense supported as long as you add a simple `---@class` annotation.
 
 First, give your library a name. For this example, we'll call your library `Matrix`, and we'll have the library provide helper methods relating to SW matrices.
 
 Define the library like so:
 
-<pre class="language-lua" data-title="Matrix.lua" data-line-numbers><code class="lang-lua"><strong>MatrixLibrary = Noir.Libraries:Create("Matrix")
+<pre class="language-lua" data-title="Matrix.lua" data-line-numbers><code class="lang-lua"><strong>---@class MatrixLibrary: NoirLibrary
+</strong><strong>MatrixLibrary = Noir.Libraries:Create("Matrix")
 </strong></code></pre>
 
 And simply add methods to it like so:
