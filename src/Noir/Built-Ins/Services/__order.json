@@ -1,9 +1,0 @@
-{
-    "order" : [
-        "TaskService.lua",
-        "PlayerService.lua",
-        "ObjectService.lua",
-        "GameSettingsService.lua",
-        "CommandService.lua"
-    ]
-}
