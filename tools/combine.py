@@ -1,5 +1,5 @@
 # // ---------------------------------------------------------------------
-# // ------- [cuhHub] Tools - Combiner
+# // ------- [Noir]  Combiner Tool
 # // ---------------------------------------------------------------------
 
 # -----------------------------------------
@@ -28,7 +28,7 @@ def quickRead(path: str, mode: str = "r"):
 def quickWrite(path: str, content: str, mode: str = "w"):
     directory = os.path.dirname(path)
     
-    if not os.path.exists(directory):
+    if not os.path.exists(directory) and directory != "":
         os.makedirs(directory, exist_ok = True)
     
     with open(path, mode) as f:
@@ -131,5 +131,5 @@ for path, content in result.items():
 # dump it into output file
 try:
     quickWrite(args.destination, "\n\n".join(result.values()), "w")
-except:
-    print("Failed to output.")
+except Exception as error:
+    print(f"Failed to output. Error: {error}")
