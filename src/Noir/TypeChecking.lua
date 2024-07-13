@@ -55,24 +55,18 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
     local valueType = type(value)
 
     -- Check if the value is of the correct type
-    local isClassWhileCheckTable = false -- sorry for the horrendous variable name. this is here so the error doesn't say "expected 'table' but got 'table'"
-
     for _, typeToCheck in pairs(types) do
-        if not isClassWhileCheckTable then
-            isClassWhileCheckTable = typeToCheck == "table" and self._DummyClass:IsClass(value)
-        end
-
         -- Value == ExactType
-        if (valueType == typeToCheck) and not isClassWhileCheckTable then
+        if valueType == typeToCheck then
             return
         end
 
-        -- Value == AnyClass
+        -- Value == Any Class
         if typeToCheck == "class" and self._DummyClass:IsClass(value) then
             return
         end
 
-        -- Value == ExactClass
+        -- Value == Exact Class
         if self._DummyClass:IsClass(typeToCheck) and typeToCheck:IsSameType(value) then ---@diagnostic disable-line
             return
         end
@@ -84,9 +78,9 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
         "%s: Expected %s for parameter '%s', but got '%s'.",
         true,
         origin,
-        self:FormatTypes(types),
+        self:_FormatTypes(types),
         parameterName,
-        self._DummyClass:IsClass(value) and value.ClassName or (isClassWhileCheckTable and "class" or valueType)
+        self._DummyClass:IsClass(value) and value.ClassName.." (Class)" or valueType
     )
 end
 
@@ -116,9 +110,9 @@ end
 ]]
 ---@param types table<integer, NoirTypeCheckingType>
 ---@return string
-function Noir.TypeChecking:FormatTypes(types)
+function Noir.TypeChecking:_FormatTypes(types)
     -- Perform type checking
-    self:Assert("Noir.TypeChecking:FormatTypes()", "types", types, "table")
+    self:Assert("Noir.TypeChecking:_FormatTypes()", "types", types, "table")
 
     -- Format types
     local formatted = ""
