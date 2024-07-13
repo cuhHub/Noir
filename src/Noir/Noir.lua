@@ -148,10 +148,10 @@ function Noir:Start()
     end, true)
 
     self.IsStarting = true
-
-    -- Prevent user-created methods in services from being called before the service has been initialized
-    self.Bootstrapper:WrapServiceMethodsForAllServices()
 end
+
+-- Prevent user-created methods in services from being called before the service has been initialized
+Noir.Bootstrapper:WrapServiceMethodsForAllServices()
 
 -------------------------------
 -- // Intellisense
