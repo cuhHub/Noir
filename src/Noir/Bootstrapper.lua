@@ -51,6 +51,58 @@ function Noir.Bootstrapper:InitializeSavedata()
 end
 
 --[[
+    Wraps user-created methods in a service with code to prevent them from being called if the service hasn't initialized yet.<br>
+    Do not use this in your code. This is used internally.
+]]
+---@param service NoirService
+function Noir.Bootstrapper:WrapServiceMethodsForService(service)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Bootstrapper:WrapServiceMethods()", "service", service, Noir.Classes.ServiceClass)
+
+    -- Prevent wrapping non-custom methods (aka methods not provided by the user)
+    local blacklistedMethods = {}
+
+    for name, _ in pairs(Noir.Classes.ServiceClass) do
+        blacklistedMethods[name] = true
+    end
+
+    -- Wrap methods
+    for name, method in pairs(service) do
+        -- Check if the method is even a method
+        if type(method) ~= "function" then
+            goto continue
+        end
+
+        -- Check if the method is a user-created method or not
+        if blacklistedMethods[name] then
+            goto continue
+        end
+
+        -- Wrap the method
+        service[name] = function(...)
+            if not service.Initialized then
+                Noir.Libraries.Logging:Error(service.Name.." (Service)", "Attempted to call '%s()' of '%s' (service) when the service hasn't initialized yet.", true, name, service.Name)
+                return
+            end
+
+            return method(...)
+        end
+
+        ::continue::
+    end
+end
+
+--[[
+    Calls :WrapServiceMethodsForService() for all services.<br>
+    Do not use this in your code. This is used internally.
+]]
+function Noir.Bootstrapper:WrapServiceMethodsForAllServices()
+    for _, service in pairs(Noir.Services.CreatedServices) do
+        self:WrapServiceMethodsForService(service)
+    end
+end
+
+--[[
     Initialize all services.<br>
     This will order services by their `InitPriority` and then initialize them.<br>
     Do not use this in your code. This is used internally.

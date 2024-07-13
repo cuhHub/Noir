@@ -142,15 +142,15 @@ function Noir:Start()
         end, true)
     end
 
-    self.IsStarting = true
-
     -- Wait for onCreate, then setup
     self.Callbacks:Once("onCreate", function(isSaveCreate)
         setup(server.getTimeMillisec(), isSaveCreate)
     end, true)
 
-    -- Send log
-    self.Libraries.Logging:Info("Start", "Waiting for onCreate game event to fire before setting up Noir.")
+    self.IsStarting = true
+
+    -- Prevent user-created methods in services from being called before the service has been initialized
+    self.Bootstrapper:WrapServiceMethodsForAllServices()
 end
 
 -------------------------------
