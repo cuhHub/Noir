@@ -61,6 +61,7 @@ require("Noir.Built-Ins.Libraries.Number")
 require("Noir.Built-Ins.Libraries.JSON")
 require("Noir.Built-Ins.Libraries.Base64")
 require("Noir.Built-Ins.Libraries.Matrix")
+require("Noir.Built-Ins.Libraries.Dataclasses")
 
 require("Noir.Services")
 
