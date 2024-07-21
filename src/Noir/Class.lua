@@ -41,12 +41,12 @@
         self.name = name
     end
 
-    function MyClass:myName()
+    function MyClass:MyName()
         print(self.name)
     end
 
     local object = MyClass:New("Cuh4")
-    object:myName() -- "Cuh4"
+    object:MyName() -- "Cuh4"
 ]]
 ---@param name string
 ---@param parent NoirClass|nil
@@ -55,13 +55,13 @@ function Noir.Class(name, parent)
     --[[
         A class that objects can be created from.
 
-        local MyClass = Class:Create("MyClass")
+        local MyClass = Noir.Class:Create("MyClass")
 
-        function MyClass:Init(name) -- This is called when MyClass.new() is called
+        function MyClass:Init(name) -- This is called when MyClass:New() is called
             self.something = true
         end
 
-        local object = MyClass:new("Cuh4")
+        local object = MyClass:New("Cuh4")
         print(object.something) -- true
     ]]
     ---@class NoirClass
