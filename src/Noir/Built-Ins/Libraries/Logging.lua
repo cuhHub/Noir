@@ -96,7 +96,7 @@ function Noir.Libraries.Logging:Log(logType, title, message, ...)
         debug.log(formattedText)
         server.announce("Noir", formattedText)
     else
-        self:Error("Invalid logging mode: %s", "'%s' is not a valid logging mode.", true, tostring(Noir.Libraries.LoggingMode))
+        self:Error("Logging", "'%s' is not a valid logging mode.", true, tostring(Noir.Libraries.LoggingMode))
     end
 
     -- Send event
