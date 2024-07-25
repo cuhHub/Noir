@@ -66,7 +66,11 @@ Now, you need to use Noir in your `script.lua` file, but `Noir` is in a whole se
 
 ## Integrating Noir Using Noir's Tools
 
-1. Extract all files from [here](https://github.com/cuhHub/Noir/tree/main/tools) from and place it in your addon dircetory.
+{% hint style="warning" %}
+[Python](https://www.python.org/downloads/) is required for these tools, preferably `>3.12`.
+{% endhint %}
+
+1. Extract all files from [here](https://github.com/cuhHub/Noir/tree/main/tools) from and place it in your addon directory.
 2. Create an `__order.json` file in your addon directory containing the following:
 
 {% code title="__order.json" lineNumbers="true" %}
@@ -80,7 +84,7 @@ Now, you need to use Noir in your `script.lua` file, but `Noir` is in a whole se
 ```
 {% endcode %}
 
-3. Run `build.bat`. This will combine the contents of Noir and your addon and dump it all into a file called `build.lua`.
+3. Run `build.bat`. This will combine the contents of Noir and your addon and dump it all into a file called `build.lua` by running `py combine.py` with specific arguments.
 
 Your addon directory should now look like:
 
