@@ -68,19 +68,26 @@ function Noir.Class(name, parent)
     ---@field ClassName string The name of this class/object
     ---@field _Parent NoirClass|nil The parent class that this class inherits from
     ---@field _IsObject boolean Represents whether or not this is a class (objects are created from a class via class:New()) or a class object (an object created from a class due to class:New() call)
+    ---@field _ClassMethods table<integer, string> A list of methods that are only available on classes and not objects created from classes. Used for :_Descend() exceptions internally
     ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
     local class = {} ---@diagnostic disable-line
     class.ClassName = name
     class._Parent = parent
     class._IsObject = false
+    class._ClassMethods = {"New", "Init", "_Descend"}
 
     function class:New(...)
         -- Create class object
         ---@type NoirClass
         local object = {} ---@diagnostic disable-line
-        self:_Descend(object, {New = true, Init = true, _Descend = true})
+        self:_Descend(object, self._ClassMethods)
 
         object._IsObject = true
+
+        -- Bring down methods from parent
+        if self._Parent then
+            self._Parent:_Descend(object, self._ClassMethods)
+        end
 
         -- Call init of object. This init function will provide the needed attributes to the object
         if self.Init then
@@ -144,7 +151,7 @@ function Noir.Class(name, parent)
         local object = self._Parent:New(...)
 
         -- Copy and bring new attributes and methods down from the new parent object to this object
-        self._Descend(object, self, {New = true, Init = true, _Descend = true})
+        self._Descend(object, self, self._ClassMethods)
     end
 
     --[[
