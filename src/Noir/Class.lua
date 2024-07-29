@@ -129,13 +129,13 @@ function Noir.Class(name, parent)
     ]]
     function class:InitializeParent(...)
         -- Check if this was called from an object
-        if not self.IsSameType then
+        if not self._IsObject then
             Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' is a class and not an object.", true)
             return
         end
 
         -- Check if there is a parent
-        if not self._IsObject then
+        if not self._Parent then
             Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' has no parent.", true)
             return
         end
