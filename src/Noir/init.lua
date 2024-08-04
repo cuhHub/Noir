@@ -28,8 +28,11 @@
 ]]
 
 --[[
-    This is here for those who want to use this framework without using the tools provided with the framework
-    but instead using the Stormworks Lua extension's build feature.
+    This is deprecated but still maintained.
+    If you would like to make a PR and test it, require() this file and use the Stormworks VSCode extension's build feature.
+
+    Alternatively, and this is recommended, you could use the combine tool in the `/tools` directory and combine `src/Noir` with your addon files, completely removing the need for this init.lua file.
+    You will need to create an `__order.json` file though, you can see the docs for an example.
 ]]
 
 -------------------------------
