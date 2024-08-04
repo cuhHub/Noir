@@ -1,6 +1,4 @@
-<div align="center">
-    <img src = "imgs/banner.png">
-</div>
+![Banner](imgs/banner.png)
 
 <div align="center">
     <img src="https://img.shields.io/badge/Stormworks-Build%20and%20Rescue-blue?style=for-the-badge">
@@ -11,11 +9,14 @@
 ## 📚 Overview
 Noir is a framework for Stormworks: Build and Rescue designed to (metaphorically!) hold your hand in some areas with addon development, while also giving you a neat way of organizing your addon.
 
-Noir contains built-in libraries that provide helpful functions to use throughout your code. They can be found in `Noir.Libraries`.
+Helpful examples can be found in `/examples`.
 
-Noir also contains built-in services which can be found in `Noir.Services` or fetched directly via `Noir.Services:GetService(name)`.
+## 🍗 Code Snippet
+The below snippet showcases Noir's events system as well as the OOP nature of the framework. The code below simply sends a notification to any player who joins and gives them an item.
 
-Finally, examples can be found in the `examples` directory.
+<div align="center">
+    <img src="imgs/snippet.png" width=700px>
+</div>
 
 ## 📜 Documentation
 Documentation can be found [here](https://cuhhub.gitbook.io/noir/).
@@ -25,3 +26,4 @@ For learning how to install and use Noir in your addon, please check out the [do
 
 ## ✨ Credit
 - [Cuh4](https://github.com/Cuh4)
+- [Avril112113](https://github.com/Avril112113)
