@@ -105,3 +105,10 @@ function Noir.Classes.TaskClass:SetArguments(arguments)
     Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetArguments()", "arguments", arguments, "table")
     self.Arguments = arguments
 end
+
+--[[
+    Remove this task from the task service.
+]]
+function Noir.Classes.TaskClass:Remove()
+    Noir.Services.TaskService:RemoveTask(self)
+end
