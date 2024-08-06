@@ -33,15 +33,16 @@
 
 --[[
     A service for retrieving the TPS (Ticks Per Second) of the server.
-    Main code is from Trapdoor: https://discord.com/channels/357480372084408322/905791966904729611/1270333300635992064 - https://discord.gg/stormworks
+    TPS calculations are from Trapdoor: https://discord.com/channels/357480372084408322/905791966904729611/1270333300635992064 - https://discord.gg/stormworks
 
     Noir.Services.TPSService:GetTPS() -- 62.0
     Noir.Services.TPSService:GetAverageTPS() -- 61.527...
     Noir.Services.TPSService:SetPrecision(10) -- The average TPS will now be calculated every 10 ticks, meaning higher accuracy but slower
 ]]
 ---@class NoirTPSService: NoirService
----@field TPS integer The TPS of the server
----@field AverageTPS integer The average TPS of the server
+---@field TPS number The TPS of the server
+---@field AverageTPS number The average TPS of the server
+---@field DesiredTPS number The desired TPS. This service will slow the game enough to achieve this. 0 = disabled
 ---@field _AverageTPSPrecision integer Tick rate for calculating the average TPS. Higher = more accurate, but slower. Use :SetPrecision() to modify
 ---@field _AverageTPSAccumulation table<integer, integer> Average TPS over time. Gets cleared after it is filled enough
 ---@field _LastTimeSec number The last time the TPS was calculated
@@ -57,6 +58,7 @@ Noir.Services.TPSService = Noir.Services:CreateService(
 function Noir.Services.TPSService:ServiceInit()
     self.TPS = 0
     self.AverageTPS = 0
+    self.DesiredTPS = 0
 
     self._AverageTPSPrecision = 10
     self._LastTimeSec = server.getTimeMillisec()
@@ -64,9 +66,17 @@ function Noir.Services.TPSService:ServiceInit()
 end
 
 function Noir.Services.TPSService:ServiceStart()
-    self._OnTickConnection = Noir.Callbacks:Connect("onTick", function()
+    self._OnTickConnection = Noir.Callbacks:Connect("onTick", function(ticks)
         -- Calculate TPS
-        self.TPS = 1000 / (server.getTimeMillisec() - self._LastTimeSec)
+        local now = server.getTimeMillisec()
+
+        if self.DesiredTPS ~= 0 then -- below is from Woe (https://discord.com/channels/357480372084408322/905791966904729611/1261911499723509820) @ https://discord.gg/stormworks
+            while self:_CalculateTPS(self._LastTimeSec, now, ticks) > self.DesiredTPS do
+                now = server.getTimeMillisec()
+            end
+        end
+
+        self.TPS = self:_CalculateTPS(self._LastTimeSec, now, ticks)
         self._LastTimeSec = server.getTimeMillisec()
 
         -- Calculate Average TPS
@@ -80,9 +90,42 @@ function Noir.Services.TPSService:ServiceStart()
 end
 
 --[[
+    Calculates TPS from two points in time.
+]]
+---@param past number
+---@param now number
+---@param gameTicks number
+---@return number
+function Noir.Services.TPSService:_CalculateTPS(past, now, gameTicks)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TPSService:CalculateTPS()", "past", past, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TPSService:CalculateTPS()", "now", now, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TPSService:CalculateTPS()", "gameTicks", gameTicks, "number")
+
+    -- Calculate TPS
+    return 1000 / (now - past) * gameTicks
+end
+
+--[[
+    Set the desired TPS. The service will then slow the game down until the desired TPS is achieved. Set to 0 to disable this.
+]]
+---@param desiredTPS number 0 = disabled
+function Noir.Services.TPSService:SetTPS(desiredTPS)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TPSService:SetTPS()", "desiredTPS", desiredTPS, "number")
+
+    -- Set desired TPS, and validate
+    if desiredTPS < 0 then
+        desiredTPS = 0
+    end
+
+    self.DesiredTPS = desiredTPS
+end
+
+--[[
     Get the TPS of the server.
 ]]
----@return integer
+---@return number
 function Noir.Services.TPSService:GetTPS()
     return self.TPS
 end
@@ -90,7 +133,7 @@ end
 --[[
     Get the average TPS of the server.
 ]]
----@return integer
+---@return number
 function Noir.Services.TPSService:GetAverageTPS()
     return self.AverageTPS
 end
