@@ -48,11 +48,11 @@
 ---@field OnLeave NoirEvent Arguments: player | Fired when a player leaves the server
 ---@field OnDie NoirEvent Arguments: player | Fired when a player dies
 ---@field OnRespawn NoirEvent Arguments: player | Fired when a player respawns
----@field Players table<integer, NoirPlayer>
----@field JoinCallback NoirConnection A connection to the onPlayerDie event
----@field LeaveCallback NoirConnection A connection to the onPlayerLeave event
----@field DieCallback NoirConnection A connection to the onPlayerDie event
----@field RespawnCallback NoirConnection A connection to the onPlayerRespawn event
+---@field Players table<integer, NoirPlayer> The players in the server
+---@field _JoinCallback NoirConnection A connection to the onPlayerDie event
+---@field _LeaveCallback NoirConnection A connection to the onPlayerLeave event
+---@field _DieCallback NoirConnection A connection to the onPlayerDie event
+---@field _RespawnCallback NoirConnection A connection to the onPlayerRespawn event
 Noir.Services.PlayerService = Noir.Services:CreateService(
     "PlayerService",
     true,
@@ -77,7 +77,7 @@ end
 
 function Noir.Services.PlayerService:ServiceStart()
     -- Create callbacks
-    self.JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
+    self._JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
         -- Give data
         local player = self:_GivePlayerData(steam_id, name, peer_id, admin, auth)
 
@@ -89,7 +89,7 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnJoin:Fire(player)
     end)
 
-    self.LeaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
+    self._LeaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
         -- Get player
         local player = self:GetPlayer(peer_id)
 
@@ -110,7 +110,7 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnLeave:Fire(player)
     end)
 
-    self.DieCallback = Noir.Callbacks:Connect("onPlayerDie", function(steam_id, name, peer_id, admin, auth)
+    self._DieCallback = Noir.Callbacks:Connect("onPlayerDie", function(steam_id, name, peer_id, admin, auth)
         -- Get player
         local player = self:GetPlayer(peer_id)
 
@@ -123,7 +123,7 @@ function Noir.Services.PlayerService:ServiceStart()
         self.OnDie:Fire(player)
     end)
 
-    self.RespawnCallback = Noir.Callbacks:Connect("onPlayerRespawn", function(peer_id)
+    self._RespawnCallback = Noir.Callbacks:Connect("onPlayerRespawn", function(peer_id)
         -- Get player
         local player = self:GetPlayer(peer_id)
 
@@ -370,9 +370,14 @@ end
     Returns all players.<br>
     This is the preferred way to get all players instead of using `Noir.Services.PlayerService.Players`.
 ]]
+---@param usePeerIDsAsIndex boolean|nil If true, the indices of the returned table will match the peer ID of the value (player) matched to the index. Having this as true is slightly faster
 ---@return table<integer, NoirPlayer>
-function Noir.Services.PlayerService:GetPlayers()
-    return self.Players
+function Noir.Services.PlayerService:GetPlayers(usePeerIDsAsIndex)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayers()", "usePeerIDsAsIndex", usePeerIDsAsIndex, "boolean", "nil")
+
+    -- Return players
+    return usePeerIDsAsIndex and self.Players or Noir.Libraries.Table:Values(self.Players)
 end
 
 --[[
@@ -385,7 +390,7 @@ function Noir.Services.PlayerService:GetPlayer(ID)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayer()", "ID", ID, "number")
 
-    -- Get player
+    -- Return player if any
     return self:GetPlayers()[ID]
 end
 
