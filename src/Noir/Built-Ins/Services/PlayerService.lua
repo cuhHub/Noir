@@ -391,7 +391,7 @@ function Noir.Services.PlayerService:GetPlayer(ID)
     Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayer()", "ID", ID, "number")
 
     -- Return player if any
-    return self:GetPlayers()[ID]
+    return self:GetPlayers(true)[ID]
 end
 
 --[[
@@ -405,7 +405,7 @@ function Noir.Services.PlayerService:GetPlayerBySteam(steam)
     Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerBySteam()", "steam", steam, "string")
 
     -- Get player
-    for _, player in pairs(self:GetPlayers()) do
+    for _, player in pairs(self:GetPlayers(true)) do
         if player.Steam == steam then
             return player
         end
@@ -423,7 +423,7 @@ function Noir.Services.PlayerService:GetPlayerByName(name)
     Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerByName()", "name", name, "string")
 
     -- Get player
-    for _, player in pairs(self:GetPlayers()) do
+    for _, player in pairs(self:GetPlayers(true)) do
         if player.Name == name then
             return player
         end
@@ -440,7 +440,7 @@ function Noir.Services.PlayerService:SearchPlayerByName(name)
     Noir.TypeChecking:Assert("Noir.Services.PlayerService:SearchPlayerByName()", "name", name, "string")
 
     -- Get player
-    for _, player in pairs(self:GetPlayers()) do
+    for _, player in pairs(self:GetPlayers(true)) do
         if player.Name:lower():gsub(" ", ""):find(name:lower():gsub(" ", "")) then
             return player
         end
