@@ -45,8 +45,8 @@
     end)
 ]]
 ---@class NoirCommandService: NoirService
----@field Commands table<string, NoirCommand>
----@field OnCustomCommand NoirConnection Represents the connection to the OnCustomCommand game callback
+---@field Commands table<string, NoirCommand> A table of registered commands
+---@field _OnCustomCommandConnection NoirConnection Represents the connection to the OnCustomCommand game callback
 Noir.Services.CommandService = Noir.Services:CreateService(
     "CommandService",
     true,
@@ -60,7 +60,7 @@ function Noir.Services.CommandService:ServiceInit()
 end
 
 function Noir.Services.CommandService:ServiceStart()
-    self.OnCustomCommand = Noir.Callbacks:Connect("onCustomCommand", function(message, peer_id, _, _, commandName, ...)
+    self._OnCustomCommandConnection = Noir.Callbacks:Connect("onCustomCommand", function(message, peer_id, _, _, commandName, ...)
         -- Get the player
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)
 
