@@ -100,7 +100,7 @@ end
 ---@param player NoirPlayer|table<integer, NoirPlayer>
 ---@param ... any
 function Noir.Services.NotificationService:Success(title, message, player, ...)
-    self:Notify(self.SuccessTitlePrefix..title, message, 4, player)
+    self:Notify(self.SuccessTitlePrefix..title, message, 4, player, ...)
 end
 
 --[[
@@ -111,7 +111,7 @@ end
 ---@param player NoirPlayer|table<integer, NoirPlayer>
 ---@param ... any
 function Noir.Services.NotificationService:Warning(title, message, player, ...)
-    self:Notify(self.WarningTitlePrefix..title, message, 2, player)
+    self:Notify(self.WarningTitlePrefix..title, message, 2, player, ...)
 end
 
 --[[
@@ -122,7 +122,7 @@ end
 ---@param player NoirPlayer|table<integer, NoirPlayer>
 ---@param ... any
 function Noir.Services.NotificationService:Error(title, message, player, ...)
-    self:Notify(self.ErrorTitlePrefix..title, message, 3, player)
+    self:Notify(self.ErrorTitlePrefix..title, message, 3, player, ...)
 end
 
 --[[
@@ -133,5 +133,5 @@ end
 ---@param player NoirPlayer|table<integer, NoirPlayer>
 ---@param ... any
 function Noir.Services.NotificationService:Info(title, message, player, ...)
-    self:Notify(self.InfoTitlePrefix..title, message, 7, player)
+    self:Notify(self.InfoTitlePrefix..title, message, 7, player, ...)
 end
