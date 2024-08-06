@@ -41,9 +41,9 @@
     task:SetDuration(10) -- Duration changes from 5 to 10
 ]]
 ---@class NoirTaskService: NoirService
----@field IncrementalID integer The ID of the next task
+---@field _IncrementalID integer The ID of the most recent task
 ---@field Tasks table<integer, NoirTask> A table containing active tasks
----@field OnTickConnection NoirConnection Represents the connection to the onTick game callback
+---@field _OnTickConnection NoirConnection Represents the connection to the onTick game callback
 Noir.Services.TaskService = Noir.Services:CreateService(
     "TaskService",
     true,
@@ -54,13 +54,13 @@ Noir.Services.TaskService = Noir.Services:CreateService(
 
 function Noir.Services.TaskService:ServiceInit()
     -- Create attributes
-    self.IncrementalID = 0
+    self._IncrementalID = 0
     self.Tasks = {}
 end
 
 function Noir.Services.TaskService:ServiceStart()
     -- Connect to onTick, and constantly check tasks
-    self.OnTickConnection = Noir.Callbacks:Connect("onTick", function()
+    self._OnTickConnection = Noir.Callbacks:Connect("onTick", function()
         for _, task in pairs(self.Tasks) do
             -- Get time so far in seconds
             local time = self:GetTimeSeconds()
@@ -122,10 +122,10 @@ function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepe
     isRepeating = isRepeating or false
 
     -- Increment ID
-    self.IncrementalID = self.IncrementalID + 1
+    self._IncrementalID = self._IncrementalID + 1
 
     -- Create task
-    local task = Noir.Classes.TaskClass:New(self.IncrementalID, duration, isRepeating, arguments)
+    local task = Noir.Classes.TaskClass:New(self._IncrementalID, duration, isRepeating, arguments)
     task.OnCompletion:Connect(callback)
 
     self.Tasks[task.ID] = task
