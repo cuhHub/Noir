@@ -58,7 +58,8 @@ Noir.Services.TPSService = Noir.Services:CreateService(
 function Noir.Services.TPSService:ServiceInit()
     self.TPS = 0
     self.AverageTPS = 0
-    self.DesiredTPS = 0
+    self.DesiredTPS = self:Load("DesiredTPS", 0)
+    self:Save("DesiredTPS", self.DesiredTPS)
 
     self._AverageTPSPrecision = 10
     self._LastTimeSec = server.getTimeMillisec()
@@ -120,6 +121,7 @@ function Noir.Services.TPSService:SetTPS(desiredTPS)
     end
 
     self.DesiredTPS = desiredTPS
+    self:Save("DesiredTPS", self.DesiredTPS)
 end
 
 --[[
