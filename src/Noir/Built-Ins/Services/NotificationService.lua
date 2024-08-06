@@ -111,7 +111,7 @@ end
 ---@param player NoirPlayer|table<integer, NoirPlayer>
 ---@param ... any
 function Noir.Services.NotificationService:Warning(title, message, player, ...)
-    self:Notify(self.WarningTitlePrefix..title, message, 2, player, ...)
+    self:Notify(self.WarningTitlePrefix..title, message, 1, player, ...)
 end
 
 --[[
