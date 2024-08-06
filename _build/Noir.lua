@@ -9,7 +9,7 @@
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -57,7 +57,7 @@ g_savedata = { ---@diagnostic disable-line: lowercase-global
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -92,12 +92,12 @@ g_savedata = { ---@diagnostic disable-line: lowercase-global
         self.name = name
     end
 
-    function MyClass:myName()
+    function MyClass:MyName()
         print(self.name)
     end
 
     local object = MyClass:New("Cuh4")
-    object:myName() -- "Cuh4"
+    object:MyName() -- "Cuh4"
 ]]
 ---@param name string
 ---@param parent NoirClass|nil
@@ -106,32 +106,39 @@ function Noir.Class(name, parent)
     --[[
         A class that objects can be created from.
 
-        local MyClass = Class:Create("MyClass")
+        local MyClass = Noir.Class:Create("MyClass")
 
-        function MyClass:Init(name) -- This is called when MyClass.new() is called
+        function MyClass:Init(name) -- This is called when MyClass:New() is called
             self.something = true
         end
 
-        local object = MyClass:new("Cuh4")
+        local object = MyClass:New("Cuh4")
         print(object.something) -- true
     ]]
     ---@class NoirClass
     ---@field ClassName string The name of this class/object
     ---@field _Parent NoirClass|nil The parent class that this class inherits from
     ---@field _IsObject boolean Represents whether or not this is a class (objects are created from a class via class:New()) or a class object (an object created from a class due to class:New() call)
+    ---@field _ClassMethods table<integer, string> A list of methods that are only available on classes and not objects created from classes. Used for :_Descend() exceptions internally
     ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
     local class = {} ---@diagnostic disable-line
     class.ClassName = name
     class._Parent = parent
     class._IsObject = false
+    class._ClassMethods = {"New", "Init", "_Descend"}
 
     function class:New(...)
         -- Create class object
         ---@type NoirClass
         local object = {} ---@diagnostic disable-line
-        self:_Descend(object, {New = true, Init = true, _Descend = true})
+        self:_Descend(object, self._ClassMethods)
 
         object._IsObject = true
+
+        -- Bring down methods from parent
+        if self._Parent then
+            self._Parent:_Descend(object, self._ClassMethods)
+        end
 
         -- Call init of object. This init function will provide the needed attributes to the object
         if self.Init then
@@ -180,13 +187,13 @@ function Noir.Class(name, parent)
     ]]
     function class:InitializeParent(...)
         -- Check if this was called from an object
-        if not self.IsSameType then
+        if not self._IsObject then
             Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' is a class and not an object.", true)
             return
         end
 
         -- Check if there is a parent
-        if not self._IsObject then
+        if not self._Parent then
             Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' has no parent.", true)
             return
         end
@@ -195,12 +202,12 @@ function Noir.Class(name, parent)
         local object = self._Parent:New(...)
 
         -- Copy and bring new attributes and methods down from the new parent object to this object
-        self._Descend(object, self, {New = true, Init = true, _Descend = true})
+        self._Descend(object, self, self._ClassMethods)
     end
 
     --[[
         Returns if a class/object is the same type as another.<br>
-        If 'other' is not a class, it will return false.
+        If `other` is not a class, it will return false.
     ]]
     ---@param other NoirClass|any
     ---@return boolean
@@ -231,7 +238,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -280,24 +287,18 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
     local valueType = type(value)
 
     -- Check if the value is of the correct type
-    local isClassWhileCheckTable = false -- sorry for the horrendous variable name. this is here so the error doesn't say "expected 'table' but got 'table'"
-
     for _, typeToCheck in pairs(types) do
-        if not isClassWhileCheckTable then
-            isClassWhileCheckTable = typeToCheck == "table" and self._DummyClass:IsClass(value)
-        end
-
         -- Value == ExactType
-        if (valueType == typeToCheck) and not isClassWhileCheckTable then
+        if valueType == typeToCheck then
             return
         end
 
-        -- Value == AnyClass
+        -- Value == Any Class
         if typeToCheck == "class" and self._DummyClass:IsClass(value) then
             return
         end
 
-        -- Value == ExactClass
+        -- Value == Exact Class
         if self._DummyClass:IsClass(typeToCheck) and typeToCheck:IsSameType(value) then ---@diagnostic disable-line
             return
         end
@@ -309,9 +310,9 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
         "%s: Expected %s for parameter '%s', but got '%s'.",
         true,
         origin,
-        self:FormatTypes(types),
+        self:_FormatTypes(types),
         parameterName,
-        self._DummyClass:IsClass(value) and value.ClassName or (isClassWhileCheckTable and "class" or valueType)
+        self._DummyClass:IsClass(value) and value.ClassName.." (Class)" or valueType
     )
 end
 
@@ -341,9 +342,9 @@ end
 ]]
 ---@param types table<integer, NoirTypeCheckingType>
 ---@return string
-function Noir.TypeChecking:FormatTypes(types)
+function Noir.TypeChecking:_FormatTypes(types)
     -- Perform type checking
-    self:Assert("Noir.TypeChecking:FormatTypes()", "types", types, "table")
+    self:Assert("Noir.TypeChecking:_FormatTypes()", "types", types, "table")
 
     -- Format types
     local formatted = ""
@@ -391,7 +392,7 @@ Noir.TypeChecking._DummyClass = Noir.Class("NoirTypeCheckingDummyClass")
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -423,6 +424,172 @@ Noir.TypeChecking._DummyClass = Noir.Class("NoirTypeCheckingDummyClass")
 Noir.Classes = {}
 
 ----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Classes\Command.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Classes - Command
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a command.
+]]
+---@class NoirCommand: NoirClass
+---@field New fun(self: NoirCommand, name: string, aliases: table<integer, string>, requiredPermissions: table<integer, string>, requiresAuth: boolean, requiresAdmin: boolean, capsSensitive: boolean, description: string): NoirCommand
+---@field Name string The name of this command
+---@field Aliases table<integer, string> The aliases of this command
+---@field RequiredPermissions table<integer, string> The required permissions for this command. If this is empty, anyone can use this command
+---@field RequiresAuth boolean Whether or not this command requires auth
+---@field RequiresAdmin boolean Whether or not this command requires admin
+---@field CapsSensitive boolean Whether or not this command is case-sensitive
+---@field Description string The description of this command
+---@field OnUse NoirEvent Arguments: player, message, args, hasPermission | Fired when this command is used
+Noir.Classes.CommandClass = Noir.Class("NoirCommand")
+
+--[[
+    Initializes command class objects.
+]]
+---@param name string
+---@param aliases table<integer, string>
+---@param requiredPermissions table<integer, string>
+---@param requiresAuth boolean
+---@param requiresAdmin boolean
+---@param capsSensitive boolean
+---@param description string
+function Noir.Classes.CommandClass:Init(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description)
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "aliases", aliases, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "requiredPermissions", requiredPermissions, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "requiresAuth", requiresAuth, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "requiresAdmin", requiresAdmin, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "capsSensitive", capsSensitive, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "description", description, "string")
+
+    self.Name = name
+    self.Aliases = aliases
+    self.RequiredPermissions = requiredPermissions
+    self.RequiresAuth = requiresAuth
+    self.RequiresAdmin = requiresAdmin
+    self.CapsSensitive = capsSensitive
+    self.Description = description
+
+    self.OnUse = Noir.Libraries.Events:Create()
+end
+
+--[[
+    Trigger this command.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+---@param message string
+---@param args table
+function Noir.Classes.CommandClass:_Use(player, message, args)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Use()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Use()", "message", message, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Use()", "args", args, "table")
+
+    -- Fire event
+    self.OnUse:Fire(player, message, args, self:CanUse(player))
+end
+
+--[[
+    Returns whether or not the string matches this command.<br>
+    Used internally. Do not use in your code.
+]]
+---@param query string
+---@return boolean
+function Noir.Classes.CommandClass:_Matches(query)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Matches()", "query", query, "string")
+
+    -- Check if the string matches this command's name/aliases
+    if not self.CapsSensitive then
+        if self.Name:lower() == query:lower() then
+            return true
+        end
+
+        for _, alias in ipairs(self.Aliases) do
+            if alias:lower() == query:lower() then
+                return true
+            end
+        end
+
+        return false
+    else
+        if self.Name == query then
+            return true
+        end
+
+        for _, alias in ipairs(self.Aliases) do
+            if alias == query then
+                return true
+            end
+        end
+
+        return false
+    end
+end
+
+--[[
+    Returns whether or not the player can use this command.
+]]
+---@param player NoirPlayer
+---@return boolean
+function Noir.Classes.CommandClass:CanUse(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:CanUse()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Check if the player can use this command via auth
+    if self.RequiresAuth and not player.Auth then
+        return false
+    end
+
+    -- Check if the player can use this command via admin
+    if self.RequiresAdmin and not player.Admin then
+        return false
+    end
+
+    -- Check if the player has the required permissions
+    for _, permission in ipairs(self.RequiredPermissions) do
+        if not player:HasPermission(permission) then
+            return false
+        end
+    end
+
+    -- Woohoo!
+    return true
+end
+
+----------------------------------------------
 -- // [File] ..\src\Noir\Built-Ins/Classes\Connection.lua
 ----------------------------------------------
 --------------------------------------------------------
@@ -433,7 +600,7 @@ Noir.Classes = {}
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -520,7 +687,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub), @Avril112113 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -729,17 +896,17 @@ end
 
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Service.lua
+-- // [File] ..\src\Noir\Built-Ins/Classes\Library.lua
 ----------------------------------------------
 --------------------------------------------------------
--- [Noir] Classes - Service
+-- [Noir] Classes - Library
 --------------------------------------------------------
 
 --[[
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -765,585 +932,33 @@ end
 -------------------------------
 
 --[[
-    Represents a Noir service.
+    Represents a library.
 ]]
----@class NoirService: NoirClass
----@field New fun(self: NoirService, name: string, isBuiltIn: boolean, shortDescription: string, longDescription: string, authors: table<integer, string>): NoirService
----@field Name string The name of this service
----@field IsBuiltIn boolean Whether or not this service comes with Noir
----@field Initialized boolean Whether or not this service has been initialized
----@field Started boolean Whether or not this service has been started
----@field InitPriority integer The priority of this service when it is initialized
----@field StartPriority integer The priority of this service when it is started
----@field ShortDescription string A short description of this service
----@field LongDescription string A long description of this service
----@field Authors table<integer, string> The authors of this service
----
----@field ServiceInit fun(self: NoirService) A method that is called when the service is initialized
----@field ServiceStart fun(self: NoirService) A method that is called when the service is started
-Noir.Classes.ServiceClass = Noir.Class("NoirService")
+---@class NoirLibrary: NoirClass
+---@field New fun(self: NoirLibrary, name: string, shortDescription: string, longDescription: string, authors: table<integer, string>): NoirLibrary
+---@field Name string
+---@field ShortDescription string
+---@field LongDescription string
+---@field Authors table<integer, string>
+Noir.Classes.LibraryClass = Noir.Class("NoirLibrary")
 
 --[[
-    Initializes service class objects.
+    Initializes library class objects.
 ]]
 ---@param name string
----@param isBuiltIn boolean
 ---@param shortDescription string
 ---@param longDescription string
 ---@param authors table<integer, string>
-function Noir.Classes.ServiceClass:Init(name, isBuiltIn, shortDescription, longDescription, authors)
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "isBuiltIn", isBuiltIn, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "shortDescription", shortDescription, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "longDescription", longDescription, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "authors", authors, "table")
+function Noir.Classes.LibraryClass:Init(name, shortDescription, longDescription, authors)
+    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "shortDescription", shortDescription, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "longDescription", longDescription, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "authors", authors, "table")
 
     self.Name = name
-    self.IsBuiltIn = isBuiltIn
-    self.Initialized = false
-    self.Started = false
-
-    self.InitPriority = nil
-    self.StartPriority = nil
-
     self.ShortDescription = shortDescription
     self.LongDescription = longDescription
     self.Authors = authors
-end
-
---[[
-    Initialize this service.<br>
-    Used internally.
-]]
-function Noir.Classes.ServiceClass:_Initialize()
-    -- Checks
-    if self.Initialized then
-        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to initialize this service when it has already initialized.", true, self.Name)
-        return
-    end
-
-    if self.Started then
-        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has already started.", true, self.Name)
-        return
-    end
-
-    -- Set initialized
-    self.Initialized = true
-
-    -- Call ServiceInit
-    if not self.ServiceInit then
-        return
-    end
-
-    self:ServiceInit()
-end
-
---[[
-    Start this service.<br>
-    Used internally.
-]]
-function Noir.Classes.ServiceClass:_Start()
-    -- Checks
-    if self.Started then
-        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has already started.", true, self.Name)
-        return
-    end
-
-    if not self.Initialized then
-        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has not initialized yet.", true, self.Name)
-        return
-    end
-
-    -- Set started
-    self.Started = true
-
-    -- Call ServiceStart
-    if not self.ServiceStart then
-        return
-    end
-
-    self:ServiceStart()
-end
-
---[[
-    Checks if g_savedata is intact.<br>
-    Used internally.
-]]
----@return boolean
-function Noir.Classes.ServiceClass:_CheckSaveData()
-    -- Checks
-    if not g_savedata then
-        Noir.Libraries.Logging:Error("NoirService", "_CheckSaveData(): g_savedata is nil.", false)
-        return false
-    end
-
-    if not g_savedata.Noir then
-        Noir.Libraries.Logging:Error("NoirService", "._CheckSaveData(): g_savedata.Noir is nil.", false)
-        return false
-    end
-
-    if not g_savedata.Noir.Services then
-        Noir.Libraries.Logging:Error("NoirService", "._CheckSaveData(): g_savedata.Noir.Services is nil.", false)
-        return false
-    end
-
-    if not g_savedata.Noir.Services[self.Name] then
-        Noir.Libraries.Logging:Info("NoirService", "_CheckSaveData(): %s is missing a table in g_savedata.Noir.Services. Creating one.", self.Name)
-        g_savedata.Noir.Services[self.Name] = {}
-    end
-
-    -- All good!
-    return true
-end
-
---[[
-    Save a value to g_savedata under this service.
-
-    local MyService = Noir.Services:CreateService("MyService")
-
-    function MyService:ServiceInit()
-        self:Save("MyKey", "MyValue")
-    end
-]]
----@param index string
----@param data any
-function Noir.Classes.ServiceClass:Save(index, data)
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Save()", "index", index, "string")
-    self:GetSaveData()[index] = data
-end
-
---[[
-    Load data from g_savedata that was saved via the :Save() method.
-
-    local MyService = Noir.Services:CreateService("MyService")
-
-    function MyService:ServiceInit()
-        local MyValue = self:Load("MyKey")
-    end
-]]
----@param index string
----@param default any
----@return any
-function Noir.Classes.ServiceClass:Load(index, default)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Load()", "index", index, "string")
-
-    -- Get the value
-    local value = self:GetSaveData()[index]
-
-    -- Return the default if it's nil
-    if value == nil then
-        return default
-    end
-
-    -- Return the value
-    return value
-end
-
---[[
-    Remove data from g_savedata that was saved via the :Save() method.
-
-    local MyService = Noir.Services:CreateService("MyService")
-
-    function MyService:ServiceInit()
-        MyService:Remove("MyKey")
-    end
-]]
----@param index string
-function Noir.Classes.ServiceClass:Remove(index)
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Remove()", "index", index, "string")
-    self:GetSaveData()[index] = nil
-end
-
---[[
-    Returns this service's g_savedata table for direct modification.<br>
-
-    local MyService = Noir.Services:CreateService("MyService")
-
-    function MyService:ServiceInit()
-        self:GetSaveData().MyKey = "MyValue"
-        -- Equivalent to: self:Save("MyKey", "MyValue")
-    end
-]]
----@return table
-function Noir.Classes.ServiceClass:GetSaveData()
-    -- Check g_savedata
-    if not self:_CheckSaveData() then
-        return {}
-    end
-
-    -- Return
-    return g_savedata.Noir.Services[self.Name]
-end
-
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Player.lua
-----------------------------------------------
---------------------------------------------------------
--- [Noir] Classes - Player
---------------------------------------------------------
-
---[[
-    ----------------------------
-
-    CREDIT:
-        Author: @Cuh4 (GitHub)
-        GitHub Repository: https://github.com/cuhHub/Noir
-
-    License:
-        Copyright (C) 2024 Cuh4
-
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
-
-    ----------------------------
-]]
-
--------------------------------
--- // Main
--------------------------------
-
---[[
-    Represents a player.
-
-    player:GetCharacter() -- NoirCharacter
-    player:SetPermission("Awesome")
-    player:HasPermission("Awesome") -- true
-]]
----@class NoirPlayer: NoirClass
----@field New fun(self: NoirPlayer, name: string, ID: integer, steam: string, admin: boolean, auth: boolean, permissions: table<string, boolean>): NoirPlayer
----@field Name string The name of this player
----@field ID integer The ID of this player
----@field Steam string The Steam ID of this player
----@field Admin boolean Whether or not this player is an admin
----@field Auth boolean Whether or not this player is authed
----@field Permissions table<string, boolean> The permissions this player has
-Noir.Classes.PlayerClass = Noir.Class("NoirPlayer")
-
---[[
-    Initializes player class objects.
-]]
----@param name string
----@param ID integer
----@param steam string
----@param admin boolean
----@param auth boolean
----@param permissions table<string, boolean>
-function Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions)
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "steam", steam, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "admin", admin, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "auth", auth, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "permissions", permissions, "table")
-
-    self.Name = name
-    self.ID = ID
-    self.Steam = steam
-    self.Admin = admin
-    self.Auth = auth
-    self.Permissions = permissions
-end
-
---[[
-    Give this player a permission.
-]]
----@param permission string
-function Noir.Classes.PlayerClass:SetPermission(permission)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetPermission()", "permission", permission, "string")
-
-    -- Set permission
-    self.Permissions[permission] = true
-
-    -- Save changes
-    Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
-end
-
---[[
-    Returns whether or not this player has a permission.
-]]
----@param permission string
----@return boolean
-function Noir.Classes.PlayerClass:HasPermission(permission)
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:HasPermission()", "permission", permission, "string")
-    return self.Permissions[permission] ~= nil
-end
-
---[[
-    Remove a permission from this player.
-]]
----@param permission string
-function Noir.Classes.PlayerClass:RemovePermission(permission)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:RemovePermission()", "permission", permission, "string")
-
-    -- Remove permission
-    self.Permissions[permission] = nil
-
-    -- Save changes
-    Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
-end
-
---[[
-    Returns a table containing the player's permissions.
-]]
----@return table<integer, string>
-function Noir.Classes.PlayerClass:GetPermissions()
-    return Noir.Libraries.Table:Keys(self.Permissions)
-end
-
---[[
-    Sets whether or not this player is authed.
-]]
----@param auth boolean
-function Noir.Classes.PlayerClass:SetAuth(auth)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetAuth()", "auth", auth, "boolean")
-
-    -- Add/remove auth
-    if auth then
-        server.addAuth(self.ID)
-    else
-        server.removeAuth(self.ID)
-    end
-
-    self.Auth = auth
-end
-
---[[
-    Sets whether or not this player is an admin.
-]]
----@param admin boolean
-function Noir.Classes.PlayerClass:SetAdmin(admin)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetAdmin()", "admin", admin, "boolean")
-
-    -- Add/remove admin
-    if admin then
-        server.addAdmin(self.ID)
-    else
-        server.removeAdmin(self.ID)
-    end
-
-    self.Admin = admin
-end
-
---[[
-    Kicks this player.
-]]
-function Noir.Classes.PlayerClass:Kick()
-    server.kickPlayer(self.ID)
-end
-
---[[
-    Bans this player.
-]]
-function Noir.Classes.PlayerClass:Ban()
-    server.banPlayer(self.ID)
-end
-
---[[
-    Teleports this player.
-]]
----@param pos SWMatrix
-function Noir.Classes.PlayerClass:Teleport(pos)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Teleport()", "pos", pos, "table")
-
-    -- Teleport the player
-    server.setPlayerPos(self.ID, pos)
-end
-
---[[
-    Returns this player's position.
-]]
----@return SWMatrix
-function Noir.Classes.PlayerClass:GetPosition()
-    local pos, success = server.getPlayerPos(self.ID)
-
-    if not success then
-        return matrix.translation(0, 0 ,0)
-    end
-
-    return pos
-end
-
---[[
-    Returns this player's character as a NoirObject.
-]]
----@return NoirObject|nil
-function Noir.Classes.PlayerClass:GetCharacter()
-    -- Get the character
-    local character = server.getPlayerCharacterID(self.ID)
-
-    if not character then
-        Noir.Libraries.Logging:Error("NoirPlayer", ":GetCharacter() failed for player %s (%d, %s)", false, self.Name, self.ID, self.Steam)
-        return
-    end
-
-    -- Get or create object for character
-    local object = Noir.Services.ObjectService:GetObject(character)
-
-    if not object then
-        Noir.Libraries.Logging:Error("NoirPlayer", ":GetCharacter() failed for player %s (%d, %s) due to object being nil", false, self.Name, self.ID, self.Steam)
-        return
-    end
-
-    -- Return
-    return object
-end
-
---[[
-    Returns this player's look direction.
-]]
----@return number LookX
----@return number LookY
----@return number LookZ
-function Noir.Classes.PlayerClass:GetLook()
-    local x, y, z, success = server.getPlayerLookDirection(self.ID)
-
-    if not success then
-        return 0, 0, 0
-    end
-
-    return x, y, z
-end
-
---[[
-    Send this player a notification.
-]]
----@param title string
----@param message string
----@param notificationType SWNotifiationTypeEnum
-function Noir.Classes.PlayerClass:Notify(title, message, notificationType)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Notify()", "title", title, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Notify()", "message", message, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Notify()", "notificationType", notificationType, "number")
-
-    -- Send notification
-    server.notify(self.ID, title, message, notificationType)
-end
-
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Task.lua
-----------------------------------------------
---------------------------------------------------------
--- [Noir] Classes - Task
---------------------------------------------------------
-
---[[
-    ----------------------------
-
-    CREDIT:
-        Author: @Cuh4 (GitHub)
-        GitHub Repository: https://github.com/cuhHub/Noir
-
-    License:
-        Copyright (C) 2024 Cuh4
-
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
-
-    ----------------------------
-]]
-
--------------------------------
--- // Main
--------------------------------
-
---[[
-    Represents a task.
-
-    task:SetRepeating(true)
-    task:SetDuration(1)
-
-    task.OnCompletion:Connect(function()
-        -- Do something
-    end)
-]]
----@class NoirTask: NoirClass
----@field New fun(self: NoirTask, ID: integer, duration: number, isRepeating: boolean, arguments: table<integer, any>): NoirTask
----@field ID integer The ID of this task
----@field StartedAt integer The time that this task started at
----@field Duration integer The duration of this task
----@field StopsAt integer The time that this task will stop at if it is not repeating
----@field IsRepeating boolean Whether or not this task is repeating
----@field Arguments table<integer, any> The arguments that will be passed to this task upon completion
----@field OnCompletion NoirEvent The event that will be fired when this task is completed
-Noir.Classes.TaskClass = Noir.Class("NoirTask")
-
---[[
-    Initializes task class objects.
-]]
----@param ID integer
----@param duration number
----@param isRepeating boolean
----@param arguments table<integer, any>
-function Noir.Classes.TaskClass:Init(ID, duration, isRepeating, arguments)
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "duration", duration, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "isRepeating", isRepeating, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "arguments", arguments, "table")
-
-    self.ID = ID
-    self.StartedAt = Noir.Services.TaskService:GetTimeSeconds()
-
-    self:SetDuration(duration)
-    self:SetRepeating(isRepeating)
-    self:SetArguments(arguments)
-
-    self.OnCompletion = Noir.Libraries.Events:Create()
-end
-
---[[
-    Sets whether or not this task is repeating.<br>
-    If repeating, the task will be triggered every Task.Duration seconds.<br>
-    If not, the task will be triggered once, then removed from the TaskService.
-]]
----@param isRepeating boolean
-function Noir.Classes.TaskClass:SetRepeating(isRepeating)
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetRepeating()", "isRepeating", isRepeating, "boolean")
-    self.IsRepeating = isRepeating
-end
-
---[[
-    Sets the duration of this task.
-]]
----@param duration number
-function Noir.Classes.TaskClass:SetDuration(duration)
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetDuration()", "duration", duration, "number")
-
-    self.Duration = duration
-    self.StopsAt = self.StartedAt + duration
-end
-
---[[
-    Sets the arguments that will be passed to this task upon finishing.
-]]
----@param arguments table<integer, any>
-function Noir.Classes.TaskClass:SetArguments(arguments)
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetArguments()", "arguments", arguments, "table")
-    self.Arguments = arguments
 end
 
 ----------------------------------------------
@@ -1357,7 +972,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -1768,17 +1383,17 @@ end
 ---@field ID integer The object ID
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Command.lua
+-- // [File] ..\src\Noir\Built-Ins/Classes\Player.lua
 ----------------------------------------------
 --------------------------------------------------------
--- [Noir] Classes - Command
+-- [Noir] Classes - Player
 --------------------------------------------------------
 
 --[[
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -1804,147 +1419,240 @@ end
 -------------------------------
 
 --[[
-    Represents a command.
+    Represents a player.
+
+    player:GetCharacter() -- NoirCharacter
+    player:SetPermission("Awesome")
+    player:HasPermission("Awesome") -- true
 ]]
----@class NoirCommand: NoirClass
----@field New fun(self: NoirCommand, name: string, aliases: table<integer, string>, requiredPermissions: table<integer, string>, requiresAuth: boolean, requiresAdmin: boolean, capsSensitive: boolean, description: string): NoirCommand
----@field Name string The name of this command
----@field Aliases table<integer, string> The aliases of this command
----@field RequiredPermissions table<integer, string> The required permissions for this command. If this is empty, anyone can use this command
----@field RequiresAuth boolean Whether or not this command requires auth
----@field RequiresAdmin boolean Whether or not this command requires admin
----@field CapsSensitive boolean Whether or not this command is case-sensitive
----@field Description string The description of this command
----@field OnUse NoirEvent Arguments: player, message, args, hasPermission | Fired when this command is used
-Noir.Classes.CommandClass = Noir.Class("NoirCommand")
+---@class NoirPlayer: NoirClass
+---@field New fun(self: NoirPlayer, name: string, ID: integer, steam: string, admin: boolean, auth: boolean, permissions: table<string, boolean>): NoirPlayer
+---@field Name string The name of this player
+---@field ID integer The ID of this player
+---@field Steam string The Steam ID of this player
+---@field Admin boolean Whether or not this player is an admin
+---@field Auth boolean Whether or not this player is authed
+---@field Permissions table<string, boolean> The permissions this player has
+Noir.Classes.PlayerClass = Noir.Class("NoirPlayer")
 
 --[[
-    Initializes command class objects.
+    Initializes player class objects.
 ]]
 ---@param name string
----@param aliases table<integer, string>
----@param requiredPermissions table<integer, string>
----@param requiresAuth boolean
----@param requiresAdmin boolean
----@param capsSensitive boolean
----@param description string
-function Noir.Classes.CommandClass:Init(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description)
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "aliases", aliases, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "requiredPermissions", requiredPermissions, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "requiresAuth", requiresAuth, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "requiresAdmin", requiresAdmin, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "capsSensitive", capsSensitive, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "description", description, "string")
+---@param ID integer
+---@param steam string
+---@param admin boolean
+---@param auth boolean
+---@param permissions table<string, boolean>
+function Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions)
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "steam", steam, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "admin", admin, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "auth", auth, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "permissions", permissions, "table")
 
     self.Name = name
-    self.Aliases = aliases
-    self.RequiredPermissions = requiredPermissions
-    self.RequiresAuth = requiresAuth
-    self.RequiresAdmin = requiresAdmin
-    self.CapsSensitive = capsSensitive
-    self.Description = description
-
-    self.OnUse = Noir.Libraries.Events:Create()
+    self.ID = ID
+    self.Steam = steam
+    self.Admin = admin
+    self.Auth = auth
+    self.Permissions = permissions
 end
 
 --[[
-    Trigger this command.<br>
-    Used internally. Do not use in your code.
+    Give this player a permission.
 ]]
----@param player NoirPlayer
----@param message string
----@param args table
-function Noir.Classes.CommandClass:_Use(player, message, args)
+---@param permission string
+function Noir.Classes.PlayerClass:SetPermission(permission)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Use()", "player", player, Noir.Classes.PlayerClass)
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Use()", "message", message, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Use()", "args", args, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetPermission()", "permission", permission, "string")
 
-    -- Fire event
-    self.OnUse:Fire(player, message, args, self:CanUse(player))
+    -- Set permission
+    self.Permissions[permission] = true
+
+    -- Save changes
+    Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
 end
 
 --[[
-    Returns whether or not the string matches this command.<br>
-    Used internally. Do not use in your code.
+    Returns whether or not this player has a permission.
 ]]
----@param query string
+---@param permission string
 ---@return boolean
-function Noir.Classes.CommandClass:_Matches(query)
+function Noir.Classes.PlayerClass:HasPermission(permission)
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:HasPermission()", "permission", permission, "string")
+    return self.Permissions[permission] ~= nil
+end
+
+--[[
+    Remove a permission from this player.
+]]
+---@param permission string
+function Noir.Classes.PlayerClass:RemovePermission(permission)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Matches()", "query", query, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:RemovePermission()", "permission", permission, "string")
 
-    -- Check if the string matches this command's name/aliases
-    if not self.CapsSensitive then
-        if self.Name:lower() == query:lower() then
-            return true
-        end
+    -- Remove permission
+    self.Permissions[permission] = nil
 
-        for _, alias in ipairs(self.Aliases) do
-            if alias:lower() == query:lower() then
-                return true
-            end
-        end
+    -- Save changes
+    Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
+end
 
-        return false
+--[[
+    Returns a table containing the player's permissions.
+]]
+---@return table<integer, string>
+function Noir.Classes.PlayerClass:GetPermissions()
+    return Noir.Libraries.Table:Keys(self.Permissions)
+end
+
+--[[
+    Sets whether or not this player is authed.
+]]
+---@param auth boolean
+function Noir.Classes.PlayerClass:SetAuth(auth)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetAuth()", "auth", auth, "boolean")
+
+    -- Add/remove auth
+    if auth then
+        server.addAuth(self.ID)
     else
-        if self.Name == query then
-            return true
-        end
-
-        for _, alias in ipairs(self.Aliases) do
-            if alias == query then
-                return true
-            end
-        end
-
-        return false
+        server.removeAuth(self.ID)
     end
+
+    self.Auth = auth
 end
 
 --[[
-    Returns whether or not the player can use this command.
+    Sets whether or not this player is an admin.
 ]]
----@param player NoirPlayer
----@return boolean
-function Noir.Classes.CommandClass:CanUse(player)
+---@param admin boolean
+function Noir.Classes.PlayerClass:SetAdmin(admin)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:CanUse()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetAdmin()", "admin", admin, "boolean")
 
-    -- Check if the player can use this command via auth
-    if self.RequiresAuth and not player.Auth then
-        return false
+    -- Add/remove admin
+    if admin then
+        server.addAdmin(self.ID)
+    else
+        server.removeAdmin(self.ID)
     end
 
-    -- Check if the player can use this command via admin
-    if self.RequiresAdmin and not player.Admin then
-        return false
+    self.Admin = admin
+end
+
+--[[
+    Kicks this player.
+]]
+function Noir.Classes.PlayerClass:Kick()
+    server.kickPlayer(self.ID)
+end
+
+--[[
+    Bans this player.
+]]
+function Noir.Classes.PlayerClass:Ban()
+    server.banPlayer(self.ID)
+end
+
+--[[
+    Teleports this player.
+]]
+---@param pos SWMatrix
+function Noir.Classes.PlayerClass:Teleport(pos)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Teleport()", "pos", pos, "table")
+
+    -- Teleport the player
+    server.setPlayerPos(self.ID, pos)
+end
+
+--[[
+    Returns this player's position.
+]]
+---@return SWMatrix
+function Noir.Classes.PlayerClass:GetPosition()
+    local pos, success = server.getPlayerPos(self.ID)
+
+    if not success then
+        return matrix.translation(0, 0 ,0)
     end
 
-    -- Check if the player has the required permissions
-    for _, permission in ipairs(self.RequiredPermissions) do
-        if not player:HasPermission(permission) then
-            return false
-        end
+    return pos
+end
+
+--[[
+    Returns this player's character as a NoirObject.
+]]
+---@return NoirObject|nil
+function Noir.Classes.PlayerClass:GetCharacter()
+    -- Get the character
+    local character = server.getPlayerCharacterID(self.ID)
+
+    if not character then
+        Noir.Libraries.Logging:Error("NoirPlayer", ":GetCharacter() failed for player %s (%d, %s)", false, self.Name, self.ID, self.Steam)
+        return
     end
 
-    -- Woohoo!
-    return true
+    -- Get or create object for character
+    local object = Noir.Services.ObjectService:GetObject(character)
+
+    if not object then
+        Noir.Libraries.Logging:Error("NoirPlayer", ":GetCharacter() failed for player %s (%d, %s) due to object being nil", false, self.Name, self.ID, self.Steam)
+        return
+    end
+
+    -- Return
+    return object
+end
+
+--[[
+    Returns this player's look direction.
+]]
+---@return number LookX
+---@return number LookY
+---@return number LookZ
+function Noir.Classes.PlayerClass:GetLook()
+    local x, y, z, success = server.getPlayerLookDirection(self.ID)
+
+    if not success then
+        return 0, 0, 0
+    end
+
+    return x, y, z
+end
+
+--[[
+    Send this player a notification.
+]]
+---@param title string
+---@param message string
+---@param notificationType SWNotifiationTypeEnum
+function Noir.Classes.PlayerClass:Notify(title, message, notificationType)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Notify()", "title", title, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Notify()", "message", message, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Notify()", "notificationType", notificationType, "number")
+
+    -- Send notification
+    server.notify(self.ID, title, message, notificationType)
 end
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Library.lua
+-- // [File] ..\src\Noir\Built-Ins/Classes\Service.lua
 ----------------------------------------------
 --------------------------------------------------------
--- [Noir] Classes - Library
+-- [Noir] Classes - Service
 --------------------------------------------------------
 
 --[[
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -1970,33 +1678,333 @@ end
 -------------------------------
 
 --[[
-    Represents a library.
+    Represents a Noir service.
 ]]
----@class NoirLibrary: NoirClass
----@field New fun(self: NoirLibrary, name: string, shortDescription: string, longDescription: string, authors: table<integer, string>): NoirLibrary
----@field Name string
----@field ShortDescription string
----@field LongDescription string
----@field Authors table<integer, string>
-Noir.Classes.LibraryClass = Noir.Class("NoirLibrary")
+---@class NoirService: NoirClass
+---@field New fun(self: NoirService, name: string, isBuiltIn: boolean, shortDescription: string, longDescription: string, authors: table<integer, string>): NoirService
+---@field Name string The name of this service
+---@field IsBuiltIn boolean Whether or not this service comes with Noir
+---@field Initialized boolean Whether or not this service has been initialized
+---@field Started boolean Whether or not this service has been started
+---@field InitPriority integer The priority of this service when it is initialized
+---@field StartPriority integer The priority of this service when it is started
+---@field ShortDescription string A short description of this service
+---@field LongDescription string A long description of this service
+---@field Authors table<integer, string> The authors of this service
+---
+---@field ServiceInit fun(self: NoirService) A method that is called when the service is initialized
+---@field ServiceStart fun(self: NoirService) A method that is called when the service is started
+Noir.Classes.ServiceClass = Noir.Class("NoirService")
 
 --[[
-    Initializes library class objects.
+    Initializes service class objects.
 ]]
 ---@param name string
+---@param isBuiltIn boolean
 ---@param shortDescription string
 ---@param longDescription string
 ---@param authors table<integer, string>
-function Noir.Classes.LibraryClass:Init(name, shortDescription, longDescription, authors)
-    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "shortDescription", shortDescription, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "longDescription", longDescription, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.LibraryClass:Init()", "authors", authors, "table")
+function Noir.Classes.ServiceClass:Init(name, isBuiltIn, shortDescription, longDescription, authors)
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "isBuiltIn", isBuiltIn, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "shortDescription", shortDescription, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "longDescription", longDescription, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "authors", authors, "table")
 
     self.Name = name
+    self.IsBuiltIn = isBuiltIn
+    self.Initialized = false
+    self.Started = false
+
+    self.InitPriority = nil
+    self.StartPriority = nil
+
     self.ShortDescription = shortDescription
     self.LongDescription = longDescription
     self.Authors = authors
+end
+
+--[[
+    Initialize this service.<br>
+    Used internally.
+]]
+function Noir.Classes.ServiceClass:_Initialize()
+    -- Checks
+    if self.Initialized then
+        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to initialize this service when it has already initialized.", true, self.Name)
+        return
+    end
+
+    if self.Started then
+        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has already started.", true, self.Name)
+        return
+    end
+
+    -- Set initialized
+    self.Initialized = true
+
+    -- Call ServiceInit
+    if not self.ServiceInit then
+        return
+    end
+
+    self:ServiceInit()
+end
+
+--[[
+    Start this service.<br>
+    Used internally.
+]]
+function Noir.Classes.ServiceClass:_Start()
+    -- Checks
+    if self.Started then
+        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has already started.", true, self.Name)
+        return
+    end
+
+    if not self.Initialized then
+        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has not initialized yet.", true, self.Name)
+        return
+    end
+
+    -- Set started
+    self.Started = true
+
+    -- Call ServiceStart
+    if not self.ServiceStart then
+        return
+    end
+
+    self:ServiceStart()
+end
+
+--[[
+    Checks if g_savedata is intact.<br>
+    Used internally.
+]]
+---@return boolean
+function Noir.Classes.ServiceClass:_CheckSaveData()
+    -- Checks
+    if not g_savedata then
+        Noir.Libraries.Logging:Error("NoirService", "_CheckSaveData(): g_savedata is nil.", false)
+        return false
+    end
+
+    if not g_savedata.Noir then
+        Noir.Libraries.Logging:Error("NoirService", "._CheckSaveData(): g_savedata.Noir is nil.", false)
+        return false
+    end
+
+    if not g_savedata.Noir.Services then
+        Noir.Libraries.Logging:Error("NoirService", "._CheckSaveData(): g_savedata.Noir.Services is nil.", false)
+        return false
+    end
+
+    if not g_savedata.Noir.Services[self.Name] then
+        Noir.Libraries.Logging:Info("NoirService", "_CheckSaveData(): %s is missing a table in g_savedata.Noir.Services. Creating one.", self.Name)
+        g_savedata.Noir.Services[self.Name] = {}
+    end
+
+    -- All good!
+    return true
+end
+
+--[[
+    Save a value to g_savedata under this service.
+
+    local MyService = Noir.Services:CreateService("MyService")
+
+    function MyService:ServiceInit()
+        self:Save("MyKey", "MyValue")
+    end
+]]
+---@param index string
+---@param data any
+function Noir.Classes.ServiceClass:Save(index, data)
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Save()", "index", index, "string")
+    self:GetSaveData()[index] = data
+end
+
+--[[
+    Load data from g_savedata that was saved via the :Save() method.
+
+    local MyService = Noir.Services:CreateService("MyService")
+
+    function MyService:ServiceInit()
+        local MyValue = self:Load("MyKey")
+    end
+]]
+---@param index string
+---@param default any
+---@return any
+function Noir.Classes.ServiceClass:Load(index, default)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Load()", "index", index, "string")
+
+    -- Get the value
+    local value = self:GetSaveData()[index]
+
+    -- Return the default if it's nil
+    if value == nil then
+        return default
+    end
+
+    -- Return the value
+    return value
+end
+
+--[[
+    Remove data from g_savedata that was saved via the :Save() method.
+
+    local MyService = Noir.Services:CreateService("MyService")
+
+    function MyService:ServiceInit()
+        MyService:Remove("MyKey")
+    end
+]]
+---@param index string
+function Noir.Classes.ServiceClass:Remove(index)
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Remove()", "index", index, "string")
+    self:GetSaveData()[index] = nil
+end
+
+--[[
+    Returns this service's g_savedata table for direct modification.<br>
+
+    local MyService = Noir.Services:CreateService("MyService")
+
+    function MyService:ServiceInit()
+        self:GetSaveData().MyKey = "MyValue"
+        -- Equivalent to: self:Save("MyKey", "MyValue")
+    end
+]]
+---@return table
+function Noir.Classes.ServiceClass:GetSaveData()
+    -- Check g_savedata
+    if not self:_CheckSaveData() then
+        return {}
+    end
+
+    -- Return
+    return g_savedata.Noir.Services[self.Name]
+end
+
+----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Classes\Task.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Classes - Task
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a task.
+
+    task:SetRepeating(true)
+    task:SetDuration(1)
+
+    task.OnCompletion:Connect(function()
+        -- Do something
+    end)
+]]
+---@class NoirTask: NoirClass
+---@field New fun(self: NoirTask, ID: integer, duration: number, isRepeating: boolean, arguments: table<integer, any>): NoirTask
+---@field ID integer The ID of this task
+---@field StartedAt integer The time that this task started at
+---@field Duration integer The duration of this task
+---@field StopsAt integer The time that this task will stop at if it is not repeating
+---@field IsRepeating boolean Whether or not this task is repeating
+---@field Arguments table<integer, any> The arguments that will be passed to this task upon completion
+---@field OnCompletion NoirEvent The event that will be fired when this task is completed
+Noir.Classes.TaskClass = Noir.Class("NoirTask")
+
+--[[
+    Initializes task class objects.
+]]
+---@param ID integer
+---@param duration number
+---@param isRepeating boolean
+---@param arguments table<integer, any>
+function Noir.Classes.TaskClass:Init(ID, duration, isRepeating, arguments)
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "duration", duration, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "isRepeating", isRepeating, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "arguments", arguments, "table")
+
+    self.ID = ID
+    self.StartedAt = Noir.Services.TaskService:GetTimeSeconds()
+
+    self:SetDuration(duration)
+    self:SetRepeating(isRepeating)
+    self:SetArguments(arguments)
+
+    self.OnCompletion = Noir.Libraries.Events:Create()
+end
+
+--[[
+    Sets whether or not this task is repeating.<br>
+    If repeating, the task will be triggered every Task.Duration seconds.<br>
+    If not, the task will be triggered once, then removed from the TaskService.
+]]
+---@param isRepeating boolean
+function Noir.Classes.TaskClass:SetRepeating(isRepeating)
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetRepeating()", "isRepeating", isRepeating, "boolean")
+    self.IsRepeating = isRepeating
+end
+
+--[[
+    Sets the duration of this task.
+]]
+---@param duration number
+function Noir.Classes.TaskClass:SetDuration(duration)
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetDuration()", "duration", duration, "number")
+
+    self.Duration = duration
+    self.StopsAt = self.StartedAt + duration
+end
+
+--[[
+    Sets the arguments that will be passed to this task upon finishing.
+]]
+---@param arguments table<integer, any>
+function Noir.Classes.TaskClass:SetArguments(arguments)
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetArguments()", "arguments", arguments, "table")
+    self.Arguments = arguments
+end
+
+--[[
+    Remove this task from the task service.
+]]
+function Noir.Classes.TaskClass:Remove()
+    Noir.Services.TaskService:RemoveTask(self)
 end
 
 ----------------------------------------------
@@ -2010,7 +2018,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -2075,6 +2083,342 @@ function Noir.Libraries:Create(name, shortDescription, longDescription, authors)
 end
 
 ----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Libraries\Base64.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Libraries - Base64
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A library containing helper methods to serialize strings into Base64 and back.<br>
+    This code is from https://gist.github.com/To0fan/ca3ebb9c029bb5df381e4afc4d27b4a6
+]]
+---@class NoirBase64Lib: NoirLibrary
+Noir.Libraries.Base64 = Noir.Libraries:Create(
+    "NoirBase64",
+    "A library containing helper methods to serialize strings into Base64 and back.",
+    "",
+    {"Cuh4"}
+)
+
+--[[
+    Character table as a string.<br>
+    Used internally, do not use in your code.
+]]
+Noir.Libraries.Base64.Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+--[[
+    Encode a string into Base64.
+]]
+---@param data string
+---@return string
+function Noir.Libraries.Base64:Encode(data)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:Encode()", "data", data, "string")
+
+    -- Encode the string into Base64
+    ---@param str string
+    local encoded = (data:gsub(".", function(str)
+        return self:_EncodeInitial(str)
+    end).."0000")
+
+    ---@param str string
+    return encoded:gsub("%d%d%d?%d?%d?%d?", function(str)
+        return self:_EncodeFinal(str)
+    end)..({"", "==", "="})[#data % 3 + 1]
+end
+
+--[[
+    Used internally, do not use in your code.
+]]
+---@param data string
+---@return string
+function Noir.Libraries.Base64:_EncodeInitial(data)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_EncodeInitial()", "data", data, "string")
+
+    -- Main logic
+    local r, b = "", data:byte()
+
+    for i = 8, 1, -1 do
+        r = r..(b % 2 ^ i - b % 2 ^ (i - 1) > 0 and "1" or "0")
+    end
+
+    return r
+end
+
+--[[
+    Used internally, do not use in your code.
+]]
+---@param data string
+---@return string
+function Noir.Libraries.Base64:_EncodeFinal(data)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_EncodeFinal()", "data", data, "string")
+
+    -- Main logic
+    if (#data < 6) then
+        return ""
+    end
+
+    local c = 0
+
+    for i = 1, 6 do
+        c = c + (data:sub(i, i) == "1" and 2 ^ (6 - i) or 0)
+    end
+
+    return self.Characters:sub(c + 1, c + 1)
+end
+
+--[[
+    Decode a string from Base64.
+]]
+---@param data string
+---@return string
+function Noir.Libraries.Base64:Decode(data)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:Decode()", "data", data, "string")
+
+    -- Decode the Base64 string into a normal string
+    local decoded = data:gsub("[^"..self.Characters.."=]", "")
+
+    ---@param str string
+    decoded = decoded:gsub(".", function(str)
+        return self:_DecodeInitial(str)
+    end)
+
+    ---@param str string
+    return (decoded:gsub("%d%d%d?%d?%d?%d?%d?%d?", function(str)
+        return self:_DecodeFinal(str)
+    end))
+end
+
+--[[
+    Used internally, do not use in your code.
+]]
+---@param str string
+---@return string
+function Noir.Libraries.Base64:_DecodeInitial(str)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_DecodeInitial()", "str", str, "string")
+
+    -- Main logic
+    if str == "=" then
+        return ""
+    end
+
+    local r, f = "", (self.Characters:find(str)) - 1
+
+    for i = 6, 1, -1 do
+        r = r .. (f % 2 ^ i - f % 2 ^ (i - 1) > 0 and "1" or "0")
+    end
+
+    return r
+end
+
+--[[
+    Used internally, do not use in your code.
+]]
+---@param str string
+---@return string
+function Noir.Libraries.Base64:_DecodeFinal(str)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_DecodeFinal()", "str", str, "string")
+
+    -- Main logic
+    if #str ~= 8 then
+        return ""
+    end
+
+    local c = 0
+
+    for i = 1, 8 do
+        c = c + (str:sub(i, i) == "1" and 2 ^ (8 - i) or 0)
+    end
+
+    if not Noir.Libraries.Number:IsInteger(c) then
+        Noir.Libraries.Logging:Error("Base64 - :_DecodeFinal()", "'c' is not an integer.", true)
+        return ""
+    end
+
+    return string.char(c)
+end
+
+----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Libraries\Dataclasses.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Libraries - Dataclasses
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A library that allows you to create dataclasses, similar to Python.
+
+    local InventoryItem = Noir.Libraries.Dataclasses:New("InventoryItem", {
+        Noir.Libraries.Dataclasses:Field("Name", "String"),
+        Noir.Libraries.Dataclasses:Field("Weight", "Number"),
+        Noir.Libraries.Dataclasses:Field("Stackable", "Boolean")
+    })
+
+    local item = InventoryItem:New("Sword", 5, true)
+    print(item.Name, item.Weight, item.Stackable)
+]]
+---@class NoirDataclassesLib: NoirLibrary
+Noir.Libraries.Dataclasses = Noir.Libraries:Create(
+    "NoirDataclasses",
+    "A library that allows you to create dataclasses, similar to Python.",
+    nil,
+    {"Cuh4"}
+)
+
+--[[
+    Create a new dataclass.
+
+    local InventoryItem = Noir.Libraries.Dataclasses:New("InventoryItem", {
+        Noir.Libraries.Dataclasses:Field("Name", "String"),
+        Noir.Libraries.Dataclasses:Field("Weight", "Number"),
+        Noir.Libraries.Dataclasses:Field("Stackable", "Boolean")
+    })
+
+    local item = InventoryItem:New("Sword", 5, true)
+    print(item.Name, item.Weight, item.Stackable)
+]]
+---@param name string
+---@param fields table<integer, NoirDataclassField>
+---@return NoirDataclass
+function Noir.Libraries.Dataclasses:New(name, fields)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Dataclasses:New()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Dataclasses:New()", "fields", fields, "table")
+
+    -- Create dataclass
+    ---@class NoirDataclass: NoirClass
+    ---@field New fun(self: NoirDataclass, ...: any): NoirDataclass
+    local dataclass = Noir.Class(name)
+
+    function dataclass:Init(...)
+        -- Pack into table
+        local args = {...} ---@type table<integer, any>
+
+        -- Check number of arguments
+        if #args ~= #fields then
+            Noir.Libraries.Logging:Error(("%s (Dataclass)"):format(name), "Invalid number of arguments. Expected %s, got %s.", true, #fields, #args)
+            return
+        end
+
+        -- Iterate through arguments and create fields in this dataclass
+        for index, arg in pairs(args) do
+            -- Get field
+            local field = fields[index]
+
+            if not field then
+                Noir.Libraries.Logging:Error(("%s (Dataclass)"):format(name), "An argument provided doesn't have a corresponding field.", true)
+                return
+            end
+
+            -- Type check
+            Noir.TypeChecking:Assert("Dataclass:Init()", field.Name, arg, field.Type)
+
+            -- Ensure we're not overwriting anyway
+            if self[field.Name] then
+                Noir.Libraries.Logging:Error(("%s (Dataclass)"):format(name), "'%s' overwrites an existing field (possibly a built-in field to a class like 'ClassName'). To fix this, rename the field to something else.", true, field.Name)
+                return
+            end
+
+            -- Insert field
+            self[field.Name] = arg
+        end
+    end
+
+    -- Return
+    return dataclass
+end
+
+--[[
+    Returns a dataclass field to be used with Noir.Libraries.Dataclasses:New().
+]]
+---@param name string
+---@param type NoirTypeCheckingType
+---@return NoirDataclassField
+function Noir.Libraries.Dataclasses:Field(name, type)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Dataclasses:Field()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Dataclasses:Field()", "type", type, "string")
+
+    -- Construct and return field
+    return {Name = name, Type = type}
+end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+--[[
+    Represents a field for a dataclass.
+]]
+---@class NoirDataclassField
+---@field Name string
+---@field Type NoirTypeCheckingType
+
+----------------------------------------------
 -- // [File] ..\src\Noir\Built-Ins/Libraries\Events.lua
 ----------------------------------------------
 --------------------------------------------------------
@@ -2085,7 +2429,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -2157,793 +2501,6 @@ function Noir.Libraries.Events:Create()
 end
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Logging.lua
-----------------------------------------------
---------------------------------------------------------
--- [Noir] Libraries - Logging
---------------------------------------------------------
-
---[[
-    ----------------------------
-
-    CREDIT:
-        Author: @Cuh4 (GitHub)
-        GitHub Repository: https://github.com/cuhHub/Noir
-
-    License:
-        Copyright (C) 2024 Cuh4
-
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
-
-    ----------------------------
-]]
-
--------------------------------
--- // Main
--------------------------------
-
---[[
-    A library containing methods related to logging.
-]]
----@class NoirLoggingLib: NoirLibrary
-Noir.Libraries.Logging = Noir.Libraries:Create(
-    "NoirLogging",
-    "A library containing methods related to logging.",
-    nil,
-    {"Cuh4"}
-)
-
---[[
-    The mode to use when logging.<br>
-    - "DebugLog": Sends logs to DebugView<br>
-    - "Chat": Sends logs to chat
-]]
-Noir.Libraries.Logging.LoggingMode = "DebugLog" ---@type NoirLoggingMode
-
---[[
-    An event called when a log is sent.<br>
-    Arguments: (log: string)
-]]
-Noir.Libraries.Logging.OnLog = Noir.Libraries.Events:Create()
-
---[[
-    Represents the logging layout.<br>
-    Requires two '%s' in the layout. First %s is the log type, the second %s is the log title. The message is then added after the layout.
-]]
-Noir.Libraries.Logging.Layout = "[Noir] [%s] [%s]: "
-
---[[
-    Set the logging mode.
-
-    Noir.Libraries.Logging:SetMode("DebugLog")
-]]
----@param mode NoirLoggingMode
-function Noir.Libraries.Logging:SetMode(mode)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:SetMode()", "mode", mode, "string")
-    self.LoggingMode = mode
-end
-
---[[
-    Sends a log.
-
-    Noir.Libraries.Logging:Log("Warning", "Title", "Something went wrong relating to %s", "something.")
-]]
----@param logType string
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:Log(logType, title, message, ...)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Log()", "logType", logType, "string")
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Log()", "title", title, "string")
-
-    -- Format
-    local formattedText = self:_FormatLog(logType, title, message, ...)
-
-    -- Send log
-    if self.LoggingMode == "DebugLog" then
-        debug.log(formattedText)
-    elseif self.LoggingMode == "Chat" then
-        debug.log(formattedText)
-        server.announce("Noir", formattedText)
-    else
-        self:Error("Invalid logging mode: %s", "'%s' is not a valid logging mode.", true, tostring(Noir.Libraries.LoggingMode))
-    end
-
-    -- Send event
-    self.OnLog:Fire(formattedText)
-end
-
---[[
-    Format a log.<br>
-    Used internally.
-]]
----@param logType string
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:_FormatLog()", "logType", logType, "string")
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:_FormatLog()", "title", title, "string")
-
-    -- Validate args
-    local validatedLogType = tostring(logType)
-    local validatedTitle = tostring(title)
-    local validatedMessage = type(message) == "table" and Noir.Libraries.Table:ToString(message) or (... and tostring(message):format(...) or tostring(message))
-
-    -- Format text
-    local formattedMessage = (self.Layout:format(validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..self.Layout:format(validatedLogType, validatedTitle))
-
-    -- Return
-    return formattedMessage
-end
-
---[[
-    Sends an error log.<br>
-    Passing true to the third argument will intentionally cause an addon error to be thrown.
-
-    Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", true, "something.")
-]]
----@param title string
----@param message any
----@param triggerError boolean
----@param ... any
-function Noir.Libraries.Logging:Error(title, message, triggerError, ...)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "title", title, "string")
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "triggerError", triggerError, "boolean")
-
-    self:Log("Error", title, message, ...)
-
-    if triggerError then
-        _ENV["Noir: An error was triggered. See logs for details."]()
-    end
-end
-
---[[
-    Sends a warning log.
-
-    Noir.Libraries.Logging:Warning("Title", "Something went unexpected relating to %s", "something.")
-]]
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:Warning(title, message, ...)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Warning()", "title", title, "string")
-    self:Log("Warning", title, message, ...)
-end
-
---[[
-    Sends an info log.
-
-    Noir.Libraries.Logging:Info("Title", "Something went okay relating to %s", "something.")
-]]
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:Info(title, message, ...)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Info()", "title", title, "string")
-    self:Log("Info", title, message, ...)
-end
-
---[[
-    Sends a success log.
-
-    Noir.Libraries.Logging:Success("Title", "Something went right relating to %s", "something.")
-]]
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:Success(title, message, ...)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Success()", "title", title, "string")
-    self:Log("Success", title, message, ...)
-end
-
--------------------------------
--- // Intellisense
--------------------------------
-
----@alias NoirLoggingMode
----| "Chat" Sends via server.announce and via debug.log
----| "DebugLog" Sends only via debug.log
-
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Table.lua
-----------------------------------------------
---------------------------------------------------------
--- [Noir] Libraries - Table
---------------------------------------------------------
-
---[[
-    ----------------------------
-
-    CREDIT:
-        Author: @Cuh4 (GitHub)
-        GitHub Repository: https://github.com/cuhHub/Noir
-
-    License:
-        Copyright (C) 2024 Cuh4
-
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
-
-    ----------------------------
-]]
-
--------------------------------
--- // Main
--------------------------------
-
---[[
-    A library containing helper methods relating to tables.
-]]
----@class NoirTableLib: NoirLibrary
-Noir.Libraries.Table = Noir.Libraries:Create(
-    "NoirTable",
-    "A library containing helper methods relating to tables.",
-    nil,
-    {"Cuh4"}
-)
-
---[[
-    Returns the length of the provided table.
-
-    local myTbl = {1, 2, 3}
-    local length = Noir.Libraries.Table:Length(myTbl)
-    print(length) -- 3
-
-    local complexTable = {
-        [5] = true,
-        [true] = 25
-    }
-    local complexLength = Noir.Libraries.Table:Length(complexTable)
-    print(length) -- 2
-]]
----@param tbl table
----@return integer
-function Noir.Libraries.Table:Length(tbl)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Length()", "tbl", tbl, "table")
-
-    -- Calculate the length of the table
-    local length = 0
-
-    for _ in pairs(tbl) do
-        length = length + 1
-    end
-
-    return length
-end
-
---[[
-    Returns a random value in the provided table.
-
-    local myTbl = {1, 2, 3}
-    local random = Noir.Libraries.Table:Random(myTbl)
-    print(random) -- 1|2|3
-]]
----@param tbl table
----@return any
-function Noir.Libraries.Table:Random(tbl)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Random()", "tbl", tbl, "table")
-
-    -- Prevent an error if the table is empty
-    if #tbl == 0 then
-        return
-    end
-
-    -- Return a random value
-    return tbl[math.random(1, #tbl)]
-end
-
---[[
-    Return the keys of the provided table.
-
-    local myTbl = {
-        [true] = 1
-    }
-
-    local keys = Noir.Libraries.Table:Keys(myTbl)
-    print(keys) -- {true}
-]]
----@generic tbl: table
----@param tbl table
----@return tbl
-function Noir.Libraries.Table:Keys(tbl)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Keys()", "tbl", tbl, "table")
-
-    -- Create a new table with the keys of the provided table
-    local keys = {}
-
-    for index, _ in pairs(tbl) do
-        table.insert(keys, index)
-    end
-
-    return keys
-end
-
---[[
-    Return the values of the provided table.
-
-    local myTbl = {
-        [true] = 1
-    }
-
-    local values = Noir.Libraries.Table:Values(myTbl)
-    print(values) -- {1}
-]]
----@generic tbl: table
----@param tbl tbl
----@return tbl
-function Noir.Libraries.Table:Values(tbl)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Values()", "tbl", tbl, "table")
-
-    -- Create a new table with the values of the provided table
-    local values = {}
-
-    for _, value in pairs(tbl) do
-        table.insert(values, value)
-    end
-
-    return values
-end
-
---[[
-    Get a portion of a table between two points.
-
-    local myTbl = {1, 2, 3, 4, 5, 6}
-    local trimmed = Noir.Libraries.Table:Slice(myTbl, 2, 4)
-    print(trimmed) -- {2, 3, 4}
-]]
----@generic tbl: table
----@param tbl tbl
----@param start number|nil
----@param finish number|nil
----@return tbl
-function Noir.Libraries.Table:Slice(tbl, start, finish)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Slice()", "tbl", tbl, "table")
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Slice()", "start", start, "number", "nil")
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Slice()", "finish", finish, "number", "nil")
-
-    -- Slice the table
-    return {table.unpack(tbl, start, finish)}
-end
-
---[[
-    Converts a table to a string by iterating deep through the table.
-
-    local myTbl = {1, 2, {}, "foo"}
-    local string = Noir.Libraries.Table:ToString(myTbl)
-    print(string) -- 1: 1\n2: 2\n3: {}\n4: "foo"
-    
-]]
----@param tbl table
----@param indent integer|nil
----@return string
-function Noir.Libraries.Table:ToString(tbl, indent)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "tbl", tbl, "table")
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "indent", indent, "number", "nil")
-
-    -- Set default indent
-    if not indent then
-        indent = 0
-    end
-
-    -- Create a table for later
-    local toConcatenate = {}
-
-    -- Convert the table to a string
-    for index, value in pairs(tbl) do
-        -- Get value type
-        local valueType = type(value)
-
-        -- Format the index for later
-        local formattedIndex = ("[%s]:"):format(type(index) == "string" and "\""..index.."\"" or tostring(index):gsub("\n", "\\n"))
-
-        -- Format the value
-        local toAdd = formattedIndex
-
-        if valueType == "table" then
-            -- Format table
-            local nextIndent = indent + 2
-            local formattedValue = Noir.Libraries.Table:ToString(value, nextIndent)
-
-            -- Check if empty table
-            if formattedValue == "" then
-                formattedValue = "{}"
-            else
-                formattedValue = "\n"..formattedValue
-            end
-
-            -- Add to string
-            toAdd = toAdd..(" %s"):format(formattedValue)
-        elseif valueType == "number" or valueType == "boolean" then
-            toAdd = toAdd..(" %s"):format(tostring(value))
-        else
-            toAdd = toAdd..(" \"%s\""):format(tostring(value):gsub("\n", "\\n"))
-        end
-
-        -- Add to table
-        table.insert(toConcatenate, ("  "):rep(indent)..toAdd)
-    end
-
-    -- Return the table as a formatted string
-    return table.concat(toConcatenate, "\n")
-end
-
---[[
-    Copy a table (shallow).
-
-    local myTbl = {1, 2, 3}
-    local copy = Noir.Libraries.Table:Copy(myTbl)
-    print(copy) -- {1, 2, 3}
-]]
----@generic tbl: table
----@param tbl tbl
----@return tbl
-function Noir.Libraries.Table:Copy(tbl)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Copy()", "tbl", tbl, "table")
-
-    -- Perform a shallow copy
-    local new = {}
-
-    for index, value in pairs(tbl) do
-        new[index] = value
-    end
-
-    return new
-end
---[[
-    Copy a table (deep).
-
-    local myTbl = {1, 2, 3}
-    local copy = Noir.Libraries.Table:DeepCopy(myTbl)
-    print(copy) -- {1, 2, 3}
-]]
----@generic tbl: table
----@param tbl tbl
----@return tbl
-function Noir.Libraries.Table:DeepCopy(tbl)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:DeepCopy()", "tbl", tbl, "table")
-
-    -- Perform a deep copy
-    local new = {}
-
-    for index, value in pairs(tbl) do
-        if type(value) == "table" then
-            new[index] = self:DeepCopy(value)
-        else
-            new[index] = value
-        end
-    end
-
-    return new
-end
-
---[[
-    Merge two tables together (unforced).
-
-    local myTbl = {1, 2, 3}
-    local otherTbl = {4, 5, 6}
-    local merged = Noir.Libraries.Table:Merge(myTbl, otherTbl)
-    print(merged) -- {1, 2, 3, 4, 5, 6}
-]]
----@param tbl table
----@param other table
----@return table
-function Noir.Libraries.Table:Merge(tbl, other)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Merge()", "tbl", tbl, "table")
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Merge()", "other", other, "table")
-
-    -- Merge the tables
-    local new = self:Copy(tbl)
-
-    for _, value in pairs(other) do
-        table.insert(new, value)
-    end
-
-    return new
-end
-
---[[
-    Merge two tables together (forced).
-
-    local myTbl = {1, 2, 3}
-    local otherTbl = {4, 5, 6}
-    local merged = Noir.Libraries.Table:ForceMerge(myTbl, otherTbl)
-    print(merged) -- {4, 5, 6} <-- This is because the indexes are the same, so the values of myTbl were overwritten
-]]
----@param tbl table
----@param other table
----@return table
-function Noir.Libraries.Table:ForceMerge(tbl, other)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:ForceMerge()", "tbl", tbl, "table")
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:ForceMerge()", "other", other, "table")
-
-    -- Merge the tables forcefully
-    local new = self:Copy(tbl)
-
-    for index, value in pairs(other) do
-        new[index] = value
-    end
-
-    return new
-end
-
---[[
-    Find a value in a table. Returns the index, or nil if not found.
-
-    local myTbl = {["hello"] = true}
-
-    local index = Noir.Libraries.Table:Find(myTbl, true)
-    print(index) -- "hello"
-]]
----@param tbl table
----@param value any
----@return any|nil
-function Noir.Libraries.Table:Find(tbl, value)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Table:Find()", "tbl", tbl, "table")
-
-    -- Find the value
-    for index, iterValue in pairs(tbl) do
-        if iterValue == value then
-            return index
-        end
-    end
-end
-
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Number.lua
-----------------------------------------------
---------------------------------------------------------
--- [Noir] Libraries - Number
---------------------------------------------------------
-
---[[
-    ----------------------------
-
-    CREDIT:
-        Author: @Cuh4 (GitHub)
-        GitHub Repository: https://github.com/cuhHub/Noir
-
-    License:
-        Copyright (C) 2024 Cuh4
-
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
-
-    ----------------------------
-]]
-
--------------------------------
--- // Main
--------------------------------
-
---[[
-    A library containing helper methods relating to numbers.
-]]
----@class NoirNumberLib: NoirLibrary
-Noir.Libraries.Number = Noir.Libraries:Create(
-    "NoirNumber",
-    "Provides helper methods relating to numbers.",
-    nil,
-    {"Cuh4"}
-)
-
---[[
-    Returns whether or not the provided number is between the two provided values.
-
-    local number = 5
-    local isWithin = Noir.Libraries.Number:IsWithin(number, 1, 10) -- true
-
-    local number = 5
-    local isWithin = Noir.Libraries.Number:IsWithin(number, 10, 20) -- false
-]]
----@param number number
----@param start number
----@param stop number
----@return boolean
-function Noir.Libraries.Number:IsWithin(number, start, stop)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsWithin()", "number", number, "number")
-    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsWithin()", "start", start, "number")
-    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsWithin()", "stop", stop, "number")
-
-    -- Clamp the number
-    return number >= start and number <= stop
-end
-
---[[
-    Clamps a number between two values.
-
-    local number = 5
-    local clamped = Noir.Libraries.Number:Clamp(number, 1, 10) -- 5
-
-    local number = 15
-    local clamped = Noir.Libraries.Number:Clamp(number, 1, 10) -- 10
-]]
----@param number number
----@param min number
----@param max number
----@return number
-function Noir.Libraries.Number:Clamp(number, min, max)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Number:Clamp()", "number", number, "number")
-    Noir.TypeChecking:Assert("Noir.Libraries.Number:Clamp()", "min", min, "number")
-    Noir.TypeChecking:Assert("Noir.Libraries.Number:Clamp()", "max", max, "number")
-
-    -- Clamp the number
-    return math.min(math.max(number, min), max)
-end
-
---[[
-    Rounds the number to the provided number of decimal places (defaults to 0).
-
-    local number = 5.5
-    local rounded = Noir.Libraries.Number:Round(number) -- 6
-
-    local number = 5.5
-    local rounded = Noir.Libraries.Number:Round(number, 1) -- 5.5
-
-    local number = 5.537
-    local rounded = Noir.Libraries.Number:Round(number, 2) -- 5.54
-]]
----@param number number
----@param decimalPlaces number|nil
----@return number
-function Noir.Libraries.Number:Round(number, decimalPlaces)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Number:Round()", "number", number, "number")
-
-    -- Round the number
-    local mult = 10 ^ (decimalPlaces or 0)
-    return math.floor(number * mult + 0.5) / mult
-end
-
---[[
-    Returns whether or not the provided number is an integer.
-
-    Noir.Libraries.Number:IsInteger(5) -- true
-    Noir.Libraries.Number:IsInteger(5.5) -- false
-]]
----@param number number
----@return boolean
-function Noir.Libraries.Number:IsInteger(number)
-    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsInteger()", "number", number, "number")
-    return math.floor(number) == number
-end
-
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\String.lua
-----------------------------------------------
---------------------------------------------------------
--- [Noir] Libraries - String
---------------------------------------------------------
-
---[[
-    ----------------------------
-
-    CREDIT:
-        Author: @Cuh4 (GitHub)
-        GitHub Repository: https://github.com/cuhHub/Noir
-
-    License:
-        Copyright (C) 2024 Cuh4
-
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
-
-    ----------------------------
-]]
-
--------------------------------
--- // Main
--------------------------------
-
---[[
-    A library containing helper methods relating to strings.
-]]
----@class NoirStringLib: NoirLibrary
-Noir.Libraries.String = Noir.Libraries:Create(
-    "NoirString",
-    "A library containing helper methods relating to strings.",
-    nil,
-    {"Cuh4"}
-)
-
---[[
-    Splits a string by the provided separator (defaults to " ").
-
-    local myString = "hello world"
-    Noir.Libraries.String:Split(myString, " ") -- {"hello", "world"}
-    Noir.Libraries.String:Split(myString) -- {"hello", "world"}
-]]
----@param str string
----@param separator string|nil
----@return table<integer, string>
-function Noir.Libraries.String:Split(str, separator)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.String:Split()", "str", str, "string")
-    Noir.TypeChecking:Assert("Noir.Libraries.String:Split()", "separator", separator, "string", "nil")
-
-    -- Default separator
-    separator = separator or " "
-
-    -- Split the string
-    local split = {}
-
-    for part in str:gmatch("([^"..separator.."]+)") do
-        table.insert(split, part)
-    end
-
-    -- Return the split string
-    return split
-end
-
---[[
-    Splits a string by their lines.
-
-    local myString = "hello\nworld"
-    Noir.Libraries.String:SplitLines(myString) -- {"hello", "world"}
-]]
----@param str string
----@return table<integer, string>
-function Noir.Libraries.String:SplitLines(str)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.String:SplitLines()", "str", str, "string")
-
-    -- Split the string by newlines
-    return self:Split(str, "\n")
-end
-
-----------------------------------------------
 -- // [File] ..\src\Noir\Built-Ins/Libraries\JSON.lua
 ----------------------------------------------
 --------------------------------------------------------
@@ -2954,7 +2511,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -3312,17 +2869,17 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
 end
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Base64.lua
+-- // [File] ..\src\Noir\Built-Ins/Libraries\Logging.lua
 ----------------------------------------------
 --------------------------------------------------------
--- [Noir] Libraries - Base64
+-- [Noir] Libraries - Logging
 --------------------------------------------------------
 
 --[[
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -3348,159 +2905,169 @@ end
 -------------------------------
 
 --[[
-    A library containing helper methods to serialize strings into Base64 and back.<br>
-    This code is from https://gist.github.com/To0fan/ca3ebb9c029bb5df381e4afc4d27b4a6
+    A library containing methods related to logging.
 ]]
----@class NoirBase64Lib: NoirLibrary
-Noir.Libraries.Base64 = Noir.Libraries:Create(
-    "NoirBase64",
-    "A library containing helper methods to serialize strings into Base64 and back.",
-    "",
+---@class NoirLoggingLib: NoirLibrary
+Noir.Libraries.Logging = Noir.Libraries:Create(
+    "NoirLogging",
+    "A library containing methods related to logging.",
+    nil,
     {"Cuh4"}
 )
 
 --[[
-    Character table as a string.<br>
-    Used internally, do not use in your code.
+    The mode to use when logging.<br>
+    - "DebugLog": Sends logs to DebugView<br>
+    - "Chat": Sends logs to chat
 ]]
-Noir.Libraries.Base64.Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+Noir.Libraries.Logging.LoggingMode = "DebugLog" ---@type NoirLoggingMode
 
 --[[
-    Encode a string into Base64.
+    An event called when a log is sent.<br>
+    Arguments: (log: string)
 ]]
----@param data string
----@return string
-function Noir.Libraries.Base64:Encode(data)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Base64:Encode()", "data", data, "string")
+Noir.Libraries.Logging.OnLog = Noir.Libraries.Events:Create()
 
-    -- Encode the string into Base64
-    ---@param str string
-    local encoded = (data:gsub(".", function(str)
-        return self:_EncodeInitial(str)
-    end).."0000")
+--[[
+    Represents the logging layout.<br>
+    Requires two '%s' in the layout. First %s is the log type, the second %s is the log title. The message is then added after the layout.
+]]
+Noir.Libraries.Logging.Layout = "[Noir] [%s] [%s]: "
 
-    ---@param str string
-    return encoded:gsub("%d%d%d?%d?%d?%d?", function(str)
-        return self:_EncodeFinal(str)
-    end)..({"", "==", "="})[#data % 3 + 1]
+--[[
+    Set the logging mode.
+
+    Noir.Libraries.Logging:SetMode("DebugLog")
+]]
+---@param mode NoirLoggingMode
+function Noir.Libraries.Logging:SetMode(mode)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:SetMode()", "mode", mode, "string")
+    self.LoggingMode = mode
 end
 
 --[[
-    Used internally, do not use in your code.
+    Sends a log.
+
+    Noir.Libraries.Logging:Log("Warning", "Title", "Something went wrong relating to %s", "something.")
 ]]
----@param data string
----@return string
-function Noir.Libraries.Base64:_EncodeInitial(data)
+---@param logType string
+---@param title string
+---@param message any
+---@param ... any
+function Noir.Libraries.Logging:Log(logType, title, message, ...)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_EncodeInitial()", "data", data, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Log()", "logType", logType, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Log()", "title", title, "string")
 
-    -- Main logic
-    local r, b = "", data:byte()
+    -- Format
+    local formattedText = self:_FormatLog(logType, title, message, ...)
 
-    for i = 8, 1, -1 do
-        r = r..(b % 2 ^ i - b % 2 ^ (i - 1) > 0 and "1" or "0")
+    -- Send log
+    if self.LoggingMode == "DebugLog" then
+        debug.log(formattedText)
+    elseif self.LoggingMode == "Chat" then
+        debug.log(formattedText)
+        server.announce("Noir", formattedText)
+    else
+        self:Error("Logging", "'%s' is not a valid logging mode.", true, tostring(Noir.Libraries.LoggingMode))
     end
 
-    return r
+    -- Send event
+    self.OnLog:Fire(formattedText)
 end
 
 --[[
-    Used internally, do not use in your code.
+    Format a log.<br>
+    Used internally.
 ]]
----@param data string
----@return string
-function Noir.Libraries.Base64:_EncodeFinal(data)
+---@param logType string
+---@param title string
+---@param message any
+---@param ... any
+function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_EncodeFinal()", "data", data, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:_FormatLog()", "logType", logType, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:_FormatLog()", "title", title, "string")
 
-    -- Main logic
-    if (#data < 6) then
-        return ""
-    end
+    -- Validate args
+    local validatedLogType = tostring(logType)
+    local validatedTitle = tostring(title)
+    local validatedMessage = type(message) == "table" and Noir.Libraries.Table:ToString(message) or (... and tostring(message):format(...) or tostring(message))
 
-    local c = 0
+    -- Format text
+    local formattedMessage = (self.Layout:format(validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..self.Layout:format(validatedLogType, validatedTitle))
 
-    for i = 1, 6 do
-        c = c + (data:sub(i, i) == "1" and 2 ^ (6 - i) or 0)
-    end
-
-    return self.Characters:sub(c + 1, c + 1)
+    -- Return
+    return formattedMessage
 end
 
 --[[
-    Decode a string from Base64.
+    Sends an error log.<br>
+    Passing true to the third argument will intentionally cause an addon error to be thrown.
+
+    Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", true, "something.")
 ]]
----@param data string
----@return string
-function Noir.Libraries.Base64:Decode(data)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Base64:Decode()", "data", data, "string")
+---@param title string
+---@param message any
+---@param triggerError boolean
+---@param ... any
+function Noir.Libraries.Logging:Error(title, message, triggerError, ...)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "title", title, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "triggerError", triggerError, "boolean")
 
-    -- Decode the Base64 string into a normal string
-    local decoded = data:gsub("[^"..self.Characters.."=]", "")
+    self:Log("Error", title, message, ...)
 
-    ---@param str string
-    decoded = decoded:gsub(".", function(str)
-        return self:_DecodeInitial(str)
-    end)
-
-    ---@param str string
-    return (decoded:gsub("%d%d%d?%d?%d?%d?%d?%d?", function(str)
-        return self:_DecodeFinal(str)
-    end))
+    if triggerError then
+        _ENV["Noir: An error was triggered. See logs for details."]()
+    end
 end
 
 --[[
-    Used internally, do not use in your code.
+    Sends a warning log.
+
+    Noir.Libraries.Logging:Warning("Title", "Something went unexpected relating to %s", "something.")
 ]]
----@param str string
----@return string
-function Noir.Libraries.Base64:_DecodeInitial(str)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_DecodeInitial()", "str", str, "string")
-
-    -- Main logic
-    if str == "=" then
-        return ""
-    end
-
-    local r, f = "", (self.Characters:find(str)) - 1
-
-    for i = 6, 1, -1 do
-        r = r .. (f % 2 ^ i - f % 2 ^ (i - 1) > 0 and "1" or "0")
-    end
-
-    return r
+---@param title string
+---@param message any
+---@param ... any
+function Noir.Libraries.Logging:Warning(title, message, ...)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Warning()", "title", title, "string")
+    self:Log("Warning", title, message, ...)
 end
 
 --[[
-    Used internally, do not use in your code.
+    Sends an info log.
+
+    Noir.Libraries.Logging:Info("Title", "Something went okay relating to %s", "something.")
 ]]
----@param str string
----@return string
-function Noir.Libraries.Base64:_DecodeFinal(str)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Base64:_DecodeFinal()", "str", str, "string")
-
-    -- Main logic
-    if #str ~= 8 then
-        return ""
-    end
-
-    local c = 0
-
-    for i = 1, 8 do
-        c = c + (str:sub(i, i) == "1" and 2 ^ (8 - i) or 0)
-    end
-
-    if not Noir.Libraries.Number:IsInteger(c) then
-        Noir.Libraries.Logging:Error("Base64 - :_DecodeFinal()", "'c' is not an integer.", true)
-        return ""
-    end
-
-    return string.char(c)
+---@param title string
+---@param message any
+---@param ... any
+function Noir.Libraries.Logging:Info(title, message, ...)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Info()", "title", title, "string")
+    self:Log("Info", title, message, ...)
 end
+
+--[[
+    Sends a success log.
+
+    Noir.Libraries.Logging:Success("Title", "Something went right relating to %s", "something.")
+]]
+---@param title string
+---@param message any
+---@param ... any
+function Noir.Libraries.Logging:Success(title, message, ...)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Success()", "title", title, "string")
+    self:Log("Success", title, message, ...)
+end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+---@alias NoirLoggingMode
+---| "Chat" Sends via server.announce and via debug.log
+---| "DebugLog" Sends only via debug.log
 
 ----------------------------------------------
 -- // [File] ..\src\Noir\Built-Ins/Libraries\Matrix.lua
@@ -3513,7 +3080,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -3634,6 +3201,615 @@ function Noir.Libraries.Matrix:ToString(pos)
 end
 
 ----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Libraries\Number.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Libraries - Number
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A library containing helper methods relating to numbers.
+]]
+---@class NoirNumberLib: NoirLibrary
+Noir.Libraries.Number = Noir.Libraries:Create(
+    "NoirNumber",
+    "Provides helper methods relating to numbers.",
+    nil,
+    {"Cuh4"}
+)
+
+--[[
+    Returns whether or not the provided number is between the two provided values.
+
+    local number = 5
+    local isWithin = Noir.Libraries.Number:IsWithin(number, 1, 10) -- true
+
+    local number = 5
+    local isWithin = Noir.Libraries.Number:IsWithin(number, 10, 20) -- false
+]]
+---@param number number
+---@param start number
+---@param stop number
+---@return boolean
+function Noir.Libraries.Number:IsWithin(number, start, stop)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsWithin()", "number", number, "number")
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsWithin()", "start", start, "number")
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsWithin()", "stop", stop, "number")
+
+    -- Clamp the number
+    return number >= start and number <= stop
+end
+
+--[[
+    Clamps a number between two values.
+
+    local number = 5
+    local clamped = Noir.Libraries.Number:Clamp(number, 1, 10) -- 5
+
+    local number = 15
+    local clamped = Noir.Libraries.Number:Clamp(number, 1, 10) -- 10
+]]
+---@param number number
+---@param min number
+---@param max number
+---@return number
+function Noir.Libraries.Number:Clamp(number, min, max)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:Clamp()", "number", number, "number")
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:Clamp()", "min", min, "number")
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:Clamp()", "max", max, "number")
+
+    -- Clamp the number
+    return math.min(math.max(number, min), max)
+end
+
+--[[
+    Rounds the number to the provided number of decimal places (defaults to 0).
+
+    local number = 5.5
+    local rounded = Noir.Libraries.Number:Round(number) -- 6
+
+    local number = 5.5
+    local rounded = Noir.Libraries.Number:Round(number, 1) -- 5.5
+
+    local number = 5.537
+    local rounded = Noir.Libraries.Number:Round(number, 2) -- 5.54
+]]
+---@param number number
+---@param decimalPlaces number|nil
+---@return number
+function Noir.Libraries.Number:Round(number, decimalPlaces)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:Round()", "number", number, "number")
+
+    -- Round the number
+    local mult = 10 ^ (decimalPlaces or 0)
+    return math.floor(number * mult + 0.5) / mult
+end
+
+--[[
+    Returns whether or not the provided number is an integer.
+
+    Noir.Libraries.Number:IsInteger(5) -- true
+    Noir.Libraries.Number:IsInteger(5.5) -- false
+]]
+---@param number number
+---@return boolean
+function Noir.Libraries.Number:IsInteger(number)
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:IsInteger()", "number", number, "number")
+    return math.floor(number) == number
+end
+
+--[[
+    Returns the average of the provided numbers.
+
+    local numbers = {1, 2, 3, 4, 5}
+    Noir.Libraries.Number:Average(numbers) -- 3
+]]
+---@param numbers table<integer, number>
+---@return number
+function Noir.Libraries.Number:Average(numbers)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:Average()", "numbers", numbers, "table")
+
+    -- Get sum
+    local sum = 0
+
+    for _, number in pairs(numbers) do
+        sum = sum + number
+    end
+
+    -- Return average
+    return sum / #numbers
+end
+
+----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Libraries\String.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Libraries - String
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A library containing helper methods relating to strings.
+]]
+---@class NoirStringLib: NoirLibrary
+Noir.Libraries.String = Noir.Libraries:Create(
+    "NoirString",
+    "A library containing helper methods relating to strings.",
+    nil,
+    {"Cuh4"}
+)
+
+--[[
+    Splits a string by the provided separator (defaults to " ").
+
+    local myString = "hello world"
+    Noir.Libraries.String:Split(myString, " ") -- {"hello", "world"}
+    Noir.Libraries.String:Split(myString) -- {"hello", "world"}
+]]
+---@param str string
+---@param separator string|nil
+---@return table<integer, string>
+function Noir.Libraries.String:Split(str, separator)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.String:Split()", "str", str, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.String:Split()", "separator", separator, "string", "nil")
+
+    -- Default separator
+    separator = separator or " "
+
+    -- Split the string
+    local split = {}
+
+    for part in str:gmatch("([^"..separator.."]+)") do
+        table.insert(split, part)
+    end
+
+    -- Return the split string
+    return split
+end
+
+--[[
+    Splits a string by their lines.
+
+    local myString = "hello\nworld"
+    Noir.Libraries.String:SplitLines(myString) -- {"hello", "world"}
+]]
+---@param str string
+---@return table<integer, string>
+function Noir.Libraries.String:SplitLines(str)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.String:SplitLines()", "str", str, "string")
+
+    -- Split the string by newlines
+    return self:Split(str, "\n")
+end
+
+----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Libraries\Table.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Libraries - Table
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A library containing helper methods relating to tables.
+]]
+---@class NoirTableLib: NoirLibrary
+Noir.Libraries.Table = Noir.Libraries:Create(
+    "NoirTable",
+    "A library containing helper methods relating to tables.",
+    nil,
+    {"Cuh4"}
+)
+
+--[[
+    Returns the length of the provided table.
+
+    local myTbl = {1, 2, 3}
+    local length = Noir.Libraries.Table:Length(myTbl)
+    print(length) -- 3
+
+    local complexTable = {
+        [5] = true,
+        [true] = 25
+    }
+    local complexLength = Noir.Libraries.Table:Length(complexTable)
+    print(length) -- 2
+]]
+---@param tbl table
+---@return integer
+function Noir.Libraries.Table:Length(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Length()", "tbl", tbl, "table")
+
+    -- Calculate the length of the table
+    local length = 0
+
+    for _ in pairs(tbl) do
+        length = length + 1
+    end
+
+    return length
+end
+
+--[[
+    Returns a random value in the provided table.
+
+    local myTbl = {1, 2, 3}
+    local random = Noir.Libraries.Table:Random(myTbl)
+    print(random) -- 1|2|3
+]]
+---@param tbl table
+---@return any
+function Noir.Libraries.Table:Random(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Random()", "tbl", tbl, "table")
+
+    -- Prevent an error if the table is empty
+    if #tbl == 0 then
+        return
+    end
+
+    -- Return a random value
+    return tbl[math.random(1, #tbl)]
+end
+
+--[[
+    Return the keys of the provided table.
+
+    local myTbl = {
+        [true] = 1
+    }
+
+    local keys = Noir.Libraries.Table:Keys(myTbl)
+    print(keys) -- {true}
+]]
+---@generic tbl: table
+---@param tbl table
+---@return tbl
+function Noir.Libraries.Table:Keys(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Keys()", "tbl", tbl, "table")
+
+    -- Create a new table with the keys of the provided table
+    local keys = {}
+
+    for index, _ in pairs(tbl) do
+        table.insert(keys, index)
+    end
+
+    return keys
+end
+
+--[[
+    Return the values of the provided table.
+
+    local myTbl = {
+        [true] = 1
+    }
+
+    local values = Noir.Libraries.Table:Values(myTbl)
+    print(values) -- {1}
+]]
+---@generic tbl: table
+---@param tbl tbl
+---@return tbl
+function Noir.Libraries.Table:Values(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Values()", "tbl", tbl, "table")
+
+    -- Create a new table with the values of the provided table
+    local values = {}
+
+    for _, value in pairs(tbl) do
+        table.insert(values, value)
+    end
+
+    return values
+end
+
+--[[
+    Get a portion of a table between two points.
+
+    local myTbl = {1, 2, 3, 4, 5, 6}
+    local trimmed = Noir.Libraries.Table:Slice(myTbl, 2, 4)
+    print(trimmed) -- {2, 3, 4}
+]]
+---@generic tbl: table
+---@param tbl tbl
+---@param start number|nil
+---@param finish number|nil
+---@return tbl
+function Noir.Libraries.Table:Slice(tbl, start, finish)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Slice()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Slice()", "start", start, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Slice()", "finish", finish, "number", "nil")
+
+    -- Slice the table
+    return {table.unpack(tbl, start, finish)}
+end
+
+--[[
+    Converts a table to a string by iterating deep through the table.
+
+    local myTbl = {1, 2, {}, "foo"}
+    local string = Noir.Libraries.Table:ToString(myTbl)
+    print(string) -- 1: 1\n2: 2\n3: {}\n4: "foo"
+    
+]]
+---@param tbl table
+---@param indent integer|nil
+---@return string
+function Noir.Libraries.Table:ToString(tbl, indent)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "indent", indent, "number", "nil")
+
+    -- Set default indent
+    if not indent then
+        indent = 0
+    end
+
+    -- Create a table for later
+    local toConcatenate = {}
+
+    -- Convert the table to a string
+    for index, value in pairs(tbl) do
+        -- Get value type
+        local valueType = type(value)
+
+        -- Format the index for later
+        local formattedIndex = ("[%s]:"):format(type(index) == "string" and "\""..index.."\"" or tostring(index):gsub("\n", "\\n"))
+
+        -- Format the value
+        local toAdd = formattedIndex
+
+        if valueType == "table" then
+            -- Format table
+            local nextIndent = indent + 2
+            local formattedValue = Noir.Libraries.Table:ToString(value, nextIndent)
+
+            -- Check if empty table
+            if formattedValue == "" then
+                formattedValue = "{}"
+            else
+                formattedValue = "\n"..formattedValue
+            end
+
+            -- Add to string
+            toAdd = toAdd..(" %s"):format(formattedValue)
+        elseif valueType == "number" or valueType == "boolean" then
+            toAdd = toAdd..(" %s"):format(tostring(value))
+        else
+            toAdd = toAdd..(" \"%s\""):format(tostring(value):gsub("\n", "\\n"))
+        end
+
+        -- Add to table
+        table.insert(toConcatenate, ("  "):rep(indent)..toAdd)
+    end
+
+    -- Return the table as a formatted string
+    return table.concat(toConcatenate, "\n")
+end
+
+--[[
+    Copy a table (shallow).
+
+    local myTbl = {1, 2, 3}
+    local copy = Noir.Libraries.Table:Copy(myTbl)
+    print(copy) -- {1, 2, 3}
+]]
+---@generic tbl: table
+---@param tbl tbl
+---@return tbl
+function Noir.Libraries.Table:Copy(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Copy()", "tbl", tbl, "table")
+
+    -- Perform a shallow copy
+    local new = {}
+
+    for index, value in pairs(tbl) do
+        new[index] = value
+    end
+
+    return new
+end
+--[[
+    Copy a table (deep).
+
+    local myTbl = {1, 2, 3}
+    local copy = Noir.Libraries.Table:DeepCopy(myTbl)
+    print(copy) -- {1, 2, 3}
+]]
+---@generic tbl: table
+---@param tbl tbl
+---@return tbl
+function Noir.Libraries.Table:DeepCopy(tbl)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:DeepCopy()", "tbl", tbl, "table")
+
+    -- Perform a deep copy
+    local new = {}
+
+    for index, value in pairs(tbl) do
+        if type(value) == "table" then
+            new[index] = self:DeepCopy(value)
+        else
+            new[index] = value
+        end
+    end
+
+    return new
+end
+
+--[[
+    Merge two tables together (unforced).
+
+    local myTbl = {1, 2, 3}
+    local otherTbl = {4, 5, 6}
+    local merged = Noir.Libraries.Table:Merge(myTbl, otherTbl)
+    print(merged) -- {1, 2, 3, 4, 5, 6}
+]]
+---@param tbl table
+---@param other table
+---@return table
+function Noir.Libraries.Table:Merge(tbl, other)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Merge()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Merge()", "other", other, "table")
+
+    -- Merge the tables
+    local new = self:Copy(tbl)
+
+    for _, value in pairs(other) do
+        table.insert(new, value)
+    end
+
+    return new
+end
+
+--[[
+    Merge two tables together (forced).
+
+    local myTbl = {1, 2, 3}
+    local otherTbl = {4, 5, 6}
+    local merged = Noir.Libraries.Table:ForceMerge(myTbl, otherTbl)
+    print(merged) -- {4, 5, 6} <-- This is because the indexes are the same, so the values of myTbl were overwritten
+]]
+---@param tbl table
+---@param other table
+---@return table
+function Noir.Libraries.Table:ForceMerge(tbl, other)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:ForceMerge()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:ForceMerge()", "other", other, "table")
+
+    -- Merge the tables forcefully
+    local new = self:Copy(tbl)
+
+    for index, value in pairs(other) do
+        new[index] = value
+    end
+
+    return new
+end
+
+--[[
+    Find a value in a table. Returns the index, or nil if not found.
+
+    local myTbl = {["hello"] = true}
+
+    local index = Noir.Libraries.Table:Find(myTbl, true)
+    print(index) -- "hello"
+]]
+---@param tbl table
+---@param value any
+---@return any|nil
+function Noir.Libraries.Table:Find(tbl, value)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Find()", "tbl", tbl, "table")
+
+    -- Find the value
+    for index, iterValue in pairs(tbl) do
+        if iterValue == value then
+            return index
+        end
+    end
+end
+
+----------------------------------------------
 -- // [File] ..\src\Noir\Services.lua
 ----------------------------------------------
 --------------------------------------------------------
@@ -3644,7 +3820,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -3839,17 +4015,17 @@ function Noir.Services:RemoveBuiltInServices(exceptions)
 end
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\TaskService.lua
+-- // [File] ..\src\Noir\Built-Ins/Services\CommandService.lua
 ----------------------------------------------
 --------------------------------------------------------
--- [Noir] Services - Task Service
+-- [Noir] Services - Command Service
 --------------------------------------------------------
 
 --[[
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -3875,132 +4051,164 @@ end
 -------------------------------
 
 --[[
-    A service for easily delaying or repeating tasks.
+    A service for easily creating commands with support for command aliases, permissions, etc.
 
-    local task = Noir.Services.TaskService:AddTask(function(toSay)
-        server.announce("Server", toSay)
-    end, 5, {"Hello World!"}, true) -- This task is repeating due to isRepeating being true (final argument)
+    Noir.Services.CommandService:CreateCommand("info", {"i"}, {"Nerd"}, false, false, false, "Shows random information.", function(player, message, args, hasPermission)
+        if not hasPermission then
+            server.announce("Server", "Sorry, you don't have permission to use this command. Try again though.", player.ID)
+            player:SetPermission("Nerd")
+            return
+        end
 
-    task:SetDuration(10) -- Duration changes from 5 to 10
+        server.announce("Info", "This addon uses Noir!")
+    end)
 ]]
----@class NoirTaskService: NoirService
----@field IncrementalID integer The ID of the next task
----@field Tasks table<integer, NoirTask> A table containing active tasks
----@field OnTickConnection NoirConnection Represents the connection to the onTick game callback
-Noir.Services.TaskService = Noir.Services:CreateService(
-    "TaskService",
+---@class NoirCommandService: NoirService
+---@field Commands table<string, NoirCommand> A table of registered commands
+---@field _OnCustomCommandConnection NoirConnection Represents the connection to the OnCustomCommand game callback
+Noir.Services.CommandService = Noir.Services:CreateService(
+    "CommandService",
     true,
-    "A service for calling functions after x amount of seconds.",
-    "A service that allows you to call functions after x amount of seconds, either repeatedly or once.",
+    "A service that allows you to create commands.",
+    "A service that allows you to create commands with support for aliases, permissions, etc.",
     {"Cuh4"}
 )
 
-function Noir.Services.TaskService:ServiceInit()
-    -- Create attributes
-    self.IncrementalID = 0
-    self.Tasks = {}
+function Noir.Services.CommandService:ServiceInit()
+    self.Commands = {}
 end
 
-function Noir.Services.TaskService:ServiceStart()
-    -- Connect to onTick, and constantly check tasks
-    self.OnTickConnection = Noir.Callbacks:Connect("onTick", function()
-        for _, task in pairs(self.Tasks) do
-            -- Get time so far in seconds
-            local time = self:GetTimeSeconds()
+function Noir.Services.CommandService:ServiceStart()
+    self._OnCustomCommandConnection = Noir.Callbacks:Connect("onCustomCommand", function(message, peer_id, _, _, commandName, ...)
+        -- Get the player
+        local player = Noir.Services.PlayerService:GetPlayer(peer_id)
 
-            -- Check if the task should be stopped
-            if time >= task.StopsAt then
-                if task.IsRepeating then
-                    -- Repeat the task
-                    task.StartedAt = time
-                    task.StopsAt = time + task.Duration
-
-                    -- Fire OnCompletion
-                    task.OnCompletion:Fire(table.unpack(task.Arguments))
-                else
-                    -- Stop the task
-                    self:RemoveTask(task)
-
-                    -- Fire OnCompletion
-                    task.OnCompletion:Fire(table.unpack(task.Arguments))
-                end
-            end
+        if not player then
+            Noir.Libraries.Logging:Error("CommandService", "A player ran a command, but they aren't recognized as a player in the PlayerService", false)
+            return
         end
+
+        -- Remove ? prefix
+        commandName = commandName:sub(2)
+
+        -- Get the command
+        local command = self:FindCommand(commandName)
+
+        if not command then
+            return
+        end
+
+        -- Trigger the command
+        command:_Use(player, message, {...})
     end)
 end
 
 --[[
-    Returns the current time in seconds.<br>
-    Equivalent to: server.getTimeMillisec() / 1000
+    Get a command by the name or alias.
 ]]
----@return number
-function Noir.Services.TaskService:GetTimeSeconds()
-    return server.getTimeMillisec() / 1000
+---@param query string
+---@return NoirCommand|nil
+function Noir.Services.CommandService:FindCommand(query)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:FindCommand()", "query", query, "string")
+
+    -- Find the command
+    for _, command in pairs(self:GetCommands()) do
+        if command:_Matches(query) then
+            return command
+        end
+    end
 end
 
 --[[
-    Creates and adds a task to the TaskService.
+    Create a new command.
 
-    local task = Noir.Services.TaskService:AddTask(function(toSay)
-        server.announce("Server", toSay)
-    end, 5, {"Hello World!"}, true) -- This task is repeating due to isRepeating being true (final argument)
+    Noir.Services.CommandService:CreateCommand("help", {"h"}, {"Nerd"}, false, false, false, "Example Command", function(player, message, args, hasPermission)
+        if not hasPermission then
+            player:Notify("Lacking Permissions", "Sorry, you don't have permission to run this command. Try again.", 3)
+            player:SetPermission("Nerd")
+            return
+        end
 
-    local anotherTask = Noir.Services.TaskService:AddTask(server.announce, 5, {"Server", "Hello World!"}, true) -- This does the same as above
-    Noir.Services.TaskService:RemoveTask(anotherTask) -- Removes the task
+        player:Notify("Help", "TODO: Add a help message", 4)
+    end)
 ]]
----@param callback function
----@param duration number
----@param arguments table|nil
----@param isRepeating boolean|nil
----@return NoirTask
-function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepeating)
+---@param name string The name of the command (eg: if you provided "help", the player would need to type "?help" in chat)
+---@param aliases table<integer, string> The aliases of the command
+---@param requiredPermissions table<integer, string>|nil The required permissions for this command
+---@param requiresAuth boolean|nil Whether or not this command requires auth
+---@param requiresAdmin boolean|nil Whether or not this command requires admin
+---@param capsSensitive boolean|nil Whether or not this command is case-sensitive
+---@param description string|nil The description of this command
+---@param callback fun(player: NoirPlayer, message: string, args: table<integer, string>, hasPermission: boolean)
+---@return NoirCommand
+function Noir.Services.CommandService:CreateCommand(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description, callback)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "callback", callback, "function")
-    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "duration", duration, "number")
-    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "arguments", arguments, "table", "nil")
-    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "isRepeating", isRepeating, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "aliases", aliases, "table")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiredPermissions", requiredPermissions, "table", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiresAuth", requiresAuth, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiresAdmin", requiresAdmin, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "capsSensitive", capsSensitive, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "description", description, "string", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "callback", callback, "function")
 
-    -- Defaults
-    arguments = arguments or {}
-    isRepeating = isRepeating or false
+    -- Create command
+    local command = Noir.Classes.CommandClass:New(name, aliases, requiredPermissions or {}, requiresAuth or false, requiresAdmin or false, capsSensitive or false, description or "")
 
-    -- Increment ID
-    self.IncrementalID = self.IncrementalID + 1
+    -- Connect to event
+    command.OnUse:Connect(callback)
 
-    -- Create task
-    local task = Noir.Classes.TaskClass:New(self.IncrementalID, duration, isRepeating, arguments)
-    task.OnCompletion:Connect(callback)
-
-    self.Tasks[task.ID] = task
-
-    -- Return the task
-    return task
+    -- Save and return
+    self.Commands[name] = command
+    return command
 end
 
 --[[
-    Removes a task.
+    Get a command by the name.
 ]]
----@param task NoirTask
-function Noir.Services.TaskService:RemoveTask(task)
+---@param name string
+---@return NoirCommand|nil
+function Noir.Services.CommandService:GetCommand(name)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTask()", "task", task, Noir.Classes.TaskClass)
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:GetCommand()", "name", name, "string")
 
-    -- Remove task
-    self.Tasks[task.ID] = nil
+    -- Return the command
+    return self.Commands[name]
+end
+
+--[[
+    Remove a command.
+]]
+---@param name string
+function Noir.Services.CommandService:RemoveCommand(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.CommandService:RemoveCommand()", "name", name, "string")
+
+    -- Remove the command
+    self.Commands[name] = nil
+end
+
+--[[
+    Returns all commands.
+]]
+---@return table<string, NoirCommand>
+function Noir.Services.CommandService:GetCommands()
+    return self.Commands
 end
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\PlayerService.lua
+-- // [File] ..\src\Noir\Built-Ins/Services\GameSettingsService.lua
 ----------------------------------------------
 --------------------------------------------------------
--- [Noir] Services - Player Service
+-- [Noir] Services - Game Settings Service
 --------------------------------------------------------
 
 --[[
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -4026,436 +4234,211 @@ end
 -------------------------------
 
 --[[
-    A service that wraps SW players in a class. Essentially makes players OOP.
+    A service for changing and accessing the game's settings.
 
+    Noir.Services.GameSettingsService:GetSetting("infinite_batteries") -- false
+    Noir.Services.GameSettingsService:SetSetting("infinite_batteries", true)
+]]
+---@class NoirGameSettingsService: NoirService
+Noir.Services.GameSettingsService = Noir.Services:CreateService(
+    "GameSettingsService",
+    true,
+    "A basic service for changing and accessing the game's settings.",
+    nil,
+    {"Cuh4"}
+)
+
+--[[
+    Returns a list of all game settings.
+]]
+---@return SWGameSettings
+function Noir.Services.GameSettingsService:GetSettings()
+    return server.getGameSettings()
+end
+
+--[[
+    Returns the value of the provided game setting.
+
+    Noir.Services.GameSettingsService:GetSetting("infinite_batteries") -- false
+]]
+---@param name SWGameSettingEnum
+---@return any
+function Noir.Services.GameSettingsService:GetSetting(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.GameSettingsService:GetSetting()", "name", name, "string")
+
+    -- Get a setting
+    local settings = self:GetSettings()
+    local setting = settings[name]
+
+    if setting == nil then
+        Noir.Libraries.Logging:Error("GameSettingsService", "GetSetting(): %s is not a valid game setting.", false, name)
+        return
+    end
+
+    return setting
+end
+
+--[[
+    Sets the value of the provided game setting.
+
+    Noir.Services.GameSettingsService:SetSetting("infinite_batteries", true)
+]]
+---@param name SWGameSettingEnum
+---@param value any
+function Noir.Services.GameSettingsService:SetSetting(name, value)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.GameSettingsService:SetSetting()", "name", name, "string")
+
+    -- Set the setting
+    if self:GetSettings()[name] == nil then
+        Noir.Libraries.Logging:Error("GameSettingsService", "SetSetting(): %s is not a valid game setting.", false, name)
+        return
+    end
+
+    server.setGameSetting(name, value)
+end
+
+----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Services\NotificationService.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Services - Notification Service
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A service for sending notifications to players.
+
+    -- Notify multiple
+    local player1, player2 = Noir.Services.PlayerService:GetPlayer(0), Noir.Services.PlayerService:GetPlayer(1)
+    Noir.Services.NotificationService:Info("Money", "Your money is $%d.", {player1, player2}, 1000)
+
+    -- Notify one
     local player = Noir.Services.PlayerService:GetPlayer(0)
-    player:IsAdmin() -- true
-    player:Teleport(matrix.translation(10, 0, 10))
+    Noir.Services.NotificationService:Info("Money", "Your money is $1000.", player) -- FYI: This is the same message as above
 
-    ---@param player NoirPlayer
-    Noir.Services.PlayerService.OnJoin:Once(function(player) -- Ban the first player who joins
-        player:Ban()
-    end)
+    -- Notify everyone
+    Noir.Services.NotificationService:Info("Money", "Your money is $1000.", Noir.Services.PlayerService:GetPlayers())
 ]]
----@class NoirPlayerService: NoirService
----@field OnJoin NoirEvent Arguments: player | Fired when a player joins the server
----@field OnLeave NoirEvent Arguments: player | Fired when a player leaves the server
----@field OnDie NoirEvent Arguments: player | Fired when a player dies
----@field OnRespawn NoirEvent Arguments: player | Fired when a player respawns
----@field Players table<integer, NoirPlayer>
----@field JoinCallback NoirConnection A connection to the onPlayerDie event
----@field LeaveCallback NoirConnection A connection to the onPlayerLeave event
----@field DieCallback NoirConnection A connection to the onPlayerDie event
----@field RespawnCallback NoirConnection A connection to the onPlayerRespawn event
-Noir.Services.PlayerService = Noir.Services:CreateService(
-    "PlayerService",
+---@class NoirNotificationService: NoirService
+---@field SuccessTitlePrefix string The title prefix for success notifications
+---@field WarningTitlePrefix string The title prefix for warning notifications
+---@field ErrorTitlePrefix string The title prefix for error notifications
+---@field InfoTitlePrefix string The title prefix for info notifications
+Noir.Services.NotificationService = Noir.Services:CreateService(
+    "NotificationService",
     true,
-    "A service that wraps SW players in a class.",
-    "A service that wraps SW players in a class following an OOP format. Player data persistence across addon reloads is also handled, and player-related events are provided.",
+    "A service for notifying players.",
+    "A minimal service for notifying players.",
     {"Cuh4"}
 )
 
-Noir.Services.PlayerService.InitPriority = 1
-
-function Noir.Services.PlayerService:ServiceInit()
-    self.OnJoin = Noir.Libraries.Events:Create()
-    self.OnLeave = Noir.Libraries.Events:Create()
-    self.OnDie = Noir.Libraries.Events:Create()
-    self.OnRespawn = Noir.Libraries.Events:Create()
-
-    self.Players = {}
-
-    self:GetSaveData().PlayerProperties = self:_GetSavedProperties() or {}
-    self:GetSaveData().RecognizedIDs = self:GetSaveData().RecognizedIDs or {}
+function Noir.Services.NotificationService:ServiceInit()
+    self.SuccessTitlePrefix = "[Success] "
+    self.WarningTitlePrefix = "[Warning] "
+    self.ErrorTitlePrefix = "[Error] "
+    self.InfoTitlePrefix = "[Info] "
 end
 
-function Noir.Services.PlayerService:ServiceStart()
-    -- Create callbacks
-    self.JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
-        -- Give data
-        local player = self:_GivePlayerData(steam_id, name, peer_id, admin, auth)
+--[[
+    Notify a player or multiple players.
+]]
+---@param title string
+---@param message string
+---@param notificationType SWNotifiationTypeEnum
+---@param player NoirPlayer|table<integer, NoirPlayer>
+---@param ... any
+function Noir.Services.NotificationService:Notify(title, message, notificationType, player, ...)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "title", title, "string")
+    Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "message", message, "string")
+    Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "notificationType", notificationType, "number")
+    Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "player", player, Noir.Classes.PlayerClass, "table")
 
-        if not player then
-            return
-        end
+    -- Convert to table if needed
+    local players = (type(player) == "table" and not Noir.Classes.PlayerClass:IsClass(player)) and player or {player}
 
-        -- Call join event
-        self.OnJoin:Fire(player)
-    end)
+    -- Format message
+    local formattedMessage = ... and message:format(...) or message
 
-    self.LeaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
-        -- Get player
-        local player = self:GetPlayer(peer_id)
-
-        if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just left, but their data couldn't be found.", false)
-            return
-        end
-
-        -- Remove player
-        local success = self:_RemovePlayerData(player)
-
-        if not success then
-            Noir.Libraries.Logging:Error("PlayerService", "onPlayerLeave player data removal failed.", false)
-            return
-        end
-
-        -- Call leave event
-        self.OnLeave:Fire(player)
-    end)
-
-    self.DieCallback = Noir.Callbacks:Connect("onPlayerDie", function(steam_id, name, peer_id, admin, auth)
-        -- Get player
-        local player = self:GetPlayer(peer_id)
-
-        if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just died, but they don't have data.", false)
-            return
-        end
-
-        -- Call die event
-        self.OnDie:Fire(player)
-    end)
-
-    self.RespawnCallback = Noir.Callbacks:Connect("onPlayerRespawn", function(peer_id)
-        -- Get player
-        local player = self:GetPlayer(peer_id)
-
-        if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just respawned, but they don't have data.", false)
-            return
-        end
-
-        -- Call respawn event
-        self.OnRespawn:Fire(player)
-    end)
-
-    -- Load players in game
-    if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
-        for _, player in pairs(server.getPlayers()) do
-            -- Check if unnamed client
-            if player.steam_id == 0 then
-                goto continue
-            end
-
-            -- Check if already loaded
-            if self:GetPlayer(player.id) then
-                Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): %s already has data. Ignoring.", player.name)
-                goto continue
-            end
-
-            -- Give data
-            local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
-
-            if not createdPlayer then
-                Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
-                goto continue
-            end
-
-            -- Load saved properties (eg: permissions)
-            local savedProperties = self:_GetSavedPropertiesForPlayer(createdPlayer)
-
-            if savedProperties then
-                for property, value in pairs(savedProperties) do
-                    createdPlayer[property] = value
-                end
-            end
-
-            -- Call onJoin if unrecognized
-            if not self:_IsRecognized(createdPlayer) then
-                self.OnJoin:Fire(createdPlayer)
-            end
-
-            ::continue::
-        end
+    -- Notify
+    for _, playerToNotify in pairs(players) do
+        playerToNotify:Notify(title, formattedMessage, notificationType)
     end
 end
 
 --[[
-    Gives data to a player.<br>
-    Used internally.
+    Send a success notification to a player.
 ]]
----@param steam_id integer|string
----@param name string
----@param peer_id integer
----@param admin boolean
----@param auth boolean
----@return NoirPlayer|nil
-function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, admin, auth)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "steam_id", steam_id, "number", "string")
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "peer_id", peer_id, "number")
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "admin", admin, "boolean")
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "auth", auth, "boolean")
-
-    -- Check if the player is the server itself (applies to dedicated servers)
-    if self:_IsHost(peer_id) then
-        return
-    end
-
-    -- Check if player already exists
-    if self:GetPlayer(peer_id) then
-        Noir.Libraries.Logging:Error("PlayerService", "Attempted to give player data to an existing player. This player has been ignored.", false)
-        return
-    end
-
-    -- Create player
-    local player = Noir.Classes.PlayerClass:New(
-        name,
-        peer_id,
-        tostring(steam_id),
-        admin,
-        auth,
-        {}
-    )
-
-    -- Save player
-    self.Players[peer_id] = player
-
-    -- Save peer ID so we know if we can call onJoin for this player or not if the addon reloads
-    self:_MarkRecognized(player)
-
-    -- Return
-    return player
+---@param title string
+---@param message string
+---@param player NoirPlayer|table<integer, NoirPlayer>
+---@param ... any
+function Noir.Services.NotificationService:Success(title, message, player, ...)
+    self:Notify(self.SuccessTitlePrefix..title, message, 4, player, ...)
 end
 
 --[[
-    Removes data for a player.<br>
-    Used internally.
+    Send a warning notification to a player.
 ]]
----@param player NoirPlayer
----@return boolean success Whether or not the operation was successful
-function Noir.Services.PlayerService:_RemovePlayerData(player)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemovePlayerData()", "player", player, Noir.Classes.PlayerClass)
-
-    -- Check if player exists in this service
-    if not self:GetPlayer(player.ID) then
-        Noir.Libraries.Logging:Error("PlayerService", "Attempted to remove player data from a non-existent player.", false)
-        return false
-    end
-
-    -- Remove player
-    self.Players[player.ID] = nil
-
-    -- Remove saved properties
-    self:_RemoveSavedProperties(player)
-
-    -- Unmark as recognized
-    self:_UnmarkRecognized(player)
-
-    return true
+---@param title string
+---@param message string
+---@param player NoirPlayer|table<integer, NoirPlayer>
+---@param ... any
+function Noir.Services.NotificationService:Warning(title, message, player, ...)
+    self:Notify(self.WarningTitlePrefix..title, message, 2, player, ...)
 end
 
 --[[
-    Returns whether or not a player is the server's host. Only applies in dedicated servers.<br>
-    Used internally.
+    Send an error notification to a player.
 ]]
----@param peer_id integer
----@return boolean
-function Noir.Services.PlayerService:_IsHost(peer_id)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_IsHost()", "peer_id", peer_id, "number")
-
-    -- Return true if the provided peer_id is that of the server host player
-    return peer_id == 0 and Noir.IsDedicatedServer
+---@param title string
+---@param message string
+---@param player NoirPlayer|table<integer, NoirPlayer>
+---@param ... any
+function Noir.Services.NotificationService:Error(title, message, player, ...)
+    self:Notify(self.ErrorTitlePrefix..title, message, 3, player, ...)
 end
 
 --[[
-    Mark a player as recognized to prevent onJoin being called for them after an addon reload.<br>
-    Used internally.
+    Send an info notification to a player.
 ]]
----@param player NoirPlayer
-function Noir.Services.PlayerService:_MarkRecognized(player)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_MarkRecognized()", "player", player, Noir.Classes.PlayerClass)
-
-    -- Mark as recognized
-    self:GetSaveData().RecognizedIDs[player.ID] = true
+---@param title string
+---@param message string
+---@param player NoirPlayer|table<integer, NoirPlayer>
+---@param ... any
+function Noir.Services.NotificationService:Info(title, message, player, ...)
+    self:Notify(self.InfoTitlePrefix..title, message, 7, player, ...)
 end
-
---[[
-    Returns whether or not a player is recognized.<br>
-    Used internally.
-]]
----@param player NoirPlayer
----@return boolean
-function Noir.Services.PlayerService:_IsRecognized(player)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_IsRecognized()", "player", player, Noir.Classes.PlayerClass)
-
-    -- Return true if recognized
-    return self:GetSaveData().RecognizedIDs[player.ID] ~= nil
-end
-
---[[
-    Mark a player as not recognized.<br>
-    Used internally.
-]]
----@param player NoirPlayer
-function Noir.Services.PlayerService:_UnmarkRecognized(player)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_UnmarkRecognized()", "player", player, Noir.Classes.PlayerClass)
-
-    -- Remove from recognized
-    self:GetSaveData().RecognizedIDs[player.ID] = nil
-end
-
---[[
-    Returns all saved player properties saved in g_savedata.<br>
-    Used internally. Do not use in your code.
-]]
----@return NoirSavedPlayerProperties
-function Noir.Services.PlayerService:_GetSavedProperties()
-    return self:GetSaveData().PlayerProperties
-end
-
---[[
-    Save a player's property to g_savedata.<br>
-    Used internally. Do not use in your code.
-]]
----@param player NoirPlayer
----@param property string
-function Noir.Services.PlayerService:_SaveProperty(player, property)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "player", player, Noir.Classes.PlayerClass)
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "property", property, "string")
-
-    -- Property saving
-    local properties = self:_GetSavedProperties()
-
-    if not properties[player.ID] then
-        properties[player.ID] = {}
-    end
-
-    properties[player.ID][property] = player[property]
-end
-
---[[
-    Get a player's saved properties.<br>
-    Used internally. Do not use in your code.
-]]
----@param player NoirPlayer
----@return table<string, boolean>|nil
-function Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GetSavedPropertiesForPlayer()", "player", player, Noir.Classes.PlayerClass)
-
-    -- Return saved properties for player
-    return self:_GetSavedProperties()[player.ID]
-end
-
---[[
-    Removes a player's saved properties from g_savedata.<br>
-    Used internally. Do not use in your code.
-]]
----@param player NoirPlayer
-function Noir.Services.PlayerService:_RemoveSavedProperties(player)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemoveSavedProperties()", "player", player, Noir.Classes.PlayerClass)
-
-    -- Remove saved properties
-    local properties = self:_GetSavedProperties()
-    properties[player.ID] = nil
-end
-
---[[
-    Returns all players.<br>
-    This is the preferred way to get all players instead of using `Noir.Services.PlayerService.Players`.
-]]
----@return table<integer, NoirPlayer>
-function Noir.Services.PlayerService:GetPlayers()
-    return self.Players
-end
-
---[[
-    Returns a player by their peer ID.<br>
-    This is the preferred way to get a player.
-]]
----@param ID integer
----@return NoirPlayer|nil
-function Noir.Services.PlayerService:GetPlayer(ID)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayer()", "ID", ID, "number")
-
-    -- Get player
-    return self:GetPlayers()[ID]
-end
-
---[[
-    Returns a player by their Steam ID.<br>
-    Note that two players or more can have the same Steam ID if they spoof their Steam ID or join the server on two Stormworks instances.
-]]
----@param steam string
----@return NoirPlayer|nil
-function Noir.Services.PlayerService:GetPlayerBySteam(steam)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerBySteam()", "steam", steam, "string")
-
-    -- Get player
-    for _, player in pairs(self:GetPlayers()) do
-        if player.Steam == steam then
-            return player
-        end
-    end
-end
-
---[[
-    Returns a player by their exact name.<br>
-    Consider using `:SearchPlayerByName()` if the player name only needs to match partially.
-]]
----@param name string
----@return NoirPlayer|nil
-function Noir.Services.PlayerService:GetPlayerByName(name)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerByName()", "name", name, "string")
-
-    -- Get player
-    for _, player in pairs(self:GetPlayers()) do
-        if player.Name == name then
-            return player
-        end
-    end
-end
-
---[[
-    Searches for a player by their name, similar to a Google search but way simpler under the hood.
-]]
----@param name string
----@return NoirPlayer|nil
-function Noir.Services.PlayerService:SearchPlayerByName(name)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:SearchPlayerByName()", "name", name, "string")
-
-    -- Get player
-    for _, player in pairs(self:GetPlayers()) do
-        if player.Name:lower():gsub(" ", ""):find(name:lower():gsub(" ", "")) then
-            return player
-        end
-    end
-end
-
---[[
-    Returns whether or not two players are the same.
-]]
----@param playerA NoirPlayer
----@param playerB NoirPlayer
----@return boolean
-function Noir.Services.PlayerService:IsSamePlayer(playerA, playerB)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:IsSamePlayer()", "playerA", playerA, Noir.Classes.PlayerClass)
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:IsSamePlayer()", "playerB", playerB, Noir.Classes.PlayerClass)
-
-    -- Return if both players are the same
-    return playerA.ID == playerB.ID
-end
-
--------------------------------
--- // Intellisense
--------------------------------
-
----@alias NoirSavedPlayerProperties table<integer, table<string, any>>
 
 ----------------------------------------------
 -- // [File] ..\src\Noir\Built-Ins/Services\ObjectService.lua
@@ -4468,7 +4451,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -4518,9 +4501,8 @@ end
 ---@field OnUnregister NoirEvent Fired when an object is unregistered (first arg: NoirObject)
 ---@field OnLoad NoirEvent Fired when an object is loaded (first arg: NoirObject)
 ---@field OnUnload NoirEvent Fired when an object is unloaded (first arg: NoirObject)
----
----@field OnLoadConnection NoirConnection A connection to the onObjectLoad game callback
----@field OnUnloadConnection NoirConnection A connection to the onObjectUnload game callback
+---@field _OnObjectLoadConnection NoirConnection A connection to the onObjectLoad game callback
+---@field _OnObjectUnloadConnection NoirConnection A connection to the onObjectUnload game callback
 Noir.Services.ObjectService = Noir.Services:CreateService(
     "ObjectService",
     true,
@@ -4545,7 +4527,7 @@ function Noir.Services.ObjectService:ServiceStart()
     end
 
     -- Listen for object loading/unloading
-    self.OnLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
+    self._OnObjectLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
         -- Get object
         local object = self:GetObject(object_id) -- creates an object if it doesn't already exist
 
@@ -4563,7 +4545,7 @@ function Noir.Services.ObjectService:ServiceStart()
         self:_SaveObjectSavedata(object)
     end)
 
-    self.OnUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
+    self._OnObjectUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
         -- Get object
         local object = self:GetObject(object_id)
 
@@ -4937,17 +4919,17 @@ end
 
 
 ----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\GameSettingsService.lua
+-- // [File] ..\src\Noir\Built-Ins/Services\PlayerService.lua
 ----------------------------------------------
 --------------------------------------------------------
--- [Noir] Services - Game Settings Service
+-- [Noir] Services - Player Service
 --------------------------------------------------------
 
 --[[
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -4973,252 +4955,743 @@ end
 -------------------------------
 
 --[[
-    A service for changing and accessing the game's settings.
+    A service that wraps SW players in a class. Essentially makes players OOP.
 
-    Noir.Services.GameSettingsService:GetSetting("infinite_batteries") -- false
-    Noir.Services.GameSettingsService:SetSetting("infinite_batteries", true)
-]]
----@class NoirGameSettingsService: NoirService
-Noir.Services.GameSettingsService = Noir.Services:CreateService(
-    "GameSettingsService",
-    true,
-    "A basic service for changing and accessing the game's settings.",
-    nil,
-    {"Cuh4"}
-)
+    local player = Noir.Services.PlayerService:GetPlayer(0)
+    player:IsAdmin() -- true
+    player:Teleport(matrix.translation(10, 0, 10))
 
---[[
-    Returns a list of all game settings.
-]]
----@return SWGameSettings
-function Noir.Services.GameSettingsService:GetSettings()
-    return server.getGameSettings()
-end
-
---[[
-    Returns the value of the provided game setting.
-
-    Noir.Services.GameSettingsService:GetSetting("infinite_batteries") -- false
-]]
----@param name SWGameSettingEnum
----@return any
-function Noir.Services.GameSettingsService:GetSetting(name)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.GameSettingsService:GetSetting()", "name", name, "string")
-
-    -- Get a setting
-    local settings = self:GetSettings()
-    local setting = settings[name]
-
-    if setting == nil then
-        Noir.Libraries.Logging:Error("GameSettingsService", "GetSetting(): %s is not a valid game setting.", false, name)
-        return
-    end
-
-    return setting
-end
-
---[[
-    Sets the value of the provided game setting.
-
-    Noir.Services.GameSettingsService:SetSetting("infinite_batteries", true)
-]]
----@param name SWGameSettingEnum
----@param value any
-function Noir.Services.GameSettingsService:SetSetting(name, value)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.GameSettingsService:SetSetting()", "name", name, "string")
-
-    -- Set the setting
-    if self:GetSettings()[name] == nil then
-        Noir.Libraries.Logging:Error("GameSettingsService", "SetSetting(): %s is not a valid game setting.", false, name)
-        return
-    end
-
-    server.setGameSetting(name, value)
-end
-
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\CommandService.lua
-----------------------------------------------
---------------------------------------------------------
--- [Noir] Services - Command Service
---------------------------------------------------------
-
---[[
-    ----------------------------
-
-    CREDIT:
-        Author: @Cuh4 (GitHub)
-        GitHub Repository: https://github.com/cuhHub/Noir
-
-    License:
-        Copyright (C) 2024 Cuh4
-
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
-
-    ----------------------------
-]]
-
--------------------------------
--- // Main
--------------------------------
-
---[[
-    A service for easily creating commands with support for command aliases, permissions, etc.
-
-    Noir.Services.CommandService:CreateCommand("info", {"i"}, {"Nerd"}, false, false, false, "Shows random information.", function(player, message, args, hasPermission)
-        if not hasPermission then
-            server.announce("Server", "Sorry, you don't have permission to use this command. Try again though.", player.ID)
-            player:SetPermission("Nerd")
-            return
-        end
-
-        server.announce("Info", "This addon uses Noir!")
+    ---@param player NoirPlayer
+    Noir.Services.PlayerService.OnJoin:Once(function(player) -- Ban the first player who joins
+        player:Ban()
     end)
 ]]
----@class NoirCommandService: NoirService
----@field Commands table<string, NoirCommand>
----@field OnCustomCommand NoirConnection Represents the connection to the OnCustomCommand game callback
-Noir.Services.CommandService = Noir.Services:CreateService(
-    "CommandService",
+---@class NoirPlayerService: NoirService
+---@field OnJoin NoirEvent Arguments: player | Fired when a player joins the server
+---@field OnLeave NoirEvent Arguments: player | Fired when a player leaves the server
+---@field OnDie NoirEvent Arguments: player | Fired when a player dies
+---@field OnRespawn NoirEvent Arguments: player | Fired when a player respawns
+---@field Players table<integer, NoirPlayer> The players in the server
+---@field _JoinCallback NoirConnection A connection to the onPlayerDie event
+---@field _LeaveCallback NoirConnection A connection to the onPlayerLeave event
+---@field _DieCallback NoirConnection A connection to the onPlayerDie event
+---@field _RespawnCallback NoirConnection A connection to the onPlayerRespawn event
+Noir.Services.PlayerService = Noir.Services:CreateService(
+    "PlayerService",
     true,
-    "A service that allows you to create commands.",
-    "A service that allows you to create commands with support for aliases, permissions, etc.",
+    "A service that wraps SW players in a class.",
+    "A service that wraps SW players in a class following an OOP format. Player data persistence across addon reloads is also handled, and player-related events are provided.",
     {"Cuh4"}
 )
 
-function Noir.Services.CommandService:ServiceInit()
-    self.Commands = {}
+Noir.Services.PlayerService.InitPriority = 1
+
+function Noir.Services.PlayerService:ServiceInit()
+    self.OnJoin = Noir.Libraries.Events:Create()
+    self.OnLeave = Noir.Libraries.Events:Create()
+    self.OnDie = Noir.Libraries.Events:Create()
+    self.OnRespawn = Noir.Libraries.Events:Create()
+
+    self.Players = {}
+
+    self:GetSaveData().PlayerProperties = self:_GetSavedProperties() or {}
+    self:GetSaveData().RecognizedIDs = self:GetSaveData().RecognizedIDs or {}
 end
 
-function Noir.Services.CommandService:ServiceStart()
-    self.OnCustomCommand = Noir.Callbacks:Connect("onCustomCommand", function(message, peer_id, _, _, commandName, ...)
-        -- Get the player
-        local player = Noir.Services.PlayerService:GetPlayer(peer_id)
+function Noir.Services.PlayerService:ServiceStart()
+    -- Create callbacks
+    self._JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
+        -- Give data
+        local player = self:_GivePlayerData(steam_id, name, peer_id, admin, auth)
 
         if not player then
-            Noir.Libraries.Logging:Error("CommandService", "A player ran a command, but they aren't recognized as a player in the PlayerService", false)
             return
         end
 
-        -- Remove ? prefix
-        commandName = commandName:sub(2)
-
-        -- Get the command
-        local command = self:FindCommand(commandName)
-
-        if not command then
-            return
-        end
-
-        -- Trigger the command
-        command:_Use(player, message, {...})
+        -- Call join event
+        self.OnJoin:Fire(player)
     end)
-end
 
---[[
-    Get a command by the name or alias.
-]]
----@param query string
----@return NoirCommand|nil
-function Noir.Services.CommandService:FindCommand(query)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:FindCommand()", "query", query, "string")
+    self._LeaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
+        -- Get player
+        local player = self:GetPlayer(peer_id)
 
-    -- Find the command
-    for _, command in pairs(self:GetCommands()) do
-        if command:_Matches(query) then
-            return command
+        if not player then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just left, but their data couldn't be found.", false)
+            return
+        end
+
+        -- Remove player
+        local success = self:_RemovePlayerData(player)
+
+        if not success then
+            Noir.Libraries.Logging:Error("PlayerService", "onPlayerLeave player data removal failed.", false)
+            return
+        end
+
+        -- Call leave event
+        self.OnLeave:Fire(player)
+    end)
+
+    self._DieCallback = Noir.Callbacks:Connect("onPlayerDie", function(steam_id, name, peer_id, admin, auth)
+        -- Get player
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just died, but they don't have data.", false)
+            return
+        end
+
+        -- Call die event
+        self.OnDie:Fire(player)
+    end)
+
+    self._RespawnCallback = Noir.Callbacks:Connect("onPlayerRespawn", function(peer_id)
+        -- Get player
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just respawned, but they don't have data.", false)
+            return
+        end
+
+        -- Call respawn event
+        self.OnRespawn:Fire(player)
+    end)
+
+    -- Load players in game
+    if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
+        for _, player in pairs(server.getPlayers()) do
+            -- Check if unnamed client
+            if player.steam_id == 0 then
+                goto continue
+            end
+
+            -- Check if already loaded
+            if self:GetPlayer(player.id) then
+                Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): %s already has data. Ignoring.", player.name)
+                goto continue
+            end
+
+            -- Give data
+            local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
+
+            if not createdPlayer then
+                Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
+                goto continue
+            end
+
+            -- Load saved properties (eg: permissions)
+            local savedProperties = self:_GetSavedPropertiesForPlayer(createdPlayer)
+
+            if savedProperties then
+                for property, value in pairs(savedProperties) do
+                    createdPlayer[property] = value
+                end
+            end
+
+            -- Call onJoin if unrecognized
+            if not self:_IsRecognized(createdPlayer) then
+                self.OnJoin:Fire(createdPlayer)
+            end
+
+            ::continue::
         end
     end
 end
 
 --[[
-    Create a new command.
+    Gives data to a player.<br>
+    Used internally.
+]]
+---@param steam_id integer|string
+---@param name string
+---@param peer_id integer
+---@param admin boolean
+---@param auth boolean
+---@return NoirPlayer|nil
+function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, admin, auth)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "steam_id", steam_id, "number", "string")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "peer_id", peer_id, "number")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "admin", admin, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "auth", auth, "boolean")
 
-    Noir.Services.CommandService:CreateCommand("help", {"h"}, {"Nerd"}, false, false, false, "Example Command", function(player, message, args, hasPermission)
-        if not hasPermission then
-            player:Notify("Lacking Permissions", "Sorry, you don't have permission to run this command. Try again.", 3)
-            player:SetPermission("Nerd")
-            return
+    -- Check if the player is the server itself (applies to dedicated servers)
+    if self:_IsHost(peer_id) then
+        return
+    end
+
+    -- Check if player already exists
+    if self:GetPlayer(peer_id) then
+        Noir.Libraries.Logging:Error("PlayerService", "Attempted to give player data to an existing player. This player has been ignored.", false)
+        return
+    end
+
+    -- Create player
+    local player = Noir.Classes.PlayerClass:New(
+        name,
+        peer_id,
+        tostring(steam_id),
+        admin,
+        auth,
+        {}
+    )
+
+    -- Save player
+    self.Players[peer_id] = player
+
+    -- Save peer ID so we know if we can call onJoin for this player or not if the addon reloads
+    self:_MarkRecognized(player)
+
+    -- Return
+    return player
+end
+
+--[[
+    Removes data for a player.<br>
+    Used internally.
+]]
+---@param player NoirPlayer
+---@return boolean success Whether or not the operation was successful
+function Noir.Services.PlayerService:_RemovePlayerData(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemovePlayerData()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Check if player exists in this service
+    if not self:GetPlayer(player.ID) then
+        Noir.Libraries.Logging:Error("PlayerService", "Attempted to remove player data from a non-existent player.", false)
+        return false
+    end
+
+    -- Remove player
+    self.Players[player.ID] = nil
+
+    -- Remove saved properties
+    self:_RemoveSavedProperties(player)
+
+    -- Unmark as recognized
+    self:_UnmarkRecognized(player)
+
+    return true
+end
+
+--[[
+    Returns whether or not a player is the server's host. Only applies in dedicated servers.<br>
+    Used internally.
+]]
+---@param peer_id integer
+---@return boolean
+function Noir.Services.PlayerService:_IsHost(peer_id)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_IsHost()", "peer_id", peer_id, "number")
+
+    -- Return true if the provided peer_id is that of the server host player
+    return peer_id == 0 and Noir.IsDedicatedServer
+end
+
+--[[
+    Mark a player as recognized to prevent onJoin being called for them after an addon reload.<br>
+    Used internally.
+]]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_MarkRecognized(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_MarkRecognized()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Mark as recognized
+    self:GetSaveData().RecognizedIDs[player.ID] = true
+end
+
+--[[
+    Returns whether or not a player is recognized.<br>
+    Used internally.
+]]
+---@param player NoirPlayer
+---@return boolean
+function Noir.Services.PlayerService:_IsRecognized(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_IsRecognized()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Return true if recognized
+    return self:GetSaveData().RecognizedIDs[player.ID] ~= nil
+end
+
+--[[
+    Mark a player as not recognized.<br>
+    Used internally.
+]]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_UnmarkRecognized(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_UnmarkRecognized()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Remove from recognized
+    self:GetSaveData().RecognizedIDs[player.ID] = nil
+end
+
+--[[
+    Returns all saved player properties saved in g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@return NoirSavedPlayerProperties
+function Noir.Services.PlayerService:_GetSavedProperties()
+    return self:GetSaveData().PlayerProperties
+end
+
+--[[
+    Save a player's property to g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+---@param property string
+function Noir.Services.PlayerService:_SaveProperty(player, property)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "property", property, "string")
+
+    -- Property saving
+    local properties = self:_GetSavedProperties()
+
+    if not properties[player.ID] then
+        properties[player.ID] = {}
+    end
+
+    properties[player.ID][property] = player[property]
+end
+
+--[[
+    Get a player's saved properties.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+---@return table<string, boolean>|nil
+function Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GetSavedPropertiesForPlayer()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Return saved properties for player
+    return self:_GetSavedProperties()[player.ID]
+end
+
+--[[
+    Removes a player's saved properties from g_savedata.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+function Noir.Services.PlayerService:_RemoveSavedProperties(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemoveSavedProperties()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Remove saved properties
+    local properties = self:_GetSavedProperties()
+    properties[player.ID] = nil
+end
+
+--[[
+    Returns all players.<br>
+    This is the preferred way to get all players instead of using `Noir.Services.PlayerService.Players`.
+]]
+---@param usePeerIDsAsIndex boolean|nil If true, the indices of the returned table will match the peer ID of the value (player) matched to the index. Having this as true is slightly faster
+---@return table<integer, NoirPlayer>
+function Noir.Services.PlayerService:GetPlayers(usePeerIDsAsIndex)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayers()", "usePeerIDsAsIndex", usePeerIDsAsIndex, "boolean", "nil")
+
+    -- Return players
+    return usePeerIDsAsIndex and self.Players or Noir.Libraries.Table:Values(self.Players)
+end
+
+--[[
+    Returns a player by their peer ID.<br>
+    This is the preferred way to get a player.
+]]
+---@param ID integer
+---@return NoirPlayer|nil
+function Noir.Services.PlayerService:GetPlayer(ID)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayer()", "ID", ID, "number")
+
+    -- Return player if any
+    return self:GetPlayers(true)[ID]
+end
+
+--[[
+    Returns a player by their Steam ID.<br>
+    Note that two players or more can have the same Steam ID if they spoof their Steam ID or join the server on two Stormworks instances.
+]]
+---@param steam string
+---@return NoirPlayer|nil
+function Noir.Services.PlayerService:GetPlayerBySteam(steam)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerBySteam()", "steam", steam, "string")
+
+    -- Get player
+    for _, player in pairs(self:GetPlayers(true)) do
+        if player.Steam == steam then
+            return player
+        end
+    end
+end
+
+--[[
+    Returns a player by their exact name.<br>
+    Consider using `:SearchPlayerByName()` if the player name only needs to match partially.
+]]
+---@param name string
+---@return NoirPlayer|nil
+function Noir.Services.PlayerService:GetPlayerByName(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerByName()", "name", name, "string")
+
+    -- Get player
+    for _, player in pairs(self:GetPlayers(true)) do
+        if player.Name == name then
+            return player
+        end
+    end
+end
+
+--[[
+    Searches for a player by their name, similar to a Google search but way simpler under the hood.
+]]
+---@param name string
+---@return NoirPlayer|nil
+function Noir.Services.PlayerService:SearchPlayerByName(name)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:SearchPlayerByName()", "name", name, "string")
+
+    -- Get player
+    for _, player in pairs(self:GetPlayers(true)) do
+        if player.Name:lower():gsub(" ", ""):find(name:lower():gsub(" ", "")) then
+            return player
+        end
+    end
+end
+
+--[[
+    Returns whether or not two players are the same.
+]]
+---@param playerA NoirPlayer
+---@param playerB NoirPlayer
+---@return boolean
+function Noir.Services.PlayerService:IsSamePlayer(playerA, playerB)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:IsSamePlayer()", "playerA", playerA, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:IsSamePlayer()", "playerB", playerB, Noir.Classes.PlayerClass)
+
+    -- Return if both players are the same
+    return playerA.ID == playerB.ID
+end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+---@alias NoirSavedPlayerProperties table<integer, table<string, any>>
+
+----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Services\TaskService.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Services - Task Service
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A service for easily delaying or repeating tasks.
+
+    local task = Noir.Services.TaskService:AddTask(function(toSay)
+        server.announce("Server", toSay)
+    end, 5, {"Hello World!"}, true) -- This task is repeating due to isRepeating being true (final argument)
+
+    task:SetDuration(10) -- Duration changes from 5 to 10
+]]
+---@class NoirTaskService: NoirService
+---@field _IncrementalID integer The ID of the most recent task
+---@field Tasks table<integer, NoirTask> A table containing active tasks
+---@field _OnTickConnection NoirConnection Represents the connection to the onTick game callback
+Noir.Services.TaskService = Noir.Services:CreateService(
+    "TaskService",
+    true,
+    "A service for calling functions after x amount of seconds.",
+    "A service that allows you to call functions after x amount of seconds, either repeatedly or once.",
+    {"Cuh4"}
+)
+
+function Noir.Services.TaskService:ServiceInit()
+    -- Create attributes
+    self._IncrementalID = 0
+    self.Tasks = {}
+end
+
+function Noir.Services.TaskService:ServiceStart()
+    -- Connect to onTick, and constantly check tasks
+    self._OnTickConnection = Noir.Callbacks:Connect("onTick", function()
+        for _, task in pairs(self.Tasks) do
+            -- Get time so far in seconds
+            local time = self:GetTimeSeconds()
+
+            -- Check if the task should be stopped
+            if time >= task.StopsAt then
+                if task.IsRepeating then
+                    -- Repeat the task
+                    task.StartedAt = time
+                    task.StopsAt = time + task.Duration
+
+                    -- Fire OnCompletion
+                    task.OnCompletion:Fire(table.unpack(task.Arguments))
+                else
+                    -- Stop the task
+                    self:RemoveTask(task)
+
+                    -- Fire OnCompletion
+                    task.OnCompletion:Fire(table.unpack(task.Arguments))
+                end
+            end
+        end
+    end)
+end
+
+--[[
+    Returns the current time in seconds.<br>
+    Equivalent to: server.getTimeMillisec() / 1000
+]]
+---@return number
+function Noir.Services.TaskService:GetTimeSeconds()
+    return server.getTimeMillisec() / 1000
+end
+
+--[[
+    Creates and adds a task to the TaskService.
+
+    local task = Noir.Services.TaskService:AddTask(function(toSay)
+        server.announce("Server", toSay)
+    end, 5, {"Hello World!"}, true) -- This task is repeating due to isRepeating being true (final argument)
+
+    local anotherTask = Noir.Services.TaskService:AddTask(server.announce, 5, {"Server", "Hello World!"}, true) -- This does the same as above
+    Noir.Services.TaskService:RemoveTask(anotherTask) -- Removes the task
+]]
+---@param callback function
+---@param duration number
+---@param arguments table|nil
+---@param isRepeating boolean|nil
+---@return NoirTask
+function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepeating)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "duration", duration, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "arguments", arguments, "table", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "isRepeating", isRepeating, "boolean", "nil")
+
+    -- Defaults
+    arguments = arguments or {}
+    isRepeating = isRepeating or false
+
+    -- Increment ID
+    self._IncrementalID = self._IncrementalID + 1
+
+    -- Create task
+    local task = Noir.Classes.TaskClass:New(self._IncrementalID, duration, isRepeating, arguments)
+    task.OnCompletion:Connect(callback)
+
+    self.Tasks[task.ID] = task
+
+    -- Return the task
+    return task
+end
+
+--[[
+    Removes a task.
+]]
+---@param task NoirTask
+function Noir.Services.TaskService:RemoveTask(task)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTask()", "task", task, Noir.Classes.TaskClass)
+
+    -- Remove task
+    self.Tasks[task.ID] = nil
+end
+
+----------------------------------------------
+-- // [File] ..\src\Noir\Built-Ins/Services\TPSService.lua
+----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Services - TPS Service
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A service for retrieving the TPS (Ticks Per Second) of the server.
+    TPS calculations are from Trapdoor: https://discord.com/channels/357480372084408322/905791966904729611/1270333300635992064 - https://discord.gg/stormworks
+
+    Noir.Services.TPSService:GetTPS() -- 62.0
+    Noir.Services.TPSService:GetAverageTPS() -- 61.527...
+    Noir.Services.TPSService:SetPrecision(10) -- The average TPS will now be calculated every 10 ticks, meaning higher accuracy but slower
+]]
+---@class NoirTPSService: NoirService
+---@field TPS number The TPS of the server
+---@field AverageTPS number The average TPS of the server
+---@field DesiredTPS number The desired TPS. This service will slow the game enough to achieve this. 0 = disabled
+---@field _AverageTPSPrecision integer Tick rate for calculating the average TPS. Higher = more accurate, but slower. Use :SetPrecision() to modify
+---@field _AverageTPSAccumulation table<integer, integer> Average TPS over time. Gets cleared after it is filled enough
+---@field _LastTimeSec number The last time the TPS was calculated
+---@field _OnTickConnection NoirConnection Represents the connection to the onTick game callback
+Noir.Services.TPSService = Noir.Services:CreateService(
+    "TPSService",
+    true,
+    "A service for gathering the TPS of the server.",
+    "A minimal service for gathering the TPS of the server. The average TPS can also be retrieved.",
+    {"Cuh4"}
+)
+
+function Noir.Services.TPSService:ServiceInit()
+    self.TPS = 0
+    self.AverageTPS = 0
+    self.DesiredTPS = 0
+
+    self._AverageTPSPrecision = 10
+    self._LastTimeSec = server.getTimeMillisec()
+    self._AverageTPSAccumulation = {}
+end
+
+function Noir.Services.TPSService:ServiceStart()
+    self._OnTickConnection = Noir.Callbacks:Connect("onTick", function(ticks)
+        -- Calculate TPS
+        local now = server.getTimeMillisec()
+
+        if self.DesiredTPS ~= 0 then -- below is from Woe (https://discord.com/channels/357480372084408322/905791966904729611/1261911499723509820) @ https://discord.gg/stormworks
+            while self:_CalculateTPS(self._LastTimeSec, now, ticks) > self.DesiredTPS do
+                now = server.getTimeMillisec()
+            end
         end
 
-        player:Notify("Help", "TODO: Add a help message", 4)
+        self.TPS = self:_CalculateTPS(self._LastTimeSec, now, ticks)
+        self._LastTimeSec = server.getTimeMillisec()
+
+        -- Calculate Average TPS
+        if #self._AverageTPSAccumulation >= self._AverageTPSPrecision then
+            self.AverageTPS = Noir.Libraries.Number:Average(self._AverageTPSAccumulation)
+            self._AverageTPSAccumulation = {}
+        else
+            table.insert(self._AverageTPSAccumulation, self.TPS)
+        end
     end)
-]]
----@param name string The name of the command (eg: if you provided "help", the player would need to type "?help" in chat)
----@param aliases table<integer, string> The aliases of the command
----@param requiredPermissions table<integer, string>|nil The required permissions for this command
----@param requiresAuth boolean|nil Whether or not this command requires auth
----@param requiresAdmin boolean|nil Whether or not this command requires admin
----@param capsSensitive boolean|nil Whether or not this command is case-sensitive
----@param description string|nil The description of this command
----@param callback fun(player: NoirPlayer, message: string, args: table<integer, string>, hasPermission: boolean)
----@return NoirCommand
-function Noir.Services.CommandService:CreateCommand(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description, callback)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "aliases", aliases, "table")
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiredPermissions", requiredPermissions, "table", "nil")
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiresAuth", requiresAuth, "boolean", "nil")
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiresAdmin", requiresAdmin, "boolean", "nil")
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "capsSensitive", capsSensitive, "boolean", "nil")
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "description", description, "string", "nil")
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "callback", callback, "function")
-
-    -- Create command
-    local command = Noir.Classes.CommandClass:New(name, aliases, requiredPermissions or {}, requiresAuth or false, requiresAdmin or false, capsSensitive or false, description or "")
-
-    -- Connect to event
-    command.OnUse:Connect(callback)
-
-    -- Save and return
-    self.Commands[name] = command
-    return command
 end
 
 --[[
-    Get a command by the name.
+    Calculates TPS from two points in time.
 ]]
----@param name string
----@return NoirCommand|nil
-function Noir.Services.CommandService:GetCommand(name)
+---@param past number
+---@param now number
+---@param gameTicks number
+---@return number
+function Noir.Services.TPSService:_CalculateTPS(past, now, gameTicks)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:GetCommand()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Services.TPSService:CalculateTPS()", "past", past, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TPSService:CalculateTPS()", "now", now, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TPSService:CalculateTPS()", "gameTicks", gameTicks, "number")
 
-    -- Return the command
-    return self.Commands[name]
+    -- Calculate TPS
+    return 1000 / (now - past) * gameTicks
 end
 
 --[[
-    Remove a command.
+    Set the desired TPS. The service will then slow the game down until the desired TPS is achieved. Set to 0 to disable this.
 ]]
----@param name string
-function Noir.Services.CommandService:RemoveCommand(name)
+---@param desiredTPS number 0 = disabled
+function Noir.Services.TPSService:SetTPS(desiredTPS)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:RemoveCommand()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Services.TPSService:SetTPS()", "desiredTPS", desiredTPS, "number")
 
-    -- Remove the command
-    self.Commands[name] = nil
+    -- Set desired TPS, and validate
+    if desiredTPS < 0 then
+        desiredTPS = 0
+    end
+
+    self.DesiredTPS = desiredTPS
 end
 
 --[[
-    Returns all commands.
+    Get the TPS of the server.
 ]]
----@return table<string, NoirCommand>
-function Noir.Services.CommandService:GetCommands()
-    return self.Commands
+---@return number
+function Noir.Services.TPSService:GetTPS()
+    return self.TPS
+end
+
+--[[
+    Get the average TPS of the server.
+]]
+---@return number
+function Noir.Services.TPSService:GetAverageTPS()
+    return self.AverageTPS
+end
+
+--[[
+    Set the tick rate for calculating the average TPS.
+]]
+---@param precision integer
+function Noir.Services.TPSService:SetPrecision(precision)
+    Noir.TypeChecking:Assert("Noir.Services.TPSService:SetPrecision()", "precision", precision, "number")
+    self._AverageTPSPrecision = precision
 end
 
 ----------------------------------------------
@@ -5232,7 +5705,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -5494,7 +5967,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -5536,6 +6009,58 @@ function Noir.Bootstrapper:InitializeSavedata()
 
     g_savedata.Noir.Services = g_savedata.Noir.Services or {}
     Noir.Libraries.Logging:Info("Bootstrapper", "'Services' has been defined in Noir savedata.")
+end
+
+--[[
+    Wraps user-created methods in a service with code to prevent them from being called if the service hasn't initialized yet.<br>
+    Do not use this in your code. This is used internally.
+]]
+---@param service NoirService
+function Noir.Bootstrapper:WrapServiceMethodsForService(service)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Bootstrapper:WrapServiceMethodsForService()", "service", service, Noir.Classes.ServiceClass)
+
+    -- Prevent wrapping non-custom methods (aka methods not provided by the user)
+    local blacklistedMethods = {}
+
+    for name, _ in pairs(Noir.Classes.ServiceClass) do
+        blacklistedMethods[name] = true
+    end
+
+    -- Wrap methods
+    for name, method in pairs(service) do
+        -- Check if the method is even a method
+        if type(method) ~= "function" then
+            goto continue
+        end
+
+        -- Check if the method is a user-created method or not
+        if blacklistedMethods[name] then
+            goto continue
+        end
+
+        -- Wrap the method
+        service[name] = function(...)
+            if not service.Initialized then
+                Noir.Libraries.Logging:Error(service.Name.." (Service)", "Attempted to call '%s()' of '%s' (service) when the service hasn't initialized yet.", true, name, service.Name)
+                return
+            end
+
+            return method(...)
+        end
+
+        ::continue::
+    end
+end
+
+--[[
+    Calls :WrapServiceMethodsForService() for all services.<br>
+    Do not use this in your code. This is used internally.
+]]
+function Noir.Bootstrapper:WrapServiceMethodsForAllServices()
+    for _, service in pairs(Noir.Services.CreatedServices) do
+        self:WrapServiceMethodsForService(service)
+    end
 end
 
 --[[
@@ -5635,7 +6160,7 @@ end
     ----------------------------
 
     CREDIT:
-        Author: @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
@@ -5664,7 +6189,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.10.0"
+Noir.Version = "1.11.0"
 
 --[[
     Returns the MAJOR, MINOR, and PATCH of the current Noir version.
@@ -5753,8 +6278,10 @@ function Noir:Start()
             -- Initialize g_savedata
             self.Bootstrapper:InitializeSavedata()
 
-            -- Initialize services, then start them
+            -- Initialize services
             self.Bootstrapper:InitializeServices()
+
+            -- Start services
             self.Bootstrapper:StartServices()
 
             -- Fire event
@@ -5771,16 +6298,16 @@ function Noir:Start()
         end, true)
     end
 
-    self.IsStarting = true
-
     -- Wait for onCreate, then setup
     self.Callbacks:Once("onCreate", function(isSaveCreate)
         setup(server.getTimeMillisec(), isSaveCreate)
     end, true)
 
-    -- Send log
-    self.Libraries.Logging:Info("Start", "Waiting for onCreate game event to fire before setting up Noir.")
+    self.IsStarting = true
 end
+
+-- Prevent user-created methods in services from being called before the service has been initialized
+Noir.Bootstrapper:WrapServiceMethodsForAllServices()
 
 -------------------------------
 -- // Intellisense

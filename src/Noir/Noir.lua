@@ -35,7 +35,7 @@
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.10.0"
+Noir.Version = "1.11.0"
 
 --[[
     Returns the MAJOR, MINOR, and PATCH of the current Noir version.
