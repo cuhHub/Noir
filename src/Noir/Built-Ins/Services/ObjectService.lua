@@ -56,9 +56,8 @@
 ---@field OnUnregister NoirEvent Fired when an object is unregistered (first arg: NoirObject)
 ---@field OnLoad NoirEvent Fired when an object is loaded (first arg: NoirObject)
 ---@field OnUnload NoirEvent Fired when an object is unloaded (first arg: NoirObject)
----
----@field OnLoadConnection NoirConnection A connection to the onObjectLoad game callback
----@field OnUnloadConnection NoirConnection A connection to the onObjectUnload game callback
+---@field _OnObjectLoadConnection NoirConnection A connection to the onObjectLoad game callback
+---@field _OnObjectUnloadConnection NoirConnection A connection to the onObjectUnload game callback
 Noir.Services.ObjectService = Noir.Services:CreateService(
     "ObjectService",
     true,
@@ -83,7 +82,7 @@ function Noir.Services.ObjectService:ServiceStart()
     end
 
     -- Listen for object loading/unloading
-    self.OnLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
+    self._OnObjectLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
         -- Get object
         local object = self:GetObject(object_id) -- creates an object if it doesn't already exist
 
@@ -101,7 +100,7 @@ function Noir.Services.ObjectService:ServiceStart()
         self:_SaveObjectSavedata(object)
     end)
 
-    self.OnUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
+    self._OnObjectUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
         -- Get object
         local object = self:GetObject(object_id)
 
