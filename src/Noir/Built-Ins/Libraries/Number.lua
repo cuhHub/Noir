@@ -124,3 +124,26 @@ function Noir.Libraries.Number:IsInteger(number)
     Noir.TypeChecking:Assert("Noir.Libraries.Number:IsInteger()", "number", number, "number")
     return math.floor(number) == number
 end
+
+--[[
+    Returns the average of the provided numbers.
+
+    local numbers = {1, 2, 3, 4, 5}
+    Noir.Libraries.Number:Average(numbers) -- 3
+]]
+---@param numbers table<integer, number>
+---@return number
+function Noir.Libraries.Number:Average(numbers)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Number:Average()", "numbers", numbers, "table")
+
+    -- Get sum
+    local sum = 0
+
+    for _, number in pairs(numbers) do
+        sum = sum + number
+    end
+
+    -- Return average
+    return sum / #numbers
+end
