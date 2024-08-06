@@ -1,7 +1,8 @@
 {
     "Lua.workspace.ignoreDir": [
         ".vscode",
-        "_build/Noir.lua"
+        "_build/Noir.lua",
+        "examples/Slo-Mo"
     ],
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#1a1a1a",

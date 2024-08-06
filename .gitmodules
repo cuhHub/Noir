@@ -1,0 +1,3 @@
+[submodule "examples/Slo-Mo"]
+	path = examples/Slo-Mo
+	url = https://github.com/cuhHub/Slo-Mo.git
