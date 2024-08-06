@@ -81,7 +81,7 @@ function Noir.Services.NotificationService:Notify(title, message, notificationTy
     Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "player", player, Noir.Classes.PlayerClass, "table")
 
     -- Convert to table if needed
-    local players = type(player) == "table" and player or {player}
+    local players = (type(player) == "table" and not Noir.Classes.PlayerClass:IsClass(player)) and player or {player}
 
     -- Format message
     local formattedMessage = ... and message:format(...) or message
