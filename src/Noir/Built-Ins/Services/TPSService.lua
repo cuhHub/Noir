@@ -59,13 +59,17 @@ function Noir.Services.TPSService:ServiceInit()
     self.AverageTPS = 0
 
     self._AverageTPSPrecision = 10
-    self._LastTimeSec = Noir.Services.TaskService:GetTimeSeconds()
+    self._LastTimeSec = nil
     self._AverageTPSAccumulation = {}
 end
 
 function Noir.Services.TPSService:ServiceStart()
     self._OnTickConnection = Noir.Callbacks:Connect("onTick", function()
         -- Calculate TPS
+        if not self._LastTimeSec then
+            self._LastTimeSec = Noir.Services.TaskService:GetTimeSeconds()
+        end
+
         self.TPS = Noir.Services.TaskService:GetTimeSeconds() - self._LastTimeSec
         self._LastTimeSec = Noir.Services.TaskService:GetTimeSeconds()
 
