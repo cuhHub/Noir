@@ -156,7 +156,7 @@ function Noir.Class(name, parent)
 
     --[[
         Returns if a class/object is the same type as another.<br>
-        If 'other' is not a class, it will return false.
+        If `other` is not a class, it will return false.
     ]]
     ---@param other NoirClass|any
     ---@return boolean
