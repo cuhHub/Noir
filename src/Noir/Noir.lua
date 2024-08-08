@@ -127,11 +127,11 @@ function Noir:Start()
             -- Initialize services
             self.Bootstrapper:InitializeServices()
 
-            -- Start services
-            self.Bootstrapper:StartServices()
-
             -- Fire event
             self.Started:Fire()
+
+            -- Start services
+            self.Bootstrapper:StartServices()
 
             -- Send log
             self.Libraries.Logging:Success("Start", "Noir v%s has started. Bootstrapper has initialized and started all services.\nTook: %sms | Addon Reason: %s", self.Version, took, Noir.AddonReason)
