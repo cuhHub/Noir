@@ -44,8 +44,8 @@
 ---@field AverageTPS number The average TPS of the server
 ---@field DesiredTPS number The desired TPS. This service will slow the game enough to achieve this. 0 = disabled
 ---@field _AverageTPSPrecision integer Tick rate for calculating the average TPS. Higher = more accurate, but slower. Use :SetPrecision() to modify
----@field _AverageTPSAccumulation table<integer, integer> Average TPS over time. Gets cleared after it is filled enough
----@field _LastTimeSec number The last time the TPS was calculated
+---@field _AverageTPSAccumulation table<integer, integer> TPS over time. Gets cleared after it is filled enough
+---@field _Last number The last time the TPS was calculated
 ---@field _OnTickConnection NoirConnection Represents the connection to the onTick game callback
 Noir.Services.TPSService = Noir.Services:CreateService(
     "TPSService",
@@ -61,7 +61,7 @@ function Noir.Services.TPSService:ServiceInit()
     self.DesiredTPS = 0
 
     self._AverageTPSPrecision = 10
-    self._LastTimeSec = server.getTimeMillisec()
+    self._Last = server.getTimeMillisec()
     self._AverageTPSAccumulation = {}
 end
 
@@ -71,13 +71,13 @@ function Noir.Services.TPSService:ServiceStart()
         local now = server.getTimeMillisec()
 
         if self.DesiredTPS ~= 0 then -- below is from Woe (https://discord.com/channels/357480372084408322/905791966904729611/1261911499723509820) @ https://discord.gg/stormworks
-            while self:_CalculateTPS(self._LastTimeSec, now, ticks) > self.DesiredTPS do
+            while self:_CalculateTPS(self._Last, now, ticks) > self.DesiredTPS do
                 now = server.getTimeMillisec()
             end
         end
 
-        self.TPS = self:_CalculateTPS(self._LastTimeSec, now, ticks)
-        self._LastTimeSec = server.getTimeMillisec()
+        self.TPS = self:_CalculateTPS(self._Last, now, ticks)
+        self._Last = server.getTimeMillisec()
 
         -- Calculate Average TPS
         if #self._AverageTPSAccumulation >= self._AverageTPSPrecision then
