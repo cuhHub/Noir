@@ -180,7 +180,7 @@ function Noir.Classes.ServiceClass:Save(index, data)
 end
 
 --[[
-    Load data from g_savedata that was saved via the :Save() method.
+    Load data from this service's g_savedata entry that was saved via the :Save() method.
 
     local MyService = Noir.Services:CreateService("MyService")
 
@@ -208,7 +208,37 @@ function Noir.Classes.ServiceClass:Load(index, default)
 end
 
 --[[
-    Remove data from g_savedata that was saved via the :Save() method.
+    Similar to `:Load()`, this method loads a value from this service's g_savedata entry.<br>
+    However, if the value doesn't exist, the default value provided to this method is saved then returned.
+
+    local MyService = Noir.Services:CreateService("MyService")
+
+    function MyService:ServiceInit()
+        local MyValue = self:EnsuredLoad("MyKey", "MyDefault")
+    end
+]]
+---@param index string
+---@param default any
+---@return any
+function Noir.Classes.ServiceClass:EnsuredLoad(index, default)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:EnsuredLoad()", "index", index, "string")
+
+    -- Get the value
+    local value = self:Load(index)
+
+    -- If the value doesn't exist, save default and return default
+    if value == nil then
+        self:Save(index, default)
+        return default
+    end
+
+    -- Return the value
+    return value
+end
+
+--[[
+    Remove data from this service's g_savedata entry that was saved.
 
     local MyService = Noir.Services:CreateService("MyService")
 
