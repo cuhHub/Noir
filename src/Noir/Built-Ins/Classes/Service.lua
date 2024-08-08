@@ -155,7 +155,6 @@ function Noir.Classes.ServiceClass:_CheckSaveData()
     end
 
     if not g_savedata.Noir.Services[self.Name] then
-        Noir.Libraries.Logging:Info("NoirService", "_CheckSaveData(): %s is missing a table in g_savedata.Noir.Services. Creating one.", self.Name)
         g_savedata.Noir.Services[self.Name] = {}
     end
 
