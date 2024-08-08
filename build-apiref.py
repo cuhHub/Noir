@@ -1,8 +1,6 @@
 """
-read!!
-
-this is super rushed and ugly. i know! i would make this better, but this is only to be used by me, so quality wasn't a priority
-i do not know regex, nor can i really be bothered to learn it, hence why .split() is used a lot
+    This script is used to automatically generate the API reference in the documentation.
+    This script is also terrible and extremely rushed.
 """
 
 from __future__ import annotations
@@ -407,8 +405,12 @@ for value in values:
     valuesForFiles[value.path].append(markdown)
     
 for path, markdown in valuesForFiles.items():
-    writePath = f"../apiref/{os.path.relpath(path)}"
+    directory = os.path.relpath(os.path.dirname(path), "noir")
+    name = os.path.splitext(os.path.basename(path))[0]
+    
+    writePath = os.path.join("docs", "api-reference", "noir", directory, name).lower() + ".md"
+
     os.makedirs(os.path.dirname(writePath), exist_ok = True)
     
-    with open(f"{writePath}.md", "w", encoding="utf-8") as file:
-        file.write("\n\n---\n\n".join(markdown))
+    with open(f"{writePath}", "w", encoding="utf-8") as file:
+        file.write(f"# {name}\n\n" + "\n\n---\n\n".join(markdown))
