@@ -38,19 +38,6 @@
 Noir.Bootstrapper = {}
 
 --[[
-    Set up g_savedata.<br>
-    Do not use this in your code. This is used internally.
-]]
-function Noir.Bootstrapper:InitializeSavedata()
-    -- Setup g_savedata
-    g_savedata.Noir = g_savedata.Noir or {}
-    Noir.Libraries.Logging:Info("Bootstrapper", "'Noir' has been defined in g_savedata.")
-
-    g_savedata.Noir.Services = g_savedata.Noir.Services or {}
-    Noir.Libraries.Logging:Info("Bootstrapper", "'Services' has been defined in Noir savedata.")
-end
-
---[[
     Wraps user-created methods in a service with code to prevent them from being called if the service hasn't initialized yet.<br>
     Do not use this in your code. This is used internally.
 ]]
