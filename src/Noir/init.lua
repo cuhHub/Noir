@@ -53,6 +53,8 @@ require("Noir.Built-Ins.Classes.Task")
 require("Noir.Built-Ins.Classes.Object")
 require("Noir.Built-Ins.Classes.Command")
 require("Noir.Built-Ins.Classes.Library")
+require("Noir.Built-Ins.Classes.HTTPRequest")
+require("Noir.Built-Ins.Classes.HTTPResponse")
 
 require("Noir.Libraries")
 
@@ -65,6 +67,7 @@ require("Noir.Built-Ins.Libraries.JSON")
 require("Noir.Built-Ins.Libraries.Base64")
 require("Noir.Built-Ins.Libraries.Matrix")
 require("Noir.Built-Ins.Libraries.Dataclasses")
+require("Noir.Built-Ins.Libraries.HTTP")
 
 require("Noir.Services")
 
@@ -75,6 +78,7 @@ require("Noir.Built-Ins.Services.GameSettingsService")
 require("Noir.Built-Ins.Services.CommandService")
 require("Noir.Built-Ins.Services.TPSService")
 require("Noir.Built-Ins.Services.NotificationService")
+require("Noir.Built-Ins.Services.HTTPService")
 
 require("Noir.Callbacks")
 require("Noir.Bootstrapper")
