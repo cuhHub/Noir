@@ -37,4 +37,8 @@
 ]]
 Noir = {}
 
-g_savedata = {} ---@diagnostic disable-line: lowercase-global
+g_savedata = { ---@diagnostic disable-line: lowercase-global
+    Noir = {
+        Services = {}
+    }
+}
