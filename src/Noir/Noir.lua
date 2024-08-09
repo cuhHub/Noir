@@ -121,9 +121,6 @@ function Noir:Start()
             -- Set Noir.IsDedicatedServer
             self.Bootstrapper:SetIsDedicatedServer()
 
-            -- Initialize g_savedata
-            self.Bootstrapper:InitializeSavedata()
-
             -- Initialize services
             self.Bootstrapper:InitializeServices()
 
