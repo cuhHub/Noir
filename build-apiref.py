@@ -405,7 +405,7 @@ for value in values:
     valuesForFiles[value.path].append(markdown)
     
 for path, markdown in valuesForFiles.items():
-    directory = os.path.relpath(os.path.dirname(path), "noir")
+    directory = os.path.relpath(os.path.dirname(path), "src/noir")
     name = os.path.splitext(os.path.basename(path))[0]
     
     writePath = os.path.join("docs", "api-reference", "noir", directory, name).lower() + ".md"
