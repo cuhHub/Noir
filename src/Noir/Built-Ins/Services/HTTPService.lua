@@ -32,7 +32,7 @@
 -------------------------------
 
 --[[
-    A service for sending HTTP requests.
+    A service for sending HTTP requests.<br>
     Requests are localhost only due to Stormworks limitations.
 
     Noir.Services.HTTPService:GET("/items/5", 8000, function(response)
