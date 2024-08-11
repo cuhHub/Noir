@@ -362,6 +362,7 @@ class Parser():
 values = Parser.parseAll("src/Noir")
 valuesForFiles: dict[str, list[str]] = {}
 
+# format into markdown
 for value in values:
     # get value stuffs
     markdown = ""
@@ -404,6 +405,7 @@ for value in values:
         
     valuesForFiles[value.path].append(markdown)
     
+# write
 for path, markdown in valuesForFiles.items():
     directory = os.path.relpath(os.path.dirname(path), "src/noir")
     name = os.path.splitext(os.path.basename(path))[0]
@@ -414,3 +416,36 @@ for path, markdown in valuesForFiles.items():
     
     with open(f"{writePath}", "w", encoding="utf-8") as file:
         file.write(f"# {name}\n\n" + "\n\n---\n\n".join(markdown))
+        
+# update summary.md
+with open("docs/SUMMARY.md", "r") as f:
+    summary = f.read()
+    
+    start = "* [☄️ API Reference](api-reference/README.md)"
+    startPoint = summary.find(start) + len(start)
+    
+summary = summary[:startPoint]
+
+def recursiveSummaryUpdate(path: str, level: int = 1) -> str:
+    text = ""
+    
+    for name in os.listdir(path):
+        full = os.path.join(path, name)
+        forSummary = os.path.dirname(os.path.relpath(full, "src")).replace("\\", "/").lower()
+
+        if os.path.isdir(full):
+            text += ("  " * level) + f"* [{name}](api-reference/{forSummary}/README.md)\n"
+            text += recursiveSummaryUpdate(full, level + 1)
+        else:
+            if not name.endswith(".lua") or name == "init.lua":
+                continue
+            
+            name = os.path.splitext(name)[0]
+            text += ("  " * level) + f"* [{name}](api-reference/{forSummary}/{name.lower()}.md)\n"
+            
+    return text
+
+summary += "\n" + recursiveSummaryUpdate("src/Noir", 1)
+
+with open("docs/SUMMARY.md", "w") as f:
+    f.write(summary)
