@@ -70,8 +70,9 @@ Now, you need to use Noir in your `script.lua` file, but `Noir` is in a whole se
 [Python](https://www.python.org/downloads/) is required for these tools, preferably `>3.12`.
 {% endhint %}
 
-1. Extract all files from [here](https://github.com/cuhHub/Noir/tree/main/tools) from and place it in your addon directory.
-2. Create an `__order.json` file in your addon directory containing the following:
+1. Extract `requirements.txt`, `combine.py` and `build.bat` from [here](https://github.com/cuhHub/Noir/tree/main/tools/combine) from and place it in your addon directory.
+2. Install the requirements by running `pip install -r requirements.txt`. You can delete the `requirements.txt` file after doing so.
+3. Create an `__order.json` file in your addon directory containing the following:
 
 {% code title="__order.json" lineNumbers="true" %}
 ```json
@@ -84,7 +85,7 @@ Now, you need to use Noir in your `script.lua` file, but `Noir` is in a whole se
 ```
 {% endcode %}
 
-3. Run `build.bat`. This will combine the contents of Noir and your addon and dump it all into a file called `build.lua` by running `py combine.py` with specific arguments.
+4. Run `build.bat`. This will combine the contents of Noir and your addon and dump it all into a file called `build.lua` by running `py combine.py` with specific arguments.
 
 Your addon directory should now look like:
 
