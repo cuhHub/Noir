@@ -236,5 +236,7 @@ def combiner_tool(directory: str, destination: str, allow_file_extension: list[s
         click.style("- " + "\n- ".join([str(path) for path in contents.keys()]), fg = "yellow")
     )
     
+    click.secho(f"To: {combiner.destination}", fg = "green", underline = True, bold = True)
+    
 if __name__ == "__main__":
     combiner_tool()
