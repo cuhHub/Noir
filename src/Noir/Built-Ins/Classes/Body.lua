@@ -77,13 +77,14 @@ end
     Serialize the body.<br>
     Used internally.
 ]]
+---@return NoirSerializedBody
 function Noir.Classes.BodyClass:_Serialize()
     return {
         ID = self.ID,
         Owner = self.Owner and self.Owner.ID,
         SpawnPosition = self.SpawnPosition,
         Cost = self.Cost,
-        ParentVehicle = self.ParentVehicle.ID
+        ParentVehicle = self.ParentVehicle and self.ParentVehicle.ID
     }
 end
 
@@ -91,7 +92,7 @@ end
     Deserialize the body.<br>
     Used internally.
 ]]
----@param serializedBody table
+---@param serializedBody NoirSerializedBody
 ---@param setParentVehicle boolean|nil
 ---@return NoirBody|nil
 function Noir.Classes.BodyClass:_Deserialize(serializedBody, setParentVehicle)
@@ -108,7 +109,7 @@ function Noir.Classes.BodyClass:_Deserialize(serializedBody, setParentVehicle)
     )
 
     -- Set parent vehicle
-    if setParentVehicle then
+    if setParentVehicle and serializedBody.ParentVehicle then
         local parentVehicle = Noir.Services.VehicleService:GetVehicle(serializedBody.ParentVehicle)
 
         if not parentVehicle then
