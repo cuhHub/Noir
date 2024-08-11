@@ -11,7 +11,7 @@ Noir.Libraries.HTTP:URLEncode(str)
 ```
 Encode a string into a URL-safe string.
 
-### Parametersz
+### Parameters
 - `str`: string
 ### Returns
 - `string`
