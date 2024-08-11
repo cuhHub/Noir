@@ -434,7 +434,7 @@ def recursiveSummaryUpdate(path: str, level: int = 1) -> str:
         forSummary = os.path.dirname(os.path.relpath(full, "src")).replace("\\", "/").lower()
 
         if os.path.isdir(full):
-            text += ("  " * level) + f"* [{name}](api-reference/{forSummary}/README.md)\n"
+            text += ("  " * level) + f"* [{name}](api-reference/{forSummary}/{name.lower()}/README.md)\n"
             text += recursiveSummaryUpdate(full, level + 1)
         else:
             if not name.endswith(".lua") or name == "init.lua":
