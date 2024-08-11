@@ -62,10 +62,10 @@ Noir.Services.VehicleService = Noir.Services:CreateService(
 
 function Noir.Services.VehicleService:ServiceInit()
     self.Vehicles = {}
-    self._SavedVehicles = self:EnsuredLoad("SavedVehicles", {})
+    self._SavedVehicles = self:Load("SavedVehicles", {})
 
     self.Bodies = {}
-    self._SavedBodies = self:EnsuredLoad("SavedBodies", {})
+    self._SavedBodies = self:Load("SavedBodies", {})
 
     self.OnVehicleSpawn = Noir.Libraries.Events:Create()
     self.OnVehicleDespawn = Noir.Libraries.Events:Create()
@@ -135,7 +135,9 @@ end
     Used internally.
 ]]
 function Noir.Services.VehicleService:_LoadSavedVehicles()
+    print("LOADING SAVED VEHICLES")
     for _, vehicle in pairs(self._SavedVehicles) do
+        print("LOADING VEHICLE #"..vehicle.ID)
         self:_RegisterVehicle(vehicle.ID, vehicle.Owner and Noir.Services.PlayerService:GetPlayer(vehicle.Owner), vehicle.SpawnPosition, vehicle.Cost, false)
     end
 end
@@ -145,7 +147,9 @@ end
     Used internally.
 ]]
 function Noir.Services.VehicleService:_LoadSavedBodies()
+    print("LOADING SAVED BODIES")
     for _, body in pairs(self._SavedBodies) do
+        print("LOADING BODY #"..body.ID)
         self:_RegisterBody(body.ID, body.Owner and Noir.Services.PlayerService:GetPlayer(body.Owner), body.SpawnPosition, body.Cost, false)
     end
 end
@@ -229,7 +233,7 @@ function Noir.Services.VehicleService:_SaveVehicle(vehicle)
 
     -- Save
     self._SavedVehicles[vehicle.ID] = vehicle:_Serialize()
-    self:Save("SavedVehicles")
+    self:Save("SavedVehicles", self._SavedVehicles)
 end
 
 --[[
@@ -243,7 +247,7 @@ function Noir.Services.VehicleService:_UnsaveVehicle(vehicle)
 
     -- Unsave
     self._SavedVehicles[vehicle.ID] = nil
-    self:Save("SavedVehicles")
+    self:Save("SavedVehicles", self._SavedVehicles)
 end
 
 --[[
@@ -332,7 +336,7 @@ function Noir.Services.VehicleService:_SaveBody(body)
 
     -- Save
     self._SavedBodies[body.ID] = body:_Serialize()
-    self:Save("SavedBodies")
+    self:Save("SavedBodies", self._SavedBodies)
 end
 
 --[[
@@ -346,7 +350,7 @@ function Noir.Services.VehicleService:_UnsaveBody(body)
 
     -- Unsave
     self._SavedBodies[body.ID] = nil
-    self:Save("SavedBodies")
+    self:Save("SavedBodies", self._SavedBodies)
 end
 
 --[[
