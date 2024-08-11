@@ -78,12 +78,12 @@ end
 ]]
 ---@param serializedObject NoirSerializedObject
 ---@return NoirObject
-function Noir.Classes.ObjectClass._Deserialize(serializedObject)
+function Noir.Classes.ObjectClass:_Deserialize(serializedObject)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass._Deserialize()", "serializedObject", serializedObject, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:_Deserialize()", "serializedObject", serializedObject, "table")
 
     -- Create object from serialized object
-    local object = Noir.Classes.ObjectClass:New(serializedObject.ID)
+    local object = self:New(serializedObject.ID)
 
     -- Return it
     return object

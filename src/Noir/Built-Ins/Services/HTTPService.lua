@@ -45,10 +45,10 @@
     end)
 ]]
 ---@class NoirHTTPService: NoirService
----@field ActiveRequests table<integer, NoirHTTPRequest>
----@field _PortRangeMin integer
----@field _PortRangeMax integer
----@field _HTTPReplyConnection NoirConnection
+---@field ActiveRequests table<integer, NoirHTTPRequest> A table of unanswered HTTP requests.
+---@field _PortRangeMin integer The minimum acceptable port number.
+---@field _PortRangeMax integer The maximum acceptable port number.
+---@field _HTTPReplyConnection NoirConnection A connection to the httpReply event
 Noir.Services.HTTPService = Noir.Services:CreateService(
     "HTTPService",
     true,
