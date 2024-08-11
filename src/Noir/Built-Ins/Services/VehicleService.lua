@@ -42,8 +42,8 @@
 ---
 ---@field OnVehicleSpawn NoirEvent Arguments: NoirVehicle | Fired when a vehicle is spawned
 ---@field OnVehicleDespawn NoirEvent Arguments: NoirVehicle | Fired when a vehicle is despawned
----@field OnBodySpawn NoirEvent Arguments: NoirBody | Fired when a body is loaded
----@field OnBodyDespawn NoirEvent Arguments: NoirBody | Fired when a body is unloaded
+---@field OnBodySpawn NoirEvent Arguments: NoirBody | Fired when a body is spawned
+---@field OnBodyDespawn NoirEvent Arguments: NoirBody | Fired when a body is despawned
 ---@field OnBodyLoad NoirEvent Arguments: NoirBody | Fired when a body is loaded
 ---@field OnBodyUnload NoirEvent Arguments: NoirBody | Fired when a body is unloaded
 ---
