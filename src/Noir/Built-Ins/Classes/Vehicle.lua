@@ -162,6 +162,7 @@ function Noir.Classes.VehicleClass:_AddBody(body)
 
     -- Add body
     self.Bodies[body.ID] = body
+    body.ParentVehicle = self
     self:_CalculatePrimaryBody()
 end
 
@@ -176,6 +177,7 @@ function Noir.Classes.VehicleClass:_RemoveBody(body)
 
     -- Remove body
     self.Bodies[body.ID] = nil
+    body.ParentVehicle = nil
     self:_CalculatePrimaryBody()
 end
 
