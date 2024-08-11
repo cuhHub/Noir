@@ -1,6 +1,3 @@
-----------------------------------------------
--- // [File] ..\src\Noir\Definition.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Definition
 --------------------------------------------------------
@@ -46,9 +43,6 @@ g_savedata = { ---@diagnostic disable-line: lowercase-global
     }
 }
 
-----------------------------------------------
--- // [File] ..\src\Noir\Class.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Class
 --------------------------------------------------------
@@ -227,9 +221,6 @@ function Noir.Class(name, parent)
     return class
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\TypeChecking.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Type Checking
 --------------------------------------------------------
@@ -381,9 +372,6 @@ Noir.TypeChecking._DummyClass = Noir.Class("NoirTypeCheckingDummyClass")
 ---| "class"
 ---| NoirClass
 
-----------------------------------------------
--- // [File] ..\src\Noir\Classes.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes
 --------------------------------------------------------
@@ -423,9 +411,6 @@ Noir.TypeChecking._DummyClass = Noir.Class("NoirTypeCheckingDummyClass")
 ]]
 Noir.Classes = {}
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Command.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Command
 --------------------------------------------------------
@@ -589,9 +574,6 @@ function Noir.Classes.CommandClass:CanUse(player)
     return true
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Connection.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Connection
 --------------------------------------------------------
@@ -676,9 +658,6 @@ function Noir.Classes.ConnectionClass:Disconnect()
     self.ParentEvent:Disconnect(self)
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Event.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Event
 --------------------------------------------------------
@@ -895,9 +874,130 @@ function Noir.Classes.EventClass:_DisconnectImmediate(connection)
 end
 
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Library.lua
-----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Classes - HTTP Request
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a HTTP request.
+]]
+---@class NoirHTTPRequest: NoirClass
+---@field New fun(self: NoirHTTPRequest, URL: string, port: integer): NoirHTTPRequest
+---@field URL string
+---@field Port integer
+---@field OnResponse NoirEvent
+Noir.Classes.HTTPRequestClass = Noir.Class("NoirHTTPRequest")
+
+--[[
+    Initializes HTTP request class objects.
+]]
+---@param URL string
+---@param port integer
+function Noir.Classes.HTTPRequestClass:Init(URL, port)
+    Noir.TypeChecking:Assert("Noir.Classes.HTTPRequestClass:Init()", "URL", URL, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.HTTPRequestClass:Init()", "port", port, "number")
+
+    self.URL = URL
+    self.Port = port
+    self.OnResponse = Noir.Libraries.Events:Create()
+end
+
+--------------------------------------------------------
+-- [Noir] Classes - HTTP Response
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a response to a HTTP request.
+]]
+---@class NoirHTTPResponse: NoirClass
+---@field New fun(self: NoirHTTPResponse, response: string): NoirHTTPResponse
+---@field Text string
+Noir.Classes.HTTPResponseClass = Noir.Class("NoirHTTPResponse")
+
+--[[
+    Initializes HTTP response class objects.
+]]
+---@param response string
+function Noir.Classes.HTTPResponseClass:Init(response)
+    Noir.TypeChecking:Assert("Noir.Classes.HTTPResponseClass:Init()", "response", response, "string")
+
+    self.Text = response
+end
+
+--[[
+    Attempts to JSON decode the response. This will error if the response cannot be JSON decoded.
+]]
+---@return any
+function Noir.Classes.HTTPResponseClass:JSON()
+    return (Noir.Libraries.JSON:Decode(self.Text))
+end
+
+--[[
+    Returns whether or not the response is ok.
+]]
+---@return boolean
+function Noir.Classes.HTTPResponseClass:IsOk()
+    return Noir.Libraries.HTTP:IsResponseOk(self.Text)
+end
+
 --------------------------------------------------------
 -- [Noir] Classes - Library
 --------------------------------------------------------
@@ -961,9 +1061,6 @@ function Noir.Classes.LibraryClass:Init(name, shortDescription, longDescription,
     self.Authors = authors
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Object.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Object
 --------------------------------------------------------
@@ -1382,9 +1479,6 @@ end
 ---@class NoirSerializedObject
 ---@field ID integer The object ID
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Player.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Player
 --------------------------------------------------------
@@ -1641,9 +1735,6 @@ function Noir.Classes.PlayerClass:Notify(title, message, notificationType)
     server.notify(self.ID, title, message, notificationType)
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Service.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Service
 --------------------------------------------------------
@@ -1801,7 +1892,6 @@ function Noir.Classes.ServiceClass:_CheckSaveData()
     end
 
     if not g_savedata.Noir.Services[self.Name] then
-        Noir.Libraries.Logging:Info("NoirService", "_CheckSaveData(): %s is missing a table in g_savedata.Noir.Services. Creating one.", self.Name)
         g_savedata.Noir.Services[self.Name] = {}
     end
 
@@ -1826,7 +1916,7 @@ function Noir.Classes.ServiceClass:Save(index, data)
 end
 
 --[[
-    Load data from g_savedata that was saved via the :Save() method.
+    Load data from this service's g_savedata entry that was saved via the :Save() method.
 
     local MyService = Noir.Services:CreateService("MyService")
 
@@ -1854,7 +1944,37 @@ function Noir.Classes.ServiceClass:Load(index, default)
 end
 
 --[[
-    Remove data from g_savedata that was saved via the :Save() method.
+    Similar to `:Load()`, this method loads a value from this service's g_savedata entry.<br>
+    However, if the value doesn't exist, the default value provided to this method is saved then returned.
+
+    local MyService = Noir.Services:CreateService("MyService")
+
+    function MyService:ServiceInit()
+        local MyValue = self:EnsuredLoad("MyKey", "MyDefault")
+    end
+]]
+---@param index string
+---@param default any
+---@return any
+function Noir.Classes.ServiceClass:EnsuredLoad(index, default)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:EnsuredLoad()", "index", index, "string")
+
+    -- Get the value
+    local value = self:Load(index)
+
+    -- If the value doesn't exist, save default and return default
+    if value == nil then
+        self:Save(index, default)
+        return default
+    end
+
+    -- Return the value
+    return value
+end
+
+--[[
+    Remove data from this service's g_savedata entry that was saved.
 
     local MyService = Noir.Services:CreateService("MyService")
 
@@ -1889,9 +2009,6 @@ function Noir.Classes.ServiceClass:GetSaveData()
     return g_savedata.Noir.Services[self.Name]
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Classes\Task.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Classes - Task
 --------------------------------------------------------
@@ -2007,9 +2124,6 @@ function Noir.Classes.TaskClass:Remove()
     Noir.Services.TaskService:RemoveTask(self)
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Libraries.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Libraries
 --------------------------------------------------------
@@ -2082,9 +2196,6 @@ function Noir.Libraries:Create(name, shortDescription, longDescription, authors)
     return library
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Base64.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Libraries - Base64
 --------------------------------------------------------
@@ -2273,9 +2384,6 @@ function Noir.Libraries.Base64:_DecodeFinal(str)
     return string.char(c)
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Dataclasses.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Libraries - Dataclasses
 --------------------------------------------------------
@@ -2418,9 +2526,6 @@ end
 ---@field Name string
 ---@field Type NoirTypeCheckingType
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Events.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Libraries - Events
 --------------------------------------------------------
@@ -2500,9 +2605,136 @@ function Noir.Libraries.Events:Create()
     return event
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\JSON.lua
-----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Libraries - HTTP
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A library containing helper methods relating to HTTP.
+]]
+---@class NoirHTTPLib: NoirLibrary
+Noir.Libraries.HTTP = Noir.Libraries:Create(
+    "NoirHTTP",
+    "A library containing helper methods relating to HTTP.",
+    "A library containing helper methods relating to HTTP. Comes with methods for encoding/decoding URLs, etc.",
+    {"Cuh4"}
+)
+
+--[[
+    Encode a string into a URL-safe string.
+]]
+---@param str string
+---@return string
+function Noir.Libraries.HTTP:URLEncode(str)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.HTTP:URLEncode()", "str", str, "string")
+
+    -- Encode and return
+    return (str:gsub(
+        "([^%w%-%_%.%~])",
+
+        ---@param c string
+        function(c)
+            return ("%%%02X"):format(c:byte())
+        end
+    ))
+end
+
+--[[
+    Decode a URL-safe string into a string.
+]]
+---@param str string
+---@return string
+function Noir.Libraries.HTTP:URLDecode(str)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.HTTP:URLDecode()", "str", str, "string")
+
+    -- Decode and return
+    return (str:gsub(
+        "%%(%x%x)",
+
+        ---@param c string
+        function(c)
+            return string.char(tonumber(c, 16))
+        end
+    ))
+end
+
+--[[
+    Convert a table of URL parameters into a string.
+]]
+---@param parameters table<string, any>
+---@return string
+function Noir.Libraries.HTTP:URLParameters(parameters)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.HTTP:URLParameters()", "parameters", parameters, "table")
+
+    -- Convert
+    local str = ""
+    local count = 0
+
+    for key, value in pairs(parameters) do
+        count = count + 1
+
+        if count == 1 then
+            str = ("?%s=%s"):format(self:URLEncode(tostring(key)), self:URLEncode(tostring(value)))
+        else
+            str = ("%s&%s=%s"):format(str, self:URLEncode(tostring(key)), self:URLEncode(tostring(value)))
+        end
+    end
+
+    -- Return
+    return str
+end
+
+--[[
+    Returns whether or not a response to a HTTP request is ok.
+]]
+---@param response string
+---@return boolean
+function Noir.Libraries.HTTP:IsResponseOk(response)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.HTTP:IsResponseOk()", "response", response, "string")
+
+    -- Return
+    return ({
+        ["Connection closed unexpectedly"] = true,
+        ["connect(): Connection refused"] = true,
+        ["recv(): Connection reset by peer"] = true,
+        ["timeout"] = true,
+		["connect(): Can't assign requested address"] = true
+    })[response] == nil
+end
+
 --------------------------------------------------------
 -- [Noir] Libraries - JSON
 --------------------------------------------------------
@@ -2868,9 +3100,6 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
     end
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Logging.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Libraries - Logging
 --------------------------------------------------------
@@ -3069,9 +3298,6 @@ end
 ---| "Chat" Sends via server.announce and via debug.log
 ---| "DebugLog" Sends only via debug.log
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Matrix.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Libraries - Table
 --------------------------------------------------------
@@ -3200,9 +3426,6 @@ function Noir.Libraries.Matrix:ToString(pos)
     return ("%.1f, %.1f, %.1f"):format(x, y, z)
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Number.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Libraries - Number
 --------------------------------------------------------
@@ -3353,9 +3576,6 @@ function Noir.Libraries.Number:Average(numbers)
     return sum / #numbers
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\String.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Libraries - String
 --------------------------------------------------------
@@ -3445,9 +3665,6 @@ function Noir.Libraries.String:SplitLines(str)
     return self:Split(str, "\n")
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Libraries\Table.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Libraries - Table
 --------------------------------------------------------
@@ -3809,9 +4026,6 @@ function Noir.Libraries.Table:Find(tbl, value)
     end
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Services.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Services
 --------------------------------------------------------
@@ -4014,9 +4228,6 @@ function Noir.Services:RemoveBuiltInServices(exceptions)
     end
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\CommandService.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Services - Command Service
 --------------------------------------------------------
@@ -4197,9 +4408,6 @@ function Noir.Services.CommandService:GetCommands()
     return self.Commands
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\GameSettingsService.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Services - Game Settings Service
 --------------------------------------------------------
@@ -4299,9 +4507,176 @@ function Noir.Services.GameSettingsService:SetSetting(name, value)
     server.setGameSetting(name, value)
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\NotificationService.lua
-----------------------------------------------
+--------------------------------------------------------
+-- [Noir] Services - HTTP Service
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A service for sending HTTP requests.<br>
+    Requests are localhost only due to Stormworks limitations.
+
+    Noir.Services.HTTPService:GET("/items/5", 8000, function(response)
+        if not response:IsOk() then
+            return
+        end
+
+        local item = response:JSON()
+        Noir.Libraries.Logging:Info("Item", item.Name)
+    end)
+]]
+---@class NoirHTTPService: NoirService
+---@field ActiveRequests table<integer, NoirHTTPRequest>
+---@field _PortRangeMin integer
+---@field _PortRangeMax integer
+---@field _HTTPReplyConnection NoirConnection
+Noir.Services.HTTPService = Noir.Services:CreateService(
+    "HTTPService",
+    true,
+    "A service for sending HTTP requests.",
+    "A service for sending HTTP requests. Comes with helper HTTP functions.",
+    {"Cuh4"}
+)
+
+function Noir.Services.HTTPService:ServiceInit()
+    self.ActiveRequests = {}
+
+    self._PortRangeMin = 1
+    self._PortRangeMax = 65535
+end
+
+function Noir.Services.HTTPService:ServiceStart()
+    self._HTTPReplyConnection = Noir.Callbacks:Connect("httpReply", function(port, URL, response)
+        -- Check if port is valid
+        if not self:IsPortValid(port) then
+            return
+        end
+
+        -- Find request
+        local request, index = self:_FindRequest(URL, port)
+
+        if not request then
+            return
+        end
+
+        -- Trigger response
+        request.OnResponse:Fire(Noir.Classes.HTTPResponseClass:New(response))
+
+        -- Remove request
+        table.remove(self.ActiveRequests, index)
+    end)
+end
+
+--[[
+    Get earliest request for a URL and port.<br>
+    Used internally.
+]]
+---@param URL string
+---@param port integer
+---@return NoirHTTPRequest|nil, integer|nil
+function Noir.Services.HTTPService:_FindRequest(URL, port)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.HTTPService:_FindRequest()", "URL", URL, "string")
+    Noir.TypeChecking:Assert("Noir.Services.HTTPService:_FindRequest()", "port", port, "number")
+
+    -- Find request
+    for index, request in ipairs(self:GetActiveRequests()) do
+        if request.URL == URL and request.Port == port then
+            return request, index
+        end
+    end
+end
+
+--[[
+    Returns if a port is within the valid port range.
+]]
+---@param port integer
+---@return boolean
+function Noir.Services.HTTPService:IsPortValid(port)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.HTTPService:IsPortValid()", "port", port, "number")
+
+    -- Return
+    return port >= self._PortRangeMin and port <= self._PortRangeMax
+end
+
+--[[
+    Send a GET request.<br>
+    All requests are localhost only. This is a Stormworks limitation.
+
+    Noir.Services.HTTPService:GET("/items/5", 8000, function(response)
+        if not response:IsOk() then
+            return
+        end
+
+        local item = response:JSON()
+        Noir.Libraries.Logging:Info("Item", item.Name)
+    end)
+]]
+---@param URL string
+---@param port integer
+---@param callback fun(response: NoirHTTPResponse)
+---@return NoirHTTPRequest|nil
+function Noir.Services.HTTPService:GET(URL, port, callback)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "URL", URL, "string")
+    Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "port", port, "number")
+    Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "callback", callback, "function")
+
+    -- Check if port is valid
+    if not self:IsPortValid(port) then
+        Noir.Libraries.Logging:Error("HTTPService", "Port is out of range, expected a port between %d and %d.", true, self._PortRangeMin, self._PortRangeMax)
+        return
+    end
+
+    -- Create request object
+    local request = Noir.Classes.HTTPRequestClass:New(URL, port)
+    request.OnResponse:Once(callback)
+
+    -- Send request
+    server.httpGet(port, URL)
+    table.insert(self.ActiveRequests, request)
+
+    -- Return it
+    return request
+end
+
+--[[
+    Returns all active requests.
+]]
+---@return table<integer, NoirHTTPRequest>
+function Noir.Services.HTTPService:GetActiveRequests()
+    return self.ActiveRequests
+end
+
 --------------------------------------------------------
 -- [Noir] Services - Notification Service
 --------------------------------------------------------
@@ -4415,7 +4790,7 @@ end
 ---@param player NoirPlayer|table<integer, NoirPlayer>
 ---@param ... any
 function Noir.Services.NotificationService:Warning(title, message, player, ...)
-    self:Notify(self.WarningTitlePrefix..title, message, 2, player, ...)
+    self:Notify(self.WarningTitlePrefix..title, message, 1, player, ...)
 end
 
 --[[
@@ -4440,9 +4815,6 @@ function Noir.Services.NotificationService:Info(title, message, player, ...)
     self:Notify(self.InfoTitlePrefix..title, message, 7, player, ...)
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\ObjectService.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Services - Object Service
 --------------------------------------------------------
@@ -4918,9 +5290,6 @@ function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit,
 end
 
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\PlayerService.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Services - Player Service
 --------------------------------------------------------
@@ -5391,9 +5760,6 @@ end
 
 ---@alias NoirSavedPlayerProperties table<integer, table<string, any>>
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\TaskService.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Services - Task Service
 --------------------------------------------------------
@@ -5542,9 +5908,6 @@ function Noir.Services.TaskService:RemoveTask(task)
     self.Tasks[task.ID] = nil
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Built-Ins/Services\TPSService.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Services - TPS Service
 --------------------------------------------------------
@@ -5591,8 +5954,8 @@ end
 ---@field AverageTPS number The average TPS of the server
 ---@field DesiredTPS number The desired TPS. This service will slow the game enough to achieve this. 0 = disabled
 ---@field _AverageTPSPrecision integer Tick rate for calculating the average TPS. Higher = more accurate, but slower. Use :SetPrecision() to modify
----@field _AverageTPSAccumulation table<integer, integer> Average TPS over time. Gets cleared after it is filled enough
----@field _LastTimeSec number The last time the TPS was calculated
+---@field _AverageTPSAccumulation table<integer, integer> TPS over time. Gets cleared after it is filled enough
+---@field _Last number The last time the TPS was calculated
 ---@field _OnTickConnection NoirConnection Represents the connection to the onTick game callback
 Noir.Services.TPSService = Noir.Services:CreateService(
     "TPSService",
@@ -5608,7 +5971,7 @@ function Noir.Services.TPSService:ServiceInit()
     self.DesiredTPS = 0
 
     self._AverageTPSPrecision = 10
-    self._LastTimeSec = server.getTimeMillisec()
+    self._Last = server.getTimeMillisec()
     self._AverageTPSAccumulation = {}
 end
 
@@ -5618,13 +5981,13 @@ function Noir.Services.TPSService:ServiceStart()
         local now = server.getTimeMillisec()
 
         if self.DesiredTPS ~= 0 then -- below is from Woe (https://discord.com/channels/357480372084408322/905791966904729611/1261911499723509820) @ https://discord.gg/stormworks
-            while self:_CalculateTPS(self._LastTimeSec, now, ticks) > self.DesiredTPS do
+            while self:_CalculateTPS(self._Last, now, ticks) > self.DesiredTPS do
                 now = server.getTimeMillisec()
             end
         end
 
-        self.TPS = self:_CalculateTPS(self._LastTimeSec, now, ticks)
-        self._LastTimeSec = server.getTimeMillisec()
+        self.TPS = self:_CalculateTPS(self._Last, now, ticks)
+        self._Last = server.getTimeMillisec()
 
         -- Calculate Average TPS
         if #self._AverageTPSAccumulation >= self._AverageTPSPrecision then
@@ -5694,9 +6057,6 @@ function Noir.Services.TPSService:SetPrecision(precision)
     self._AverageTPSPrecision = precision
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Callbacks.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Callbacks
 --------------------------------------------------------
@@ -5956,9 +6316,6 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
     return event
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Bootstrapper.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Bootstrapper
 --------------------------------------------------------
@@ -5997,19 +6354,6 @@ end
     Do not use this in your code.
 ]]
 Noir.Bootstrapper = {}
-
---[[
-    Set up g_savedata.<br>
-    Do not use this in your code. This is used internally.
-]]
-function Noir.Bootstrapper:InitializeSavedata()
-    -- Setup g_savedata
-    g_savedata.Noir = g_savedata.Noir or {}
-    Noir.Libraries.Logging:Info("Bootstrapper", "'Noir' has been defined in g_savedata.")
-
-    g_savedata.Noir.Services = g_savedata.Noir.Services or {}
-    Noir.Libraries.Logging:Info("Bootstrapper", "'Services' has been defined in Noir savedata.")
-end
 
 --[[
     Wraps user-created methods in a service with code to prevent them from being called if the service hasn't initialized yet.<br>
@@ -6149,9 +6493,6 @@ function Noir.Bootstrapper:SetIsDedicatedServer()
     Noir.IsDedicatedServer = host and (host.steam_id == 0 and host.object_id == nil)
 end
 
-----------------------------------------------
--- // [File] ..\src\Noir\Noir.lua
-----------------------------------------------
 --------------------------------------------------------
 -- [Noir] Noir
 --------------------------------------------------------
@@ -6189,7 +6530,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.11.0"
+Noir.Version = "1.12.0"
 
 --[[
     Returns the MAJOR, MINOR, and PATCH of the current Noir version.
@@ -6275,17 +6616,14 @@ function Noir:Start()
             -- Set Noir.IsDedicatedServer
             self.Bootstrapper:SetIsDedicatedServer()
 
-            -- Initialize g_savedata
-            self.Bootstrapper:InitializeSavedata()
-
             -- Initialize services
             self.Bootstrapper:InitializeServices()
 
-            -- Start services
-            self.Bootstrapper:StartServices()
-
             -- Fire event
             self.Started:Fire()
+
+            -- Start services
+            self.Bootstrapper:StartServices()
 
             -- Send log
             self.Libraries.Logging:Success("Start", "Noir v%s has started. Bootstrapper has initialized and started all services.\nTook: %sms | Addon Reason: %s", self.Version, took, Noir.AddonReason)
