@@ -434,16 +434,10 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
 
     -- Remove body
     self.Bodies[body.ID] = nil
-    body.ParentVehicle.Bodies[body.ID] = nil
+    body.ParentVehicle:_RemoveBody(body)
 
-    -- If the parent vehicle has no more bodies, unregister it
-    if autoDespawnParentVehicle then
-        local bodyCount = Noir.Libraries.Table:Length(body.ParentVehicle.Bodies) -- questionable variable name
-
-        if bodyCount <= 0 then
-            self:_UnregisterVehicle(body.ParentVehicle, fireEvent)
-        end
-    end
+    -- Save vehicle
+    self:_SaveVehicle(body.ParentVehicle)
 
     -- Unsave
     self:_UnsaveBody(body)
@@ -452,6 +446,15 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
     if fireEvent then
         self.OnBodyDespawn:Fire(body)
         body.OnDespawn:Fire()
+    end
+
+    -- If the parent vehicle has no more bodies, unregister it
+    if autoDespawnParentVehicle then
+        local bodyCount = Noir.Libraries.Table:Length(body.ParentVehicle.Bodies) -- questionable variable name
+
+        if bodyCount <= 0 then
+            self:_UnregisterVehicle(body.ParentVehicle, fireEvent)
+        end
     end
 end
 
