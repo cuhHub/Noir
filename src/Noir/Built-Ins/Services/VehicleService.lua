@@ -468,3 +468,19 @@ end
 function Noir.Services.VehicleService:GetBody(ID)
     return self.Bodies[ID]
 end
+
+--[[
+    Get all spawned vehicles.
+]]
+---@return table<integer, NoirVehicle>
+function Noir.Services.VehicleService:GetVehicles()
+    return self.Vehicles
+end
+
+--[[
+    Get all spawned bodies.
+]]
+---@return table<integer, NoirBody>
+function Noir.Services.VehicleService:GetBodies()
+    return self.Bodies
+end
