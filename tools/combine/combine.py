@@ -61,12 +61,13 @@ class Combiner():
         self.ignored = ignored
         self.ignored.extend([Path(destination)])
         
-    def combine(self, prevent_write: bool = False) -> tuple[str, dict[Path, str]]:
+    def combine(self, prevent_write: bool = False, *, _directory: Path|None = None) -> tuple[str, dict[Path, str]]:
         """
         Combine all files in the directory into one.
         
         Args:
             prevent_write (bool, optional): Whether or not to prevent writing the combined file. Defaults to False.
+            _directory (Path, optional): The directory to combine. Used internally. Defaults to None.
 
         Returns:
             str: The combined content of all files, joined together by two newlines.
@@ -76,39 +77,46 @@ class Combiner():
             ValueError: If an existing `__order.json` file is invalid.
         """
         
+        # Validation
+        if _directory is None:
+            _directory = self.directory
+        
         # For later
         contents: dict[Path, str] = {}
         
-        # Iterate through directories
-        for path, _, filenames in self.directory.walk(top_down = True):
-            # Check if the directory is allowed
-            if not self._is_directory_allowed(path):
-                continue
+        # Read __order.json if it exists 
+        order = self._read_order(_directory)
+
+        if order is not None:
+            orderedFiles: list[str]|None = order.get("order")
             
-            # Iterate through files
-            order = self._read_order(path)
-            files: list[Path] = []
+            if orderedFiles is None:
+                raise ValueError(f"Invalid `__order.json` file @ {path}. Missing `order` list.")
             
-            if order is not None:
-                orderedFiles = order.get("order")
-                
-                if orderedFiles is None:
-                    raise ValueError(f"Invalid `__order.json` file @ {path}. Missing `order` list.")
-                
-                files = [path / file if not Path(file).is_absolute() else Path(file) for file in orderedFiles]
-            else:
-                files = [path / filename for filename in filenames]
-            
-            for file in files:
+            paths = [_directory / file for file in orderedFiles]
+        else:
+            paths = [*_directory.iterdir()]
+        
+        # Read files
+        for path in paths:
+            if path.is_file():
                 # Check if the file is allowed
-                if not self.is_file_allowed(file):
+                if not self.is_file_allowed(path):
                     continue
                 
                 # Read and save
                 try:
-                    contents[file] = file.read_text("utf-8")
+                    contents[path] = path.read_text("utf-8")
                 except:
                     continue
+            else:
+                # Check if the directory is allowed
+                if not self._is_directory_allowed(path):
+                    continue
+            
+                # Iterate through files
+                _, results = self.combine(prevent_write = prevent_write, _directory = path)
+                contents.update(results)
                 
         # Write
         result = "\n\n".join(contents.values())
