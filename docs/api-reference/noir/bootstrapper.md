@@ -9,15 +9,6 @@ Do not use this in your code.
 ---
 
 ```lua
-Noir.Bootstrapper:InitializeSavedata()
-```
-Set up g_savedata.
-
-Do not use this in your code. This is used internally.
-
----
-
-```lua
 Noir.Bootstrapper:WrapServiceMethodsForService(service)
 ```
 Wraps user-created methods in a service with code to prevent them from being called if the service hasn't initialized yet.
