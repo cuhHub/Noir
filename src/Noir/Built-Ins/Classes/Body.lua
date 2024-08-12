@@ -41,7 +41,7 @@
 ---@field Owner NoirPlayer|nil
 ---@field SpawnPosition SWMatrix
 ---@field Cost number
----@field ParentVehicle NoirVehicle
+---@field ParentVehicle NoirVehicle|nil This will be nil if the parent vehicle doesn't exist (occurs when the parent vehicle or body despawns)
 ---@field Loaded boolean
 ---@field OnDespawn NoirEvent
 ---@field OnLoad NoirEvent

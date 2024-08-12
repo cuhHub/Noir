@@ -42,7 +42,7 @@
 ---@field SpawnPosition SWMatrix
 ---@field Cost number
 ---@field Bodies table<integer, NoirBody>
----@field PrimaryBody NoirBody
+---@field PrimaryBody NoirBody|nil This will be nil if there are no bodies (occurs when the vehicle is despawned)
 ---@field OnDespawn NoirEvent
 Noir.Classes.VehicleClass = Noir.Class("NoirVehicle")
 
