@@ -189,7 +189,6 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
 
     -- Check if already registered
     if self:GetVehicle(ID) then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to register a vehicle because it's already registered.", false)
         return
     end
 
@@ -320,7 +319,6 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, c
 
     -- Check if already registered
     if self:GetBody(ID) then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to register a body because it's already registered.", false)
         return
     end
 
