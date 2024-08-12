@@ -200,7 +200,7 @@ function Noir.Classes.VehicleClass:GetPosition(voxelX, voxelY, voxelZ)
     Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:GetPosition()", "voxelZ", voxelZ, "number", "nil")
 
     -- Get and return position
-    return self.PrimaryBody:GetPosition(voxelX, voxelY, voxelZ)
+    return self.PrimaryBody and self.PrimaryBody:GetPosition(voxelX, voxelY, voxelZ) or matrix.translation(0, 0, 0)
 end
 
 --[[
