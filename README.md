@@ -9,7 +9,7 @@
 ## 📚 Overview
 Noir is a framework for Stormworks: Build and Rescue designed to (metaphorically!) hold your hand in some areas with addon development, while also giving you a neat way of organizing your addon.
 
-Helpful examples can be found in `/examples`.
+Helpful examples can be found in [`/examples`](/examples).
 
 ## 🍗 Code Snippet
 The below snippet showcases Noir's events system as well as the OOP nature of the framework. The code below simply sends a notification to any player who joins and gives them an item.
