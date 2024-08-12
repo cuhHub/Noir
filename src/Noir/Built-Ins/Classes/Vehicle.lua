@@ -78,7 +78,7 @@ function Noir.Classes.VehicleClass:_Serialize()
     local bodies = {}
 
     for _, body in pairs(self.Bodies) do
-        bodies[body.ID] = body.ID
+        table.insert(bodies, body.ID)
     end
 
     return {
@@ -243,6 +243,9 @@ end
 -- // Intellisense
 -------------------------------
 
+--[[
+    Represents a serialized version of the NoirVehicle class.
+]]
 ---@class NoirSerializedVehicle
 ---@field ID integer
 ---@field Owner integer
