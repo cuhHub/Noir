@@ -1,5 +1,12 @@
+# Intellisense
 intellisense.lua
+
+# Dev
 TODO.md
-apiref
+
+# Docs
+build-api-reference.py
+
+# Files relating to publishing
 publish.py
-release_description.md
+release-description.md
