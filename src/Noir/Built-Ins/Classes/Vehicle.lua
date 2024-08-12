@@ -200,13 +200,32 @@ function Noir.Classes.VehicleClass:GetPosition(voxelX, voxelY, voxelZ)
 end
 
 --[[
-    Get a body by its ID.
+    Get a child body by its ID.
 ]]
 ---@param ID integer
 ---@return NoirBody|nil
 function Noir.Classes.VehicleClass:GetBody(ID)
     Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:GetBody()", "ID", ID, "number")
     return self.Bodies[ID]
+end
+
+--[[
+    Teleport the vehicle to a new position.
+]]
+---@param position SWMatrix
+function Noir.Classes.VehicleClass:Teleport(position)
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Teleport()", "position", position, "table")
+    server.setGroupPos(self.ID, position)
+end
+
+--[[
+    Move the vehicle to a new position, essentially teleports without reloading the vehicle.<br>
+    Note that rotation is ignored.
+]]
+---@param position SWMatrix
+function Noir.Classes.VehicleClass:Move(position)
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Move()", "position", position, "table")
+    server.moveGroup(self.ID, position)
 end
 
 --[[
