@@ -217,12 +217,12 @@ function Noir.Classes.ObjectClass:SetAICharacterTarget(target)
 end
 
 --[[
-    Set this character's AI vehicle target (if character).
+    Set this character's AI body target (if character).
 ]]
----@param vehicle_id integer
-function Noir.Classes.ObjectClass:SetAIVehicleTarget(vehicle_id)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIVehicleTarget()", "vehicle_id", vehicle_id, "number")
-    server.setAITargetVehicle(self.ID, vehicle_id)
+---@param body NoirBody
+function Noir.Classes.ObjectClass:SetAIVehicleTarget(body)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIVehicleTarget()", "body", body, Noir.Classes.BodyClass)
+    server.setAITargetVehicle(self.ID, body.ID)
 end
 
 --[[
@@ -235,8 +235,9 @@ end
 --[[
     Returns the vehicle this character is sat in (if character).
 ]]
----@return integer|nil
+---@return NoirBody|nil
 function Noir.Classes.ObjectClass:GetVehicle()
+    -- Get the vehicle ID
     local vehicle_id, success = server.getCharacterVehicle(self.ID)
 
     if not success then
@@ -244,7 +245,8 @@ function Noir.Classes.ObjectClass:GetVehicle()
         return
     end
 
-    return vehicle_id
+    -- Get the body
+    return Noir.Services.VehicleService:GetBody(vehicle_id)
 end
 
 --[[
@@ -308,14 +310,14 @@ end
 --[[
     Seat this character in a seat (if character).
 ]]
----@param vehicle_id integer
+---@param body NoirBody
 ---@param name string|nil
 ---@param voxelX integer|nil
 ---@param voxelY integer|nil
 ---@param voxelZ integer|nil
-function Noir.Classes.ObjectClass:Seat(vehicle_id, name, voxelX, voxelY, voxelZ)
+function Noir.Classes.ObjectClass:Seat(body, name, voxelX, voxelY, voxelZ)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "vehicle_id", vehicle_id, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "body", body, Noir.Classes.BodyClass)
     Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "name", name, "string", "nil")
     Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "voxelX", voxelX, "number", "nil")
     Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "voxelY", voxelY, "number", "nil")
@@ -323,9 +325,9 @@ function Noir.Classes.ObjectClass:Seat(vehicle_id, name, voxelX, voxelY, voxelZ)
 
     -- Set seated
     if name then
-        server.setSeated(self.ID, vehicle_id, name)
+        server.setSeated(self.ID, body.ID, name)
     elseif voxelX and voxelY and voxelZ then
-        server.setSeated(self.ID, vehicle_id, voxelX, voxelY, voxelZ)
+        server.setSeated(self.ID, body.ID, voxelX, voxelY, voxelZ)
     else
         Noir.Libraries.Logging:Error("NoirObject", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().", true)
     end
