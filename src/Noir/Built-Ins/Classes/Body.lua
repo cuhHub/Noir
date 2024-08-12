@@ -796,6 +796,9 @@ end
 -- // Intellisense
 -------------------------------
 
+--[[
+    Represents a serialized version of the NoirBody class.
+]]
 ---@class NoirSerializedBody
 ---@field ID integer
 ---@field Owner integer
