@@ -135,9 +135,7 @@ end
     Used internally.
 ]]
 function Noir.Services.VehicleService:_LoadSavedVehicles()
-    print("LOADING SAVED VEHICLES")
     for _, vehicle in pairs(self._SavedVehicles) do
-        print("LOADING VEHICLE #"..vehicle.ID)
         self:_RegisterVehicle(vehicle.ID, vehicle.Owner and Noir.Services.PlayerService:GetPlayer(vehicle.Owner), vehicle.SpawnPosition, vehicle.Cost, false)
     end
 end
@@ -147,9 +145,7 @@ end
     Used internally.
 ]]
 function Noir.Services.VehicleService:_LoadSavedBodies()
-    print("LOADING SAVED BODIES")
     for _, body in pairs(self._SavedBodies) do
-        print("LOADING BODY #"..body.ID)
         self:_RegisterBody(body.ID, body.Owner and Noir.Services.PlayerService:GetPlayer(body.Owner), body.SpawnPosition, body.Cost, false)
     end
 end
@@ -432,12 +428,14 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
         return
     end
 
-    -- Remove body
+    -- Remove body from service
     self.Bodies[body.ID] = nil
-    body.ParentVehicle:_RemoveBody(body)
 
-    -- Save vehicle
-    self:_SaveVehicle(body.ParentVehicle)
+    -- Remove body from vehicle
+    local parentVehicle = body.ParentVehicle
+    parentVehicle:_RemoveBody(body)
+
+    self:_SaveVehicle(parentVehicle)
 
     -- Unsave
     self:_UnsaveBody(body)
