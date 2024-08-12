@@ -198,6 +198,15 @@ function Noir.Classes.PlayerClass:GetPosition()
 end
 
 --[[
+    Set the player's audio mood.
+]]
+---@param mood SWAudioMoodEnum
+function Noir.Classes.PlayerClass:SetAudioMood(mood)
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetAudioMood()", "mood", mood, "number")
+    server.setAudioMood(self.ID, mood)
+end
+
+--[[
     Returns this player's character as a NoirObject.
 ]]
 ---@return NoirObject|nil
