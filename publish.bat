@@ -1,3 +1,3 @@
 call build.bat
-py build-apiref.py
+py build-api-reference.py
 py publish.py
