@@ -433,9 +433,11 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
 
     -- Remove body from vehicle
     local parentVehicle = body.ParentVehicle
-    parentVehicle:_RemoveBody(body)
 
-    self:_SaveVehicle(parentVehicle)
+    if parentVehicle then
+        parentVehicle:_RemoveBody(body)
+        self:_SaveVehicle(parentVehicle)
+    end
 
     -- Unsave
     self:_UnsaveBody(body)
@@ -447,7 +449,7 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
     end
 
     -- If the parent vehicle has no more bodies, unregister it
-    if autoDespawnParentVehicle then
+    if autoDespawnParentVehicle and parentVehicle then
         local bodyCount = Noir.Libraries.Table:Length(parentVehicle.Bodies) -- questionable variable name
 
         if bodyCount <= 0 then
@@ -458,6 +460,12 @@ end
 
 --[[
     Get a vehicle from the vehicle service.
+
+    local vehicle = Noir.Services.VehicleService:GetVehicle(51)
+
+    if vehicle then
+        vehicle:Teleport(matrix.translation(0, 10, 0))
+    end
 ]]
 ---@param ID integer
 ---@return NoirVehicle|nil
@@ -467,6 +475,12 @@ end
 
 --[[
     Get a body from the vehicle service.
+
+    local body = Noir.Services.VehicleService:GetBody(51)
+
+    if body then
+        body:SetTooltip("Hello World")
+    end
 ]]
 ---@param ID integer
 ---@return NoirBody|nil
@@ -476,6 +490,10 @@ end
 
 --[[
     Get all spawned vehicles.
+
+    for _, vehicle in pairs(Noir.Services.VehicleService:GetVehicles()) do
+        vehicle:Move(matrix.translation(0, 10, 0))
+    end
 ]]
 ---@return table<integer, NoirVehicle>
 function Noir.Services.VehicleService:GetVehicles()
@@ -483,7 +501,11 @@ function Noir.Services.VehicleService:GetVehicles()
 end
 
 --[[
-    Get all spawned bodies.
+    Get all spawned bodies.<br>
+
+    for _, body in pairs(Noir.Services.VehicleService:GetBodies()) do
+        body:SetEditable(false)
+    end
 ]]
 ---@return table<integer, NoirBody>
 function Noir.Services.VehicleService:GetBodies()
