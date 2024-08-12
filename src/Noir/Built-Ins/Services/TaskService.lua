@@ -61,7 +61,7 @@ end
 function Noir.Services.TaskService:ServiceStart()
     -- Connect to onTick, and constantly check tasks
     self._OnTickConnection = Noir.Callbacks:Connect("onTick", function()
-        for _, task in pairs(self.Tasks) do
+        for _, task in pairs(self:GetTasks(true)) do
             -- Get time so far in seconds
             local time = self:GetTimeSeconds()
 
@@ -93,6 +93,19 @@ end
 ---@return number
 function Noir.Services.TaskService:GetTimeSeconds()
     return server.getTimeMillisec() / 1000
+end
+
+--[[
+    Returns all active tasks.
+]]
+---@param copy boolean|nil
+---@return table<integer, NoirTask>
+function Noir.Services.TaskService:GetTasks(copy)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:GetTasks()", "copy", copy, "boolean", "nil")
+
+    -- Return tasks
+    return copy and Noir.Libraries.Table:Copy(self.Tasks) or self.Tasks
 end
 
 --[[
