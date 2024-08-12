@@ -155,7 +155,6 @@ end
 ]]
 function Noir.Services.VehicleService:_LoadSavedVehicles()
     for _, vehicle in pairs(self._SavedVehicles) do
-        print("owner of vehicle: "..tostring(vehicle.Owner))
         self:_RegisterVehicle(vehicle.ID, vehicle.Owner and Noir.Services.PlayerService:GetPlayer(vehicle.Owner), vehicle.SpawnPosition, vehicle.Cost, false)
     end
 end
