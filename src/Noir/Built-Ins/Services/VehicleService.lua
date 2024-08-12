@@ -117,7 +117,7 @@ function Noir.Services.VehicleService:ServiceStart()
         local body = self:GetBody(vehicle_id)
 
         if not body then
-            Noir.Libraries.Logging:Error("VehicleService", "A body was despawned that isn't recognized.", false)
+            Noir.Libraries.Logging:Error("VehicleService", "A body was despawned that isn't recognized. ID: %s", false, vehicle_id)
             return
         end
 
@@ -129,7 +129,7 @@ function Noir.Services.VehicleService:ServiceStart()
         local body = self:GetBody(vehicle_id)
 
         if not body then
-            Noir.Libraries.Logging:Error("VehicleService", "A body was loaded that isn't recognized.", false)
+            Noir.Libraries.Logging:Error("VehicleService", "A body was loaded that isn't recognized. ID: %s", false, vehicle_id)
             return
         end
 
@@ -141,7 +141,7 @@ function Noir.Services.VehicleService:ServiceStart()
         local body = self:GetBody(vehicle_id)
 
         if not body then
-            Noir.Libraries.Logging:Error("VehicleService", "A body was unloaded that isn't recognized.", false)
+            Noir.Libraries.Logging:Error("VehicleService", "A body was unloaded that isn't recognized. ID: %s", false, vehicle_id)
             return
         end
 
