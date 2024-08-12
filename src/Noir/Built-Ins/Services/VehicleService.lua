@@ -448,10 +448,10 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
 
     -- If the parent vehicle has no more bodies, unregister it
     if autoDespawnParentVehicle then
-        local bodyCount = Noir.Libraries.Table:Length(body.ParentVehicle.Bodies) -- questionable variable name
+        local bodyCount = Noir.Libraries.Table:Length(parentVehicle.Bodies) -- questionable variable name
 
         if bodyCount <= 0 then
-            self:_UnregisterVehicle(body.ParentVehicle, fireEvent)
+            self:_UnregisterVehicle(parentVehicle, fireEvent)
         end
     end
 end
