@@ -69,7 +69,13 @@ function Noir.Classes.EventClass:Fire(...)
     self.IsFiring = true
 
     for _, connection_id in ipairs(self.ConnectionsOrder) do
-        self.Connections[connection_id]:Fire(...)
+        local connection = self.Connections[connection_id]
+        local result = connection:Fire(...)
+
+        -- Disconnect if prompted
+        if result == Noir.Libraries.Events.DismissAction then
+            connection:Disconnect()
+        end
     end
 
     self.IsFiring = false

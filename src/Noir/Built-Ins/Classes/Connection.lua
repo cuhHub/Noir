@@ -61,13 +61,14 @@ end
     Triggers the callback's stored function.
 ]]
 ---@param ... any
+---@return any
 function Noir.Classes.ConnectionClass:Fire(...)
     if not self.Connected then
         Noir.Libraries.Logging:Error("NoirConnection", "Attempted to fire an event connection when it is not connected.", true)
         return
     end
 
-    self.Callback(...)
+    return self.Callback(...)
 end
 
 --[[

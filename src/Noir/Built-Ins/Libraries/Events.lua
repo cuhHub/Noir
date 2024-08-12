@@ -57,7 +57,7 @@ Noir.Libraries.Events = Noir.Libraries:Create(
 --[[
     Create an event. This event can then be fired with the :Fire() method.
 
-    local MyEvent = Events:Create()
+    local MyEvent = Noir.Libraries.Events:Create()
 
     local connection = MyEvent:Connect(function()
         print("Fired")
@@ -76,3 +76,21 @@ function Noir.Libraries.Events:Create()
     local event = Noir.Classes.EventClass:New()
     return event
 end
+
+--[[
+    Return this in the function provided to `:Connect()` to disconnect the function from the connected event after it is called.<br>
+    This is similar to calling `:Disconnect()` after a connection to an event was fired.
+    
+    local MyEvent = Noir.Libraries.Events:Create()
+
+    MyEvent:Connect(function()
+        print("Fired")
+        return Noir.Libraries.Events.DismissAction
+    end)
+
+    MyEvent:Fire()
+    -- "Fired"
+    MyEvent:Fire()
+    -- N/A
+]]
+Noir.Libraries.Events.DismissAction = {}
