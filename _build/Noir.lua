@@ -4904,7 +4904,6 @@ function Noir.Services.ObjectService:ServiceStart()
         local object = self:GetObject(object_id) -- creates an object if it doesn't already exist
 
         if not object then
-            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnLoadConnection callback.", false)
             return
         end
 
@@ -4922,7 +4921,6 @@ function Noir.Services.ObjectService:ServiceStart()
         local object = self:GetObject(object_id)
 
         if not object then
-            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnUnloadConnection callback.", false)
             return
         end
 
