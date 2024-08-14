@@ -14,7 +14,7 @@ Notify a player or multiple players.
 ### Parameters
 - `title`: string
 - `message`: string
-- `notificationType`: SWNotifiationTypeEnum
+- `notificationType`: SWNotificationTypeEnum
 - `player`: NoirPlayer|table<integer, NoirPlayer>
 - `...`: any
 

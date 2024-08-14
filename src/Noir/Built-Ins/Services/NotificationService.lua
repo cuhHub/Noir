@@ -70,7 +70,7 @@ end
 ]]
 ---@param title string
 ---@param message string
----@param notificationType SWNotifiationTypeEnum
+---@param notificationType SWNotificationTypeEnum
 ---@param player NoirPlayer|table<integer, NoirPlayer>
 ---@param ... any
 function Noir.Services.NotificationService:Notify(title, message, notificationType, player, ...)

@@ -147,4 +147,4 @@ Send this player a notification.
 ### Parameters
 - `title`: string
 - `message`: string
-- `notificationType`: SWNotifiationTypeEnum
+- `notificationType`: SWNotificationTypeEnum

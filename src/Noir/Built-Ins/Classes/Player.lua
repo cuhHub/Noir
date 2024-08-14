@@ -252,7 +252,7 @@ end
 ]]
 ---@param title string
 ---@param message string
----@param notificationType SWNotifiationTypeEnum
+---@param notificationType SWNotificationTypeEnum
 function Noir.Classes.PlayerClass:Notify(title, message, notificationType)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Notify()", "title", title, "string")

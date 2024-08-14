@@ -36,7 +36,7 @@ Notifications = Noir.Libraries:Create("Notifications")
 
 ---@param title string
 ---@param text string
----@param notificationType SWNotifiationTypeEnum
+---@param notificationType SWNotificationTypeEnum
 ---@param player NoirPlayer|nil
 function Notifications:SendNotification(title, text, notificationType, player)
     server.notify(player and player.ID or -1, title, text, notificationType)
