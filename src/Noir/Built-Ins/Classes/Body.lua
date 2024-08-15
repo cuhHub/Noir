@@ -37,15 +37,15 @@
 ]]
 ---@class NoirBody: NoirClass
 ---@field New fun(self: NoirBody, ID: integer, owner: NoirPlayer|nil, spawnPosition: SWMatrix, cost: number): NoirBody
----@field ID integer
----@field Owner NoirPlayer|nil
----@field SpawnPosition SWMatrix
----@field Cost number
----@field ParentVehicle NoirVehicle|nil This will be nil if the parent vehicle doesn't exist (occurs when the parent vehicle or body despawns)
----@field Loaded boolean
----@field OnDespawn NoirEvent
----@field OnLoad NoirEvent
----@field OnUnload NoirEvent
+---@field ID integer The ID of this body
+---@field Owner NoirPlayer|nil The owner of this body, or nil if spawned by an addon OR if the player who owns the body left before Noir starts again (eg: after save load or addon reload)
+---@field SpawnPosition SWMatrix The position this body was spawned at
+---@field Cost number The cost of this body
+---@field ParentVehicle NoirVehicle|nil The vehicle this body belongs to. This can be nil if the body or vehicle is despawned
+---@field Loaded boolean Whether or not this body is loaded
+---@field OnDespawn NoirEvent Fired when this body is despawned
+---@field OnLoad NoirEvent Fired when this body is loaded
+---@field OnUnload NoirEvent Fired when this body is unloaded
 Noir.Classes.BodyClass = Noir.Class("NoirBody")
 
 --[[

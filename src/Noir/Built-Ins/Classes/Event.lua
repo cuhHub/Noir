@@ -38,9 +38,9 @@
 ---@field New fun(self: NoirEvent): NoirEvent
 ---@field CurrentID integer The ID that will be passed to new connections. Increments by 1 every connection
 ---@field Connections table<integer, NoirConnection> The connections that are connected to this event
----@field ConnectionsOrder integer[] Array of connection IDs into Connections table
----@field ConnectionsToRemove NoirConnection[]? Array of connections to remove after the firing of the event
----@field ConnectionsToAdd NoirConnection[]? Array of connections to add after the firing of the event
+---@field ConnectionsOrder table<integer, integer> Array of connection IDs into Connections table
+---@field ConnectionsToRemove table<integer, NoirConnection> Array of connections to remove after the firing of the event
+---@field ConnectionsToAdd table<integer, NoirConnection> Array of connections to add after the firing of the event
 ---@field IsFiring boolean Weather or not this event is currently calling connection callbacks
 ---@field HasFiredOnce boolean Whether or not this event has fired atleast once
 Noir.Classes.EventClass = Noir.Class("NoirEvent")

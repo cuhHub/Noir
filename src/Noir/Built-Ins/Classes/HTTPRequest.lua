@@ -36,9 +36,9 @@
 ]]
 ---@class NoirHTTPRequest: NoirClass
 ---@field New fun(self: NoirHTTPRequest, URL: string, port: integer): NoirHTTPRequest
----@field URL string
----@field Port integer
----@field OnResponse NoirEvent
+---@field URL string The URL of the request (eg: "/hello")
+---@field Port integer The port of the request
+---@field OnResponse NoirEvent Arguments: response (NoirHTTPResponse) | Fired when this request receives a response
 Noir.Classes.HTTPRequestClass = Noir.Class("NoirHTTPRequest")
 
 --[[

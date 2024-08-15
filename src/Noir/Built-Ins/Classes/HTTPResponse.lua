@@ -36,7 +36,7 @@
 ]]
 ---@class NoirHTTPResponse: NoirClass
 ---@field New fun(self: NoirHTTPResponse, response: string): NoirHTTPResponse
----@field Text string
+---@field Text string The raw response.
 Noir.Classes.HTTPResponseClass = Noir.Class("NoirHTTPResponse")
 
 --[[

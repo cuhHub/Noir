@@ -36,10 +36,10 @@
 ]]
 ---@class NoirLibrary: NoirClass
 ---@field New fun(self: NoirLibrary, name: string, shortDescription: string, longDescription: string, authors: table<integer, string>): NoirLibrary
----@field Name string
----@field ShortDescription string
----@field LongDescription string
----@field Authors table<integer, string>
+---@field Name string The name of the library
+---@field ShortDescription string The short description of the library
+---@field LongDescription string The long description of the library
+---@field Authors table<integer, string> The authors of the library
 Noir.Classes.LibraryClass = Noir.Class("NoirLibrary")
 
 --[[

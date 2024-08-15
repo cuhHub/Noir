@@ -36,12 +36,12 @@
 ]]
 ---@class NoirMessage: NoirClass
 ---@field New fun(self: NoirMessage, author: NoirPlayer|nil, isAddon: boolean, content: string, title: string, sentAt: number|nil, recipient: NoirPlayer|nil): NoirMessage
----@field Author NoirPlayer|nil
----@field IsAddon boolean
----@field Content string
+---@field Author NoirPlayer|nil The author of the message, or nil if sent by an addon
+---@field IsAddon boolean Whether or not the message was sent by an addon
+---@field Content string The actual message
 ---@field Title string If this message wasn't sent by an addon, this will be the author's name
----@field SentAt number
----@field Recipient NoirPlayer|nil nil = everyone
+---@field SentAt number Represents when the message was sent
+---@field Recipient NoirPlayer|nil Who received the message, nil = everyone
 Noir.Classes.MessageClass = Noir.Class("NoirMessage")
 
 --[[

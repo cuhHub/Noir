@@ -40,7 +40,7 @@
 ---@field Callback function The callback that is assigned to this connection
 ---@field ParentEvent NoirEvent The event that this connection is connected to
 ---@field Connected boolean Whether or not this connection is connected
----@field Index integer The index of this connection in ParentEvent.ConnectionsOrder
+---@field Index integer The index of this connection in `ParentEvent.ConnectionsOrder`
 Noir.Classes.ConnectionClass = Noir.Class("NoirConnection")
 
 --[[

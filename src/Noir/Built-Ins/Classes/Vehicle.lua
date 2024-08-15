@@ -37,13 +37,13 @@
 ]]
 ---@class NoirVehicle: NoirClass
 ---@field New fun(self: NoirVehicle, ID: integer, owner: NoirPlayer|nil, spawnPosition: SWMatrix, cost: number): NoirVehicle
----@field ID integer
----@field Owner NoirPlayer|nil
----@field SpawnPosition SWMatrix
----@field Cost number
----@field Bodies table<integer, NoirBody>
+---@field ID integer The ID of this vehicle
+---@field Owner NoirPlayer|nil The owner of this vehicle, or nil if spawned by an addon OR if the player who owns the vehicle left before Noir starts again (eg: after save load or addon reload)
+---@field SpawnPosition SWMatrix The position this vehicle was spawned at
+---@field Cost number The cost of this vehicle
+---@field Bodies table<integer, NoirBody> A table of all of the the bodies apart of this vehicle
 ---@field PrimaryBody NoirBody|nil This will be nil if there are no bodies (occurs when the vehicle is despawned)
----@field OnDespawn NoirEvent
+---@field OnDespawn NoirEvent Fired when this vehicle is despawned
 Noir.Classes.VehicleClass = Noir.Class("NoirVehicle")
 
 --[[
