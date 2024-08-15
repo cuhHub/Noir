@@ -186,7 +186,7 @@ end
         table.insert(tbl, value)
     end
 
-    Noir.Services.TaskService:IterateOverTicks(tbl, 1000, function(value)
+    Noir.Services.TaskService:IterateOverTicks(tbl, 1000, function(value, currentTick, completed)
         print(value)
     end)
 ]]
