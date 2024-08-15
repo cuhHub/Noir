@@ -67,7 +67,7 @@ function Noir.Services.TaskService:ServiceStart()
     -- Connect to onTick
     self._OnTickConnection = Noir.Callbacks:Connect("onTick", function()
         -- Check tick iteration processes
-        for _, tickIterationProcess in pairs(self.TickIterationProcesses) do
+        for _, tickIterationProcess in pairs(self:GetTickIterationProcesses(true)) do
             -- Check if the iteration process is done
             if tickIterationProcess.Completed then
                 self:RemoveTickIterationProcess(tickIterationProcess)
