@@ -61,7 +61,7 @@ function Noir.Classes.TickIterationClass:Init(ID, tbl, chunkSize)
     self.IterationEvent = Noir.Libraries.Events:Create()
     self.ChunkSize = chunkSize
     self.TableToIterate = tbl
-    self.TableSize = Noir.Libraries.Table:Length(self.TableToIterate)
+    self.TableSize = #self.TableToIterate
     self.CurrentTick = 0
     self.Completed = false
 
@@ -76,6 +76,7 @@ function Noir.Classes.TickIterationClass:Iterate()
     self.CurrentTick = self.CurrentTick + 1
 
     if not self.Chunks[self.CurrentTick] then
+        Noir.Libraries.Logging:Warning("NoirTickIterationProcess", ":Iterate() was called when the iteration process has already reached the end of the table")
         return true
     end
 
@@ -85,6 +86,7 @@ function Noir.Classes.TickIterationClass:Iterate()
         self.IterationEvent:Fire(value, self.CurrentTick, completed)
     end
 
+    self.Completed = self.Completed or completed
     return completed
 end
 
@@ -96,8 +98,7 @@ function Noir.Classes.TickIterationClass:CalculateChunks()
     local chunks = {}
 
     for index = 1, self.TableSize, self.ChunkSize do
-        local chunk = {}
-        table.insert(chunk, Noir.Libraries.Table:Slice(self.TableToIterate, index, index + self.ChunkSize - 1))
+        table.insert(chunks, Noir.Libraries.Table:Slice(self.TableToIterate, index, index + self.ChunkSize - 1))
     end
 
     return chunks
