@@ -87,7 +87,7 @@ function Noir.Classes.TickIterationClass:Iterate()
 
     for index, value in pairs(chunk) do
         -- Set completed
-        local completed = self.CurrentTick >= self.TableSize and index >= #chunk
+        local completed = self.CurrentTick >= #self.Chunks and index >= #chunk
         self.Completed = completed
 
         -- Fire event
