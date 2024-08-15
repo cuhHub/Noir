@@ -73,21 +73,29 @@ end
 ]]
 ---@return boolean completed
 function Noir.Classes.TickIterationClass:Iterate()
+    -- Increment the current tick
     self.CurrentTick = self.CurrentTick + 1
 
+    -- Check if this is the final iteration
     if not self.Chunks[self.CurrentTick] then
         Noir.Libraries.Logging:Warning("NoirTickIterationProcess", ":Iterate() was called when the iteration process has already reached the end of the table")
         return true
     end
 
-    local completed = self.CurrentTick >= #self.Chunks
+    -- Check if this is the final iteration
+    local chunk = self.Chunks[self.CurrentTick]
 
-    for _, value in pairs(self.Chunks[self.CurrentTick]) do
+    for index, value in pairs(chunk) do
+        -- Set completed
+        local completed = self.CurrentTick >= self.TableSize and index >= #chunk
+        self.Completed = completed
+
+        -- Fire event
         self.IterationEvent:Fire(value, self.CurrentTick, completed)
     end
 
-    self.Completed = self.Completed or completed
-    return completed
+    -- Return
+    return self.Completed
 end
 
 --[[
@@ -95,11 +103,13 @@ end
 ]]
 ---@return table<integer, table<integer, any>>
 function Noir.Classes.TickIterationClass:CalculateChunks()
+    -- Calculate chunks
     local chunks = {}
 
     for index = 1, self.TableSize, self.ChunkSize do
         table.insert(chunks, Noir.Libraries.Table:Slice(self.TableToIterate, index, index + self.ChunkSize - 1))
     end
 
+    -- Return
     return chunks
 end
