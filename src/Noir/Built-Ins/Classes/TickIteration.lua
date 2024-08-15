@@ -1,0 +1,104 @@
+--------------------------------------------------------
+-- [Noir] Classes - Tick Iteration
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a process in which code iterates through a table in chunks of x over how ever many necessary ticks.
+]]
+---@class NoirTickIterationProcess: NoirClass
+---@field New fun(self: NoirTickIterationProcess, ID: number, tbl: table<integer, table<integer, any>>, chunkSize: integer): NoirTickIterationProcess
+---@field ID integer The ID of this process
+---@field IterationEvent NoirEvent Arguments: value (any), tick (integer), completed (boolean) | Fired when an iteration during a tick is occuring
+---@field ChunkSize integer The number of values to iterate through per tick
+---@field TableToIterate table The table to iterate through across ticks
+---@field TableSize integer The number of values in the table
+---@field CurrentTick integer Represents the current tick the iteration is at
+---@field Completed boolean Whether or not the iteration is completed
+---@field Chunks table<integer, table<integer, any>> The chunks of the table
+Noir.Classes.TickIterationClass = Noir.Class("NoirTickIterationProcess")
+
+--[[
+    Initializes tick iteration process class objects.
+]]
+---@param ID integer
+---@param tbl table<integer, table<integer, any>>
+---@param chunkSize integer
+function Noir.Classes.TickIterationClass:Init(ID, tbl, chunkSize)
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "chunkSize", chunkSize, "number")
+
+    self.ID = ID
+    self.IterationEvent = Noir.Libraries.Events:Create()
+    self.ChunkSize = chunkSize
+    self.TableToIterate = tbl
+    self.TableSize = Noir.Libraries.Table:Length(self.TableToIterate)
+    self.CurrentTick = 0
+    self.Completed = false
+
+    self.Chunks = self:CalculateChunks()
+end
+
+--[[
+    Iterate through the table in chunks of x over how ever many necessary ticks.
+]]
+---@return boolean completed
+function Noir.Classes.TickIterationClass:Iterate()
+    self.CurrentTick = self.CurrentTick + 1
+
+    if not self.Chunks[self.CurrentTick] then
+        return true
+    end
+
+    local completed = self.CurrentTick >= #self.Chunks
+
+    for _, value in pairs(self.Chunks[self.CurrentTick]) do
+        self.IterationEvent:Fire(value, self.CurrentTick, completed)
+    end
+
+    return completed
+end
+
+--[[
+    Calculate the chunks of the table.
+]]
+---@return table<integer, table<integer, any>>
+function Noir.Classes.TickIterationClass:CalculateChunks()
+    local chunks = {}
+
+    for index = 1, self.TableSize, self.ChunkSize do
+        local chunk = {}
+        table.insert(chunk, Noir.Libraries.Table:Slice(self.TableToIterate, index, index + self.ChunkSize - 1))
+    end
+
+    return chunks
+end

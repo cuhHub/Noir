@@ -41,8 +41,10 @@
     task:SetDuration(10) -- Duration changes from 5 to 10
 ]]
 ---@class NoirTaskService: NoirService
----@field _IncrementalID integer The ID of the most recent task
 ---@field Tasks table<integer, NoirTask> A table containing active tasks
+---@field _TaskID integer The ID of the most recent task
+---@field TickIterationProcesses table<integer, NoirTickIterationProcess> A table of tick iteration processes
+---@field _TickIterationProcessID integer The ID of the most recent tick iteration process
 ---@field _OnTickConnection NoirConnection Represents the connection to the onTick game callback
 Noir.Services.TaskService = Noir.Services:CreateService(
     "TaskService",
@@ -54,13 +56,27 @@ Noir.Services.TaskService = Noir.Services:CreateService(
 
 function Noir.Services.TaskService:ServiceInit()
     -- Create attributes
-    self._IncrementalID = 0
     self.Tasks = {}
+    self._TaskID = 0
+
+    self.TickIterationProcesses = {}
+    self._TickIterationProcessID = 0
 end
 
 function Noir.Services.TaskService:ServiceStart()
-    -- Connect to onTick, and constantly check tasks
+    -- Connect to onTick
     self._OnTickConnection = Noir.Callbacks:Connect("onTick", function()
+        -- Check tick iteration processes
+        for _, tickIterationProcess in pairs(self.TickIterationProcesses) do
+            -- Check if the iteration process is done
+            if tickIterationProcess.Completed then
+                self:RemoveTickIterationProcess(tickIterationProcess)
+            else
+                tickIterationProcess:Iterate()
+            end
+        end
+
+        -- Check tasks
         for _, task in pairs(self:GetTasks(true)) do
             -- Get time so far in seconds
             local time = self:GetTimeSeconds()
@@ -96,19 +112,6 @@ function Noir.Services.TaskService:GetTimeSeconds()
 end
 
 --[[
-    Returns all active tasks.
-]]
----@param copy boolean|nil
----@return table<integer, NoirTask>
-function Noir.Services.TaskService:GetTasks(copy)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.TaskService:GetTasks()", "copy", copy, "boolean", "nil")
-
-    -- Return tasks
-    return copy and Noir.Libraries.Table:Copy(self.Tasks) or self.Tasks
-end
-
---[[
     Creates and adds a task to the TaskService.
 
     local task = Noir.Services.TaskService:AddTask(function(toSay)
@@ -135,16 +138,29 @@ function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepe
     isRepeating = isRepeating or false
 
     -- Increment ID
-    self._IncrementalID = self._IncrementalID + 1
+    self._TaskID = self._TaskID + 1
 
     -- Create task
-    local task = Noir.Classes.TaskClass:New(self._IncrementalID, duration, isRepeating, arguments)
+    local task = Noir.Classes.TaskClass:New(self._TaskID, duration, isRepeating, arguments)
     task.OnCompletion:Connect(callback)
 
     self.Tasks[task.ID] = task
 
     -- Return the task
     return task
+end
+
+--[[
+    Returns all active tasks.
+]]
+---@param copy boolean|nil
+---@return table<integer, NoirTask>
+function Noir.Services.TaskService:GetTasks(copy)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:GetTasks()", "copy", copy, "boolean", "nil")
+
+    -- Return tasks
+    return copy and Noir.Libraries.Table:Copy(self.Tasks) or self.Tasks
 end
 
 --[[
@@ -157,4 +173,68 @@ function Noir.Services.TaskService:RemoveTask(task)
 
     -- Remove task
     self.Tasks[task.ID] = nil
+end
+
+--[[
+    Iterate a table over how many necessary ticks in chunks of x.<br>
+    Useful for iterating through large tables without freezes due to taking too long in a tick.<br>
+    Only works for tables that are sequential. Please use `Noir.Libraries.Table:Values()` to convert a non-sequential table into a sequential table.
+
+    local tbl = {}
+
+    for value = 1, 100000 do
+        table.insert(tbl, value)
+    end
+
+    Noir.Services.TaskService:IterateOverTicks(tbl, 1000, function(value)
+        print(value)
+    end)
+]]
+---@param tbl table<integer, any>
+---@param chunkSize integer How many values to iterate per tick
+---@param callback fun(value: any)
+---@return NoirTickIterationProcess
+function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:IterateOverTicks()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:IterateOverTicks()", "chunkSize", chunkSize, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:IterateOverTicks()", "callback", callback, "function")
+
+    -- Increment ID
+    self._TickIterationProcessID = self._TickIterationProcessID + 1
+
+    -- Create iteration process
+    local iterationProcess = Noir.Classes.TickIterationClass:New(self._TickIterationProcessID, tbl, chunkSize)
+    iterationProcess.IterationEvent:Connect(callback)
+
+    -- Store iteration process
+    self.TickIterationProcesses[self._TickIterationProcessID] = iterationProcess
+
+    -- Return iteration
+    return iterationProcess
+end
+
+--[[
+    Get all active tick iteration processes.
+]]
+---@param copy boolean|nil
+---@return table<integer, NoirTickIterationProcess>
+function Noir.Services.TaskService:GetTickIterationProcesses(copy)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:GetTickIterationProcesses()", "copy", copy, "boolean", "nil")
+
+    -- Return tick iteration processes
+    return copy and Noir.Libraries.Table:Copy(self.TickIterationProcesses) or self.TickIterationProcesses
+end
+
+--[[
+    Removes a tick iteration process.
+]]
+---@param tickIterationProcess NoirTickIterationProcess
+function Noir.Services.TaskService:RemoveTickIterationProcess(tickIterationProcess)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTickIterationProcess()", "tickIterationProcess", tickIterationProcess, Noir.Classes.TickIterationClass)
+
+    -- Remove iteration process
+    self.TickIterationProcesses[tickIterationProcess.ID] = nil
 end
