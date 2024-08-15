@@ -192,7 +192,7 @@ end
 ]]
 ---@param tbl table<integer, any>
 ---@param chunkSize integer How many values to iterate per tick
----@param callback fun(value: any)
+---@param callback fun(value: any, currentTick: integer|nil, completed: boolean|nil)
 ---@return NoirTickIterationProcess
 function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
     -- Type checking
