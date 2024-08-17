@@ -27,6 +27,9 @@ limitations under the License.
 from pathlib import Path
 import click
 import json
+import rich
+from rich import print
+from rich.panel import Panel
 
 # ---- // Classes
 class Combiner():
@@ -232,13 +235,22 @@ def combiner_tool(directory: str, destination: str, allow_file_extension: list[s
     _, contents = combiner.combine()
 
     # Output
-    click.secho("[Done] Combined the following files:", fg = "green", underline = True, bold = True)
+    print(Panel(
+        title = "📂 | Noir Combiner Tool",
+        renderable = "A tool to combine multiple files into a single file.",
+        border_style = "blue",
+        width = 60
+    ))
+
+    print("[bold green](Done)[/bold green] Combined the following files:")
     
-    click.echo(
-        click.style("- " + "\n- ".join([str(path) for path in contents.keys()]), fg = "yellow")
-    )
+    if len(contents) == 0:
+        print("     - [red]None[/red]")
     
-    click.secho(f"To: {combiner.destination}", fg = "green", underline = True, bold = True)
+    for path in contents.keys():
+        print(f"    🗃️ [blue]{path}[/blue]")
+    
+    print(f"To: {combiner.destination}")
     
 if __name__ == "__main__":
     combiner_tool()
