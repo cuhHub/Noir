@@ -198,7 +198,7 @@ class Project():
 
         self.NoirPath = self.addonPath / "Noir.lua"
         self.orderPath = self.addonPath / "__order.json"
-        self.combinePath = self.addonPath / "combine.py"
+        self.combinePath = self.addonPath / "combine.exe"
         self.buildPath = self.addonPath / "build.bat"
         self.scriptPath = self.addonPath / "main.lua"
         self.intellisensePath = self.addonPath / "intellisense.lua"
