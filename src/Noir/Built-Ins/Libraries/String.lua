@@ -86,3 +86,49 @@ function Noir.Libraries.String:SplitLines(str)
     -- Split the string by newlines
     return self:Split(str, "\n")
 end
+
+--[[
+    Returns whether or not the provided string starts with the provided prefix.
+
+    local myString = "hello world"
+    Noir.Libraries.String:StartsWith(myString, "hello") -- true
+    Noir.Libraries.String:StartsWith(myString, "world") -- false
+]]
+---@param str string
+---@param prefix string
+---@return boolean
+function Noir.Libraries.String:StartsWith(str, prefix)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.String:StartsWith()", "str", str, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.String:StartsWith()", "prefix", prefix, "string")
+
+    -- Return
+    if prefix == "" then
+        return false
+    end
+
+    return str:sub(1, #prefix) == prefix
+end
+
+--[[
+    Returns whether or not the provided string ends with the provided suffix.
+
+    local myString = "hello world"
+    Noir.Libraries.String:EndsWith(myString, "world") -- true
+    Noir.Libraries.String:EndsWith(myString, "hello") -- false
+]]
+---@param str string
+---@param suffix string
+---@return boolean
+function Noir.Libraries.String:EndsWith(str, suffix)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.String:EndsWith()", "str", str, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.String:EndsWith()", "suffix", suffix, "string")
+
+    -- Return
+    if suffix == "" then
+        return false
+    end
+
+    return str:sub(-#suffix) == suffix
+end
