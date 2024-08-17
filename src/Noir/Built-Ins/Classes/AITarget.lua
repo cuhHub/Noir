@@ -36,9 +36,9 @@
 ]]
 ---@class NoirAITarget: NoirClass
 ---@field New fun(self: NoirAITarget, data: SWTargetData): NoirAITarget
----@field TargetBody NoirBody|nil
----@field TargetCharacter NoirObject|nil
----@field TargetPos SWMatrix
+---@field TargetBody NoirBody|nil The body that the character is targeting (if any).
+---@field TargetCharacter NoirObject|nil The character that the character is targeting (if any).
+---@field TargetPos SWMatrix The position that the character is targeting.
 Noir.Classes.AITargetClass = Noir.Class("NoirAITarget")
 
 --[[
