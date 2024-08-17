@@ -152,8 +152,7 @@ class Project():
 
     To reflect changes from your code into Stormworks, run `build.bat`. Otherwise, changes won't get synced to Stormworks.
     
-    Head over to [here](https://cuhhub.gitbook.io/noir) for documentation.
-    """)
+    Head over to [here](https://cuhhub.gitbook.io/noir) for documentation.""")
     
     NoirDownloadURL = "https://github.com/cuhHub/Noir/releases/latest/download/Noir.lua"
     CombineDownloadURL = "https://github.com/cuhHub/Noir/releases/latest/download/combine.exe"
