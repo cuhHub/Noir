@@ -208,6 +208,20 @@ function Noir.Classes.ObjectClass:SetAIState(state)
 end
 
 --[[
+    Returns this character's AI target (if character).
+]]
+---@return NoirAITargetData|nil
+function Noir.Classes.ObjectClass:GetAITarget()
+    local data = server.getAITarget(self.ID)
+
+    if not data then
+        return
+    end
+
+    return Noir.Classes.AITargetDataClass:New(data)
+end
+
+--[[
     Set this character's AI character target (if character).
 ]]
 ---@param target NoirObject
@@ -220,10 +234,13 @@ end
     Set this character's AI body target (if character).
 ]]
 ---@param body NoirBody
-function Noir.Classes.ObjectClass:SetAIVehicleTarget(body)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIVehicleTarget()", "body", body, Noir.Classes.BodyClass)
+function Noir.Classes.ObjectClass:SetAIBodyTarget(body)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIBodyTarget()", "body", body, Noir.Classes.BodyClass)
     server.setAITargetVehicle(self.ID, body.ID)
 end
+
+---@deprecated
+Noir.Classes.ObjectClass.SetAIVehicleTarget = Noir.Classes.ObjectClass.SetAIBodyTarget
 
 --[[
     Kills this character (if character).
