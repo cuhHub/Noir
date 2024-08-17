@@ -26,86 +26,47 @@ layout:
 
 [Discord Community](https://dsc.gg/cuhhubsw)
 
-## What is Noir?
+## What Is Noir?
 
 Noir is a framework that helps Stormworks addon developers create addons with a neat, modular structure.
 
 Noir also comes with built-in [services](tutorials/services.md) and [libraries](tutorials/libraries.md) to reduce the amount of code you have to write.
 
-## Prerequisites
+## Setting Up a Project With Noir
+Noir comes with a tool to help you set up a project with Noir in just a minute. This section will show you how to install and use it.
 
-This page will assume you already have an addon placed in `%appdata%/Stormworks/data/missions` (or somewhere else if you're experienced) that looks like:
+Note that this tool has only been tested on Windows. MacOS and Linux are untested but should work.
 
-```
-📁 | Your Addon
-        🔵 | script.lua
-        🟠 | playlist.xml
-    ...
-```
+1) Head over to [here](https://github.com/cuhHub/Noir/releases/latest/download/project_manager.exe) to download the compiled Project Manager tool.
 
-## Installing Noir In Your Addon
+      ⚠️ | If you don't trust the `.exe` and have Python installed, head to `/tools/project_manager` in the [Noir repo](https://github.com/cuhHub/Noir) to run from source instead.
 
-Before we even set up an addon, let's install Noir first.
+2) Run the downloaded `.exe` in a terminal. You'll see the tool description along with prompts below it. Simply follow what the prompts ask to set up your project.
 
-1. Head to the [latest Noir release.](https://github.com/cuhHub/Noir/releases/latest)
-2. Download the `Noir.lua` file.
-3. Move the file into your addon directory.
-4. (OPTIONAL) Move `docs/intellisense.lua` from [this repo](https://github.com/Cuh4/StormworksAddonLuaDocumentation) into your addon directory for full intellisense with addon lua.
+3) The first prompt asks for the project name. This is the name of your addon essentially. For example, you could put `AI Gunners` if your desired addon is based around AI gunners.
 
-Your addon directory should now look like:
+4) The second prompt asks for the desired path to your addon. This path can be anywhere. I recommend somewhere in your `Documents` folder (if on Windows). For example: `C:/Users/JohnDoe/Documents/Addons/AIGunners`.
 
-```
-📁 | Your Addon
-        🔵 | Noir.lua
-        🔵 | script.lua
-        🔵 | intellisense.lua <-- optional
-        🟠 | playlist.xml
-```
+5) The third prompt asks for the path to your Stormworks addons. On Windows, this is 1000% `%appdata%/Stormworks/data/missions`.
 
-Now, you need to use Noir in your `script.lua` file, but `Noir` is in a whole separate location. This is a problem because addons cannot use `require()`, but no worries! We need to simply integrate Noir into our `script.lua` file.
+![The tool's prompts](.gitbook/assets/31.png)
 
-## Integrating Noir Using Noir's Tools
+Good job! After all of that, you'll enter a new area of the tool that allows you to create the addon (create all necessary files), update the addon (update Noir and tools), open the addon in VSCode (or if not possible, file explorer), and exit the tool.
 
-{% hint style="warning" %}
-[Python](https://www.python.org/downloads/) is required for these tools, preferably `>3.12`.
-{% endhint %}
+Simply type `create` to create the addon. This will automatically open the addon after creation is complete.
 
-1. Extract `requirements.txt`, `combine.py` and `build.bat` from [here](https://github.com/cuhHub/Noir/tree/main/tools/combine) from and place it in your addon directory.
-2. Install the requirements by running `pip install -r requirements.txt`. You can delete the `requirements.txt` file after doing so.
-3. Create an `__order.json` file in your addon directory containing the following:
+![Project control choices](.gitbook/assets/32.png)
 
-{% code title="__order.json" lineNumbers="true" %}
-```json
-{
-    "order" : [
-        "Noir.lua",
-        "script.lua" // replace with your addon's main file. normally "script.lua"
-    ]
-}
-```
-{% endcode %}
+If Noir receives an update, simply repeat the previous steps and type `update` instead of `create`.
 
-4. Run `build.bat`. This will combine the contents of Noir and your addon and dump it all into a file called `build.lua` by running `py combine.py` with specific arguments.
-
-Your addon directory should now look like:
-
-```
-📁 | Your Addon
-        🔵 | Noir.lua
-        🔵 | script.lua
-        🔵 | intellisense.lua <-- optional
-        🟠 | playlist.xml
-        🟠 | __order.json
-        🔵 | combine.py
-        🟡 | build.bat
-```
-
-## Integrating Noir Using SW Lua VSCode Extension
+## Using the Stormworks Lua VSCode Extension Instead
 
 This assumes you have the [Stormworks Lua VSCode Extension.](https://marketplace.visualstudio.com/items?itemName=NameousChangey.lifeboatapi)
 
-1. Add `require("Noir")` into your `script.lua` file.
-2. Use the build keybind, or search "Build" in the VSCode command palette.
+1) Download [Noir.lua](https://github.com/cuhHub/Noir/releases/latest/download/Noir.lua).
+2) Move the downloaded file into your addon directory.
+3) Add `require("Noir")` into your addon's main file.
+4) Build your addon via the extension's build keybind or the build command in the command palette (`CTRL + SHIFT + P`)
 
 ## Congratulations!
 
