@@ -431,6 +431,23 @@ function Noir.Services.PlayerService:GetPlayerByName(name)
 end
 
 --[[
+    Get a player by their character.
+]]
+---@param character NoirObject
+---@return NoirPlayer|nil
+function Noir.Services.PlayerService:GetPlayerByCharacter(character)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerByCharacter()", "character", character, Noir.Classes.ObjectClass)
+
+    -- Get player
+    for _, player in pairs(self:GetPlayers(true)) do
+        if player:GetCharacter() == character then
+            return player
+        end
+    end
+end
+
+--[[
     Searches for a player by their name, similar to a Google search but way simpler under the hood.
 ]]
 ---@param name string
