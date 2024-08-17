@@ -2297,9 +2297,6 @@ function Noir.Classes.ObjectClass:SetAIBodyTarget(body)
     server.setAITargetVehicle(self.ID, body.ID)
 end
 
----@deprecated
-Noir.Classes.ObjectClass.SetAIVehicleTarget = Noir.Classes.ObjectClass.SetAIBodyTarget
-
 --[[
     Set this character's AI position target (if character).
 ]]
