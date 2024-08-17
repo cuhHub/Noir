@@ -1,1 +1,2 @@
-py tools/combine/combine.py --directory "src/Noir" --destination "_build/Noir.lua" --allow_file_extension ".lua"
+:: Build Noir
+py build.py
