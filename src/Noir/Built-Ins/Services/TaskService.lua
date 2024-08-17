@@ -204,7 +204,7 @@ function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
     self._TickIterationProcessID = self._TickIterationProcessID + 1
 
     -- Create iteration process
-    local iterationProcess = Noir.Classes.TickIterationClass:New(self._TickIterationProcessID, tbl, chunkSize)
+    local iterationProcess = Noir.Classes.TickIterationProcessClass:New(self._TickIterationProcessID, tbl, chunkSize)
     iterationProcess.IterationEvent:Connect(callback)
 
     -- Store iteration process
@@ -233,7 +233,7 @@ end
 ---@param tickIterationProcess NoirTickIterationProcess
 function Noir.Services.TaskService:RemoveTickIterationProcess(tickIterationProcess)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTickIterationProcess()", "tickIterationProcess", tickIterationProcess, Noir.Classes.TickIterationClass)
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTickIterationProcess()", "tickIterationProcess", tickIterationProcess, Noir.Classes.TickIterationProcessClass)
 
     -- Remove iteration process
     self.TickIterationProcesses[tickIterationProcess.ID] = nil

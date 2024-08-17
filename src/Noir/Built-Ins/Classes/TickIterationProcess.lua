@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Classes - Tick Iteration
+-- [Noir] Classes - Tick Iteration Process
 --------------------------------------------------------
 
 --[[
@@ -44,7 +44,7 @@
 ---@field CurrentTick integer Represents the current tick the iteration is at
 ---@field Completed boolean Whether or not the iteration is completed
 ---@field Chunks table<integer, table<integer, any>> The chunks of the table
-Noir.Classes.TickIterationClass = Noir.Class("NoirTickIterationProcess")
+Noir.Classes.TickIterationProcessClass = Noir.Class("NoirTickIterationProcess")
 
 --[[
     Initializes tick iteration process class objects.
@@ -52,10 +52,10 @@ Noir.Classes.TickIterationClass = Noir.Class("NoirTickIterationProcess")
 ---@param ID integer
 ---@param tbl table<integer, table<integer, any>>
 ---@param chunkSize integer
-function Noir.Classes.TickIterationClass:Init(ID, tbl, chunkSize)
-    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "tbl", tbl, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "chunkSize", chunkSize, "number")
+function Noir.Classes.TickIterationProcessClass:Init(ID, tbl, chunkSize)
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcessClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcessClass:Init()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcessClass:Init()", "chunkSize", chunkSize, "number")
 
     self.ID = ID
     self.IterationEvent = Noir.Libraries.Events:Create()
@@ -72,7 +72,7 @@ end
     Iterate through the table in chunks of x over how ever many necessary ticks.
 ]]
 ---@return boolean completed
-function Noir.Classes.TickIterationClass:Iterate()
+function Noir.Classes.TickIterationProcessClass:Iterate()
     -- Increment the current tick
     self.CurrentTick = self.CurrentTick + 1
 
@@ -102,7 +102,7 @@ end
     Calculate the chunks of the table.
 ]]
 ---@return table<integer, table<integer, any>>
-function Noir.Classes.TickIterationClass:CalculateChunks()
+function Noir.Classes.TickIterationProcessClass:CalculateChunks()
     -- Calculate chunks
     local chunks = {}
 
