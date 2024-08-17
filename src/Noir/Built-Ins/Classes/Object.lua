@@ -243,6 +243,15 @@ end
 Noir.Classes.ObjectClass.SetAIVehicleTarget = Noir.Classes.ObjectClass.SetAIBodyTarget
 
 --[[
+    Set this character's AI position target (if character).
+]]
+---@param position SWMatrix
+function Noir.Classes.ObjectClass:SetAIPositionTarget(position)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIPositionTarget()", "position", position, "table")
+    server.setAITarget(self.ID, position)
+end
+
+--[[
     Kills this character (if character).
 ]]
 function Noir.Classes.ObjectClass:Kill()
