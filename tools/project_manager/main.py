@@ -165,7 +165,7 @@ class Project():
         ]
     })
     
-    build = "combine.exe --directory \".\" --destination \"{romAddonPath}\" --allow_file_extension \".lua\""
+    build = "combine.exe --directory \".\" --destination \"{romScriptPath}\" --allow_file_extension \".lua\""
 
     def __init__(self, name: str, addonPath: Path, SWAddonsPath: Path):
         """
@@ -193,7 +193,8 @@ class Project():
         self.addonPath = addonPath # The path the user will be writing code in
         self.romAddonPath = self.SWAddonsPath / self.name # The path where the Stormworks addon will be placed
         
-        self.playlistPath = self.romAddonPath / "playlist.xml"
+        self.romPlaylistPath = self.romAddonPath / "playlist.xml"
+        self.romScriptPath = self.romAddonPath / "script.lua"
 
         self.NoirPath = self.addonPath / "Noir.lua"
         self.orderPath = self.addonPath / "__order.json"
@@ -334,7 +335,7 @@ class Project():
         Creates the `playlist.xml` file.
         """
         
-        self.playlistPath.write_text(self.playlist.format(escapedAddonName = self.name, addonName = self.rawName))
+        self.romPlaylistPath.write_text(self.playlist.format(escapedAddonName = self.name, addonName = self.rawName))
         
     def _createScript(self):
         """
@@ -355,7 +356,7 @@ class Project():
         Creates the `build.bat` file.
         """
         
-        self.buildPath.write_text(self.build.format(romAddonPath = self.romAddonPath))
+        self.buildPath.write_text(self.build.format(romScriptPath = self.romScriptPath))
 
 # ---- // Main
 @errorWrapper
