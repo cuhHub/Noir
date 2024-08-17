@@ -45,7 +45,7 @@ Noir.Classes.AITargetClass = Noir.Class("NoirAITarget")
     Initializes class objects from this class.
 ]]
 ---@param data SWTargetData
-function Noir.Classes.AITargetDataClass:Init(data)
+function Noir.Classes.AITargetClass:Init(data)
     Noir.TypeChecking:Assert("Noir.Classes.AITargetClass:Init()", "data", data, "table")
 
     self.TargetBody = data.vehicle and Noir.Services.VehicleService:GetBody(data.vehicle)
