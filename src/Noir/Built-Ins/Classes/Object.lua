@@ -201,7 +201,7 @@ end
 --[[
     Set this character's AI state (if character).
 ]]
----@param state integer 0 = none, 1 = path to destination
+---@param state integer **Ship Pilot**: 0 = none, 1 = path to destination<br>**Heli Pilot**: 0 = None, 1 = path to destination, 2 = path to destination (accurate), 3 = gun run<br>**Plane Pilot**: 0 = none, 1 = path to destination, 2 = gun run<br>**Gunner**: 0 = none, 1 = fire at target<br>**Designator**: 0 = none, 1 = aim at target
 function Noir.Classes.ObjectClass:SetAIState(state)
     Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIState()", "state", state, "number")
     server.setAIState(self.ID, state)
