@@ -190,7 +190,7 @@ function Noir.Classes.ObjectClass:GetHealth()
 end
 
 --[[
-    Set this character's tooltip (if character).
+    Set this character's/creature's tooltip (if character or creature).
 ]]
 ---@param tooltip string
 function Noir.Classes.ObjectClass:SetTooltip(tooltip)
