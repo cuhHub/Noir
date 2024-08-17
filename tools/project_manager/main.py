@@ -124,7 +124,7 @@ class Project():
     script = multiline("""
     --[[
         This is your addon code. You can make another .lua file, but be sure to include it in the `__order.json` file!
-        To reflect your changes here into Stormworks, run `build.bat`. Otherwise, changes here won't get synced to Stormworks.
+        To reflect changes to your code into Stormworks, run `build.bat`. Otherwise, changes won't get synced to Stormworks.
         
         Head over to `https://cuhhub.gitbook.io/noir` for documentation.
     ]]
@@ -143,8 +143,21 @@ class Project():
 
     """)
     
+    README = multiline("""
+    # {addonName}
+    
+    This is your addon's README file. You can remove this if you would like.
+    
+    Your main addon code should go in `main.lua`. You can create more `.lua` files as long as you add them to `__order.json` too (after `Noir.lua`).
+
+    To reflect changes from your code into Stormworks, run `build.bat`. Otherwise, changes won't get synced to Stormworks.
+    
+    Head over to [here](https://cuhhub.gitbook.io/noir) for documentation.
+    """)
+    
     NoirDownloadURL = "https://github.com/cuhHub/Noir/releases/latest/download/Noir.lua"
     CombineDownloadURL = "https://github.com/cuhHub/Noir/releases/latest/download/combine.exe"
+    IntellisenseDownloadURL = "https://raw.githubusercontent.com/Cuh4/StormworksAddonLuaDocumentation/main/docs/intellisense.lua"
     
     order = json.dumps({
         "order" : [
@@ -188,6 +201,8 @@ class Project():
         self.combinePath = self.addonPath / "combine.py"
         self.buildPath = self.addonPath / "build.bat"
         self.scriptPath = self.addonPath / "main.lua"
+        self.intellisensePath = self.addonPath / "intellisense.lua"
+        self.READMEPath = self.addonPath / "README.md"
 
     def create(self):
         """
@@ -204,8 +219,10 @@ class Project():
         self._createNoir()
         self._createScript()
         self._createOrder()
-        self._createCombine()
         self._createBuild()
+        self._createIntellisense()
+        self._createREADME()
+        self._createCombine()
         
         # rom addon
         self._createPlaylist()
@@ -219,6 +236,7 @@ class Project():
             raise Exception("Project does not exist. Create the project first before updating it.")
         
         self._createNoir()
+        self._createIntellisense()
         self._createCombine()
         
     def openAddon(self):
@@ -279,7 +297,7 @@ class Project():
         if not response.ok:
             raise Exception("Failed to download 'Noir.lua'.")
         
-        self.NoirPath.write_text(response.text)
+        self.NoirPath.write_bytes(response.content)
         
     def _createCombine(self):
         """
@@ -291,14 +309,33 @@ class Project():
         if not response.ok:
             raise Exception("Failed to download 'combine.exe'.")
 
-        self.combinePath.write_bytes(response.text)
+        self.combinePath.write_bytes(response.content)
+        
+    def _createIntellisense(self):
+        """
+        Creates the `intellisense.lua` file.
+        """
+        
+        response = requests.get(self.IntellisenseDownloadURL)
+        
+        if not response.ok:
+            raise Exception("Failed to download 'intellisense.lua'.")
+        
+        self.intellisensePath.write_bytes(response.content)
+        
+    def _createREADME(self):
+        """
+        Creates the `README.md` file.
+        """
+        
+        self.READMEPath.write_text(self.README.format(addonName = self.rawName))
             
     def _createPlaylist(self):
         """
         Creates the `playlist.xml` file.
         """
         
-        self.playlistPath.write_text(self.playlist.format(escapedAddonName = self.name, addonName = self.rawName))
+        self.playlistPath.write_text(self.playlist.format(escapedAddonName = self.name, addonName = self.rawName), newline = False)
         
     def _createScript(self):
         """
