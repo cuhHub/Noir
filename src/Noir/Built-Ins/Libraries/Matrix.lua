@@ -36,7 +36,7 @@
 ]]
 ---@class NoirMatrixLib: NoirLibrary
 Noir.Libraries.Matrix = Noir.Libraries:Create(
-    "NoirMatrix",
+    "MatrixLibrary",
     "A library containing helper methods relating to Stormworks matrices.",
     nil,
     {"Cuh4"}

@@ -36,7 +36,7 @@
 ]]
 ---@class NoirNumberLib: NoirLibrary
 Noir.Libraries.Number = Noir.Libraries:Create(
-    "NoirNumber",
+    "NumberLibrary",
     "Provides helper methods relating to numbers.",
     nil,
     {"Cuh4"}

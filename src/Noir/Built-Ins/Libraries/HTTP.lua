@@ -36,7 +36,7 @@
 ]]
 ---@class NoirHTTPLib: NoirLibrary
 Noir.Libraries.HTTP = Noir.Libraries:Create(
-    "NoirHTTP",
+    "HTTPLibrary",
     "A library containing helper methods relating to HTTP.",
     "A library containing helper methods relating to HTTP. Comes with methods for encoding/decoding URLs, etc.",
     {"Cuh4"}

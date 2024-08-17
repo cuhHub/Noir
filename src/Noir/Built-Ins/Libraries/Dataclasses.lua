@@ -45,7 +45,7 @@
 ]]
 ---@class NoirDataclassesLib: NoirLibrary
 Noir.Libraries.Dataclasses = Noir.Libraries:Create(
-    "NoirDataclasses",
+    "DataclassesLibrary",
     "A library that allows you to create dataclasses, similar to Python.",
     nil,
     {"Cuh4"}

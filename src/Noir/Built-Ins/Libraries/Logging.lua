@@ -36,7 +36,7 @@
 ]]
 ---@class NoirLoggingLib: NoirLibrary
 Noir.Libraries.Logging = Noir.Libraries:Create(
-    "NoirLogging",
+    "LoggingLibrary",
     "A library containing methods related to logging.",
     nil,
     {"Cuh4"}
