@@ -210,7 +210,7 @@ end
 --[[
     Returns this character's AI target (if character).
 ]]
----@return NoirAITargetData|nil
+---@return NoirAITarget|nil
 function Noir.Classes.ObjectClass:GetAITarget()
     local data = server.getAITarget(self.ID)
 
@@ -218,7 +218,7 @@ function Noir.Classes.ObjectClass:GetAITarget()
         return
     end
 
-    return Noir.Classes.AITargetDataClass:New(data)
+    return Noir.Classes.AITargetClass:New(data)
 end
 
 --[[

@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Classes - AI Target Data
+-- [Noir] Classes - AI Target
 --------------------------------------------------------
 
 --[[
@@ -34,19 +34,19 @@
 --[[
     Represents AI target data for a character.
 ]]
----@class NoirAITargetData: NoirClass
----@field New fun(self: NoirAITargetData, data: SWTargetData): NoirAITargetData
+---@class NoirAITarget: NoirClass
+---@field New fun(self: NoirAITarget, data: SWTargetData): NoirAITarget
 ---@field TargetBody NoirBody|nil
 ---@field TargetCharacter NoirObject|nil
 ---@field TargetPos SWMatrix
-Noir.Classes.AITargetDataClass = Noir.Class("NoirAITargetData")
+Noir.Classes.AITargetClass = Noir.Class("NoirAITarget")
 
 --[[
     Initializes class objects from this class.
 ]]
 ---@param data SWTargetData
 function Noir.Classes.AITargetDataClass:Init(data)
-    Noir.TypeChecking:Assert("Noir.Classes.AITargetDataClass:Init()", "data", data, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.AITargetClass:Init()", "data", data, "table")
 
     self.TargetBody = data.vehicle and Noir.Services.VehicleService:GetBody(data.vehicle)
     self.TargetCharacter = data.character and Noir.Services.ObjectService:GetObject(data.character)
