@@ -29,7 +29,7 @@ Used internally. Do not use in your code.
 ---
 
 ```lua
-Noir.Classes.ObjectClass._Deserialize(serializedObject)
+Noir.Classes.ObjectClass:_Deserialize(serializedObject)
 ```
 Deserializes this object from g_savedata format.
 
@@ -131,7 +131,7 @@ Returns this character's health (if character).
 ```lua
 Noir.Classes.ObjectClass:SetTooltip(tooltip)
 ```
-Set this character's tooltip (if character).
+Set this character's/creature's tooltip (if character or creature).
 
 ### Parameters
 - `tooltip`: string
@@ -144,7 +144,17 @@ Noir.Classes.ObjectClass:SetAIState(state)
 Set this character's AI state (if character).
 
 ### Parameters
-- `state`: integer - 0 = none, 1 = path to destination
+- `state`: integer - **Ship Pilot**: 0 = none, 1 = path to destination<br>**Heli Pilot**: 0 = None, 1 = path to destination, 2 = path to destination (accurate), 3 = gun run<br>**Plane Pilot**: 0 = none, 1 = path to destination, 2 = gun run<br>**Gunner**: 0 = none, 1 = fire at target<br>**Designator**: 0 = none, 1 = aim at target
+
+---
+
+```lua
+Noir.Classes.ObjectClass:GetAITarget()
+```
+Returns this character's AI target (if character).
+
+### Returns
+- `NoirAITarget|nil`
 
 ---
 
@@ -159,12 +169,22 @@ Set this character's AI character target (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:SetAIVehicleTarget(vehicle_id)
+Noir.Classes.ObjectClass:SetAIBodyTarget(body)
 ```
-Set this character's AI vehicle target (if character).
+Set this character's AI body target (if character).
 
 ### Parameters
-- `vehicle_id`: integer
+- `body`: NoirBody
+
+---
+
+```lua
+Noir.Classes.ObjectClass:SetAIPositionTarget(position)
+```
+Set this character's AI position target (if character).
+
+### Parameters
+- `position`: SWMatrix
 
 ---
 
@@ -181,7 +201,7 @@ Noir.Classes.ObjectClass:GetVehicle()
 Returns the vehicle this character is sat in (if character).
 
 ### Returns
-- `integer|nil`
+- `NoirBody|nil`
 
 ---
 
@@ -222,12 +242,12 @@ Returns whether or not this character is downed (dead, incapaciated, or hp <= 0)
 ---
 
 ```lua
-Noir.Classes.ObjectClass:Seat(vehicle_id, name, voxelX, voxelY, voxelZ)
+Noir.Classes.ObjectClass:Seat(body, name, voxelX, voxelY, voxelZ)
 ```
 Seat this character in a seat (if character).
 
 ### Parameters
-- `vehicle_id`: integer
+- `body`: NoirBody
 - `name`: string|nil
 - `voxelX`: integer|nil
 - `voxelY`: integer|nil

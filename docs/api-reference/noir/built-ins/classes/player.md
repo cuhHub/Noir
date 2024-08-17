@@ -118,6 +118,16 @@ Returns this player's position.
 ---
 
 ```lua
+Noir.Classes.PlayerClass:SetAudioMood(mood)
+```
+Set the player's audio mood.
+
+### Parameters
+- `mood`: SWAudioMoodEnum
+
+---
+
+```lua
 Noir.Classes.PlayerClass:GetCharacter()
 ```
 Returns this player's character as a NoirObject.

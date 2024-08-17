@@ -23,6 +23,8 @@ Triggers the callback's stored function.
 
 ### Parameters
 - `...`: any
+### Returns
+- `any`
 
 ---
 

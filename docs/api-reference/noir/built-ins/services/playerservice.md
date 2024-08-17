@@ -198,6 +198,18 @@ Consider using `:SearchPlayerByName()` if the player name only needs to match pa
 ---
 
 ```lua
+Noir.Services.PlayerService:GetPlayerByCharacter(character)
+```
+Get a player by their character.
+
+### Parameters
+- `character`: NoirObject
+### Returns
+- `NoirPlayer|nil`
+
+---
+
+```lua
 Noir.Services.PlayerService:SearchPlayerByName(name)
 ```
 Searches for a player by their name, similar to a Google search but way simpler under the hood.
