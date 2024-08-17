@@ -412,6 +412,869 @@ Noir.TypeChecking._DummyClass = Noir.Class("NoirTypeCheckingDummyClass")
 Noir.Classes = {}
 
 --------------------------------------------------------
+-- [Noir] Classes - AI Target
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents AI target data for a character.
+]]
+---@class NoirAITarget: NoirClass
+---@field New fun(self: NoirAITarget, data: SWTargetData): NoirAITarget
+---@field TargetBody NoirBody|nil The body that the character is targeting (if any).
+---@field TargetCharacter NoirObject|nil The character that the character is targeting (if any).
+---@field TargetPos SWMatrix The position that the character is targeting.
+Noir.Classes.AITargetClass = Noir.Class("NoirAITarget")
+
+--[[
+    Initializes class objects from this class.
+]]
+---@param data SWTargetData
+function Noir.Classes.AITargetClass:Init(data)
+    Noir.TypeChecking:Assert("Noir.Classes.AITargetClass:Init()", "data", data, "table")
+
+    self.TargetBody = data.vehicle and Noir.Services.VehicleService:GetBody(data.vehicle)
+    self.TargetCharacter = data.character and Noir.Services.ObjectService:GetObject(data.character)
+    self.TargetPos = matrix.translation(data.x or 0, data.y or 0, data.z or 0)
+end
+
+--------------------------------------------------------
+-- [Noir] Classes - Body
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a body which is apart of a vehicle.<br>
+    In Stormworks, this is actually a vehicle apart of a vehicle group.
+]]
+---@class NoirBody: NoirClass
+---@field New fun(self: NoirBody, ID: integer, owner: NoirPlayer|nil, spawnPosition: SWMatrix, cost: number): NoirBody
+---@field ID integer The ID of this body
+---@field Owner NoirPlayer|nil The owner of this body, or nil if spawned by an addon OR if the player who owns the body left before Noir starts again (eg: after save load or addon reload)
+---@field SpawnPosition SWMatrix The position this body was spawned at
+---@field Cost number The cost of this body
+---@field ParentVehicle NoirVehicle|nil The vehicle this body belongs to. This can be nil if the body or vehicle is despawned
+---@field Loaded boolean Whether or not this body is loaded
+---@field OnDespawn NoirEvent Fired when this body is despawned
+---@field OnLoad NoirEvent Fired when this body is loaded
+---@field OnUnload NoirEvent Fired when this body is unloaded
+Noir.Classes.BodyClass = Noir.Class("NoirBody")
+
+--[[
+    Initializes body class objects.
+]]
+---@param ID any
+---@param owner NoirPlayer|nil
+---@param spawnPosition SWMatrix
+---@param cost number
+function Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost)
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "owner", owner, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "spawnPosition", spawnPosition, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "cost", cost, "number")
+
+    self.ID = ID
+    self.Owner = owner
+    self.SpawnPosition = spawnPosition
+    self.Cost = cost
+    self.ParentVehicle = nil
+    self.Loaded = false
+
+    self.OnDespawn = Noir.Libraries.Events:Create()
+    self.OnLoad = Noir.Libraries.Events:Create()
+    self.OnUnload = Noir.Libraries.Events:Create()
+end
+
+--[[
+    Serialize the body.<br>
+    Used internally.
+]]
+---@return NoirSerializedBody
+function Noir.Classes.BodyClass:_Serialize()
+    return {
+        ID = self.ID,
+        Owner = self.Owner and self.Owner.ID,
+        SpawnPosition = self.SpawnPosition,
+        Cost = self.Cost,
+        ParentVehicle = self.ParentVehicle and self.ParentVehicle.ID
+    }
+end
+
+--[[
+    Deserialize the body.<br>
+    Used internally.
+]]
+---@param serializedBody NoirSerializedBody
+---@param setParentVehicle boolean|nil
+---@return NoirBody|nil
+function Noir.Classes.BodyClass:_Deserialize(serializedBody, setParentVehicle)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:_Deserialize()", "serializedBody", serializedBody, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:_Deserialize()", "setParentVehicle", setParentVehicle, "boolean", "nil")
+
+    -- Deserialize
+    local body = self:New(
+        serializedBody.ID,
+        serializedBody.Owner and Noir.Services.PlayerService:GetPlayer(serializedBody.Owner),
+        serializedBody.SpawnPosition,
+        serializedBody.Cost
+    )
+
+    -- Set parent vehicle
+    if setParentVehicle and serializedBody.ParentVehicle then
+        local parentVehicle = Noir.Services.VehicleService:GetVehicle(serializedBody.ParentVehicle)
+
+        if not parentVehicle then
+            Noir.Libraries.Logging:Error("NoirBody", "Could not find parent vehicle for a deserialized body.", false)
+            return
+        end
+
+        body.ParentVehicle = parentVehicle
+    end
+
+    -- Return body
+    return body
+end
+
+--[[
+    Returns the position of this body.
+]]
+---@param voxelX integer|nil
+---@param voxelY integer|nil
+---@param voxelZ integer|nil
+function Noir.Classes.BodyClass:GetPosition(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetPosition()", "voxelX", voxelX, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetPosition()", "voxelY", voxelY, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetPosition()", "voxelZ", voxelZ, "number", "nil")
+
+    -- Get and return position
+    return (server.getVehiclePos(self.ID))
+end
+
+--[[
+    Makes the body invulnerable/vulnerable to damage.
+]]
+---@param invulnerable boolean
+function Noir.Classes.BodyClass:SetInvulnerable(invulnerable)
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetInvulnerable()", "invulnerable", invulnerable, "boolean")
+    server.setVehicleInvulnerable(self.ID, invulnerable)
+end
+
+--[[
+    Makes the body editable/non-editable (dictates whether or not the body can be brought back to the workbench).
+]]
+---@param editable boolean
+function Noir.Classes.BodyClass:SetEditable(editable)
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetEditable()", "editable", editable, "boolean")
+    server.setVehicleEditable(self.ID, editable)
+end
+
+--[[
+    Teleport the body to the specified position.
+]]
+---@param position SWMatrix
+function Noir.Classes.BodyClass:Teleport(position)
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Teleport()", "position", position, "table")
+    server.setVehiclePos(self.ID, position)
+end
+
+--[[
+    Move the body to the specified position. Essentially teleports the body without reloading it.<br>
+    Rotation is ignored.
+]]
+---@param position SWMatrix
+function Noir.Classes.BodyClass:Move(position)
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Move()", "position", position, "table")
+    server.moveVehicle(self.ID, position)
+end
+
+--[[
+    Set a battery's charge (by name).
+]]
+---@param batteryName string
+---@param amount number
+function Noir.Classes.BodyClass:SetBattery(batteryName, amount)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetBattery()", "batteryName", batteryName, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetBattery()", "amount", amount, "number")
+
+    -- Set battery
+    server.setVehicleBattery(self.ID, batteryName, amount)
+end
+
+--[[
+    Set a battery's charge (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@param amount number
+function Noir.Classes.BodyClass:SetBatteryByVoxel(voxelX, voxelY, voxelZ, amount)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetBatteryByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetBatteryByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetBatteryByVoxel()", "voxelZ", voxelZ, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetBatteryByVoxel()", "amount", amount, "number")
+
+    -- Set battery
+    server.setVehicleBattery(self.ID, voxelX, voxelY, voxelZ, amount)
+end
+
+--[[
+    Set a hopper's amount (by name).
+]]
+---@param hopperName string
+---@param amount number
+---@param resourceType SWResourceTypeEnum
+function Noir.Classes.BodyClass:SetHopper(hopperName, amount, resourceType)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetHopper()", "hopperName", hopperName, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetHopper()", "amount", amount, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetHopper()", "resourceType", resourceType, "number")
+
+    -- Set hopper
+    server.setVehicleHopper(self.ID, hopperName, amount, resourceType)
+end
+
+--[[
+    Set a hopper's amount (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@param amount number
+---@param resourceType SWResourceTypeEnum
+function Noir.Classes.BodyClass:SetHopperByVoxel(voxelX, voxelY, voxelZ, amount, resourceType)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetHopperByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetHopperByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetHopperByVoxel()", "voxelZ", voxelZ, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetHopperByVoxel()", "amount", amount, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetHopperByVoxel()", "resourceType", resourceType, "number")
+
+    -- Set hopper
+    server.setVehicleHopper(self.ID, voxelX, voxelY, voxelZ, amount, resourceType)
+end
+
+--[[
+    Set a keypad's value (by name).
+]]
+---@param keypadName string
+---@param value number
+function Noir.Classes.BodyClass:SetKeypad(keypadName, value)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetKeypad()", "keypadName", keypadName, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetKeypad()", "value", value, "number")
+
+    -- Set keypad
+    server.setVehicleKeypad(self.ID, keypadName, value)
+end
+
+--[[
+    Set a keypad's value (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@param value number
+function Noir.Classes.BodyClass:SetKeypadByVoxel(voxelX, voxelY, voxelZ, value)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetKeypadByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetKeypadByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetKeypadByVoxel()", "voxelZ", voxelZ, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetKeypadByVoxel()", "value", value, "number")
+
+    -- Set keypad
+    server.setVehicleKeypad(self.ID, voxelX, voxelY, voxelZ, value)
+end
+
+--[[
+    Set a seat's values (by name).
+]]
+---@param seatName string
+---@param axisPitch number
+---@param axisRoll number
+---@param axisUpDown number
+---@param axisYaw number
+---@param button1 boolean
+---@param button2 boolean
+---@param button3 boolean
+---@param button4 boolean
+---@param button5 boolean
+---@param button6 boolean
+---@param trigger boolean
+function Noir.Classes.BodyClass:SetSeat(seatName, axisPitch, axisRoll, axisUpDown, axisYaw, button1, button2, button3, button4, button5, button6, trigger)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "seatName", seatName, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "axisPitch", axisPitch, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "axisRoll", axisRoll, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "axisUpDown", axisUpDown, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "axisYaw", axisYaw, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button1", button1, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button2", button2, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button3", button3, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button4", button4, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button5", button5, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button6", button6, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "trigger", trigger, "boolean")
+
+    -- Set seat
+    server.setVehicleSeat(self.ID, seatName, axisPitch, axisRoll, axisUpDown, axisYaw, button1, button2, button3, button4, button5, button6, trigger)
+end
+
+--[[
+    Set a seat's values (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@param axisPitch number
+---@param axisRoll number
+---@param axisUpDown number
+---@param axisYaw number
+---@param button1 boolean
+---@param button2 boolean
+---@param button3 boolean
+---@param button4 boolean
+---@param button5 boolean
+---@param button6 boolean
+---@param trigger boolean
+function Noir.Classes.BodyClass:SetSeatByVoxel(voxelX, voxelY, voxelZ, axisPitch, axisRoll, axisUpDown, axisYaw, button1, button2, button3, button4, button5, button6, trigger)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeatByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeatByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeatByVoxel()", "voxelZ", voxelZ, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "axisPitch", axisPitch, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "axisRoll", axisRoll, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "axisUpDown", axisUpDown, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "axisYaw", axisYaw, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button1", button1, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button2", button2, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button3", button3, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button4", button4, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button5", button5, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "button6", button6, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetSeat()", "trigger", trigger, "boolean")
+
+    -- Set seat
+    server.setVehicleSeat(self.ID, voxelX, voxelY, voxelZ, axisPitch, axisRoll, axisUpDown, axisYaw, button1, button2, button3, button4, button5, button6, trigger)
+end
+
+--[[
+    Set a weapon's ammo count (by name).
+]]
+---@param weaponName string
+---@param amount number
+function Noir.Classes.BodyClass:SetWeapon(weaponName, amount)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetWeapon()", "weaponName", weaponName, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetWeapon()", "amount", amount, "number")
+
+    -- Set weapon
+    server.setVehicleWeapon(self.ID, weaponName, amount)
+end
+
+--[[
+    Set a weapon's ammo count (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@param amount number
+function Noir.Classes.BodyClass:SetWeaponByVoxel(voxelX, voxelY, voxelZ, amount)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetWeaponByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetWeaponByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetWeaponByVoxel()", "voxelZ", voxelZ, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetWeaponByVoxel()", "amount", amount, "number")
+
+    -- Set weapon
+    server.setVehicleWeapon(self.ID, voxelX, voxelY, voxelZ, amount)
+end
+
+--[[
+    Set this body's transponder activity.
+]]
+---@param isActive boolean
+function Noir.Classes.BodyClass:SetTransponder(isActive)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetTransponder()", "isActive", isActive, "boolean")
+
+    -- Set transponder
+    server.setVehicleTransponder(self.ID, isActive)
+end
+
+--[[
+    Set a tank's contents (by name).
+]]
+---@param tankName string
+---@param amount number
+---@param fluidType SWTankFluidTypeEnum
+function Noir.Classes.BodyClass:SetTank(tankName, amount, fluidType)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetTank()", "tankName", tankName, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetTank()", "amount", amount, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetTank()", "fluidType", fluidType, "number")
+
+    -- Set tank
+    server.setVehicleTank(self.ID, tankName, amount, fluidType)
+end
+
+--[[
+    Set a tank's contents (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@param amount number
+---@param fluidType SWTankFluidTypeEnum
+function Noir.Classes.BodyClass:SetTankByVoxel(voxelX, voxelY, voxelZ, amount, fluidType)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetTankByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetTankByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetTankByVoxel()", "voxelZ", voxelZ, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetTankByVoxel()", "amount", amount, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetTankByVoxel()", "fluidType", fluidType, "number")
+
+    -- Set tank
+    server.setVehicleTank(self.ID, voxelX, voxelY, voxelZ, amount, fluidType)
+end
+
+--[[
+    Set whether or not this body is shown on the map.
+]]
+---@param isShown boolean
+function Noir.Classes.BodyClass:SetShowOnMap(isShown)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetShowOnMap()", "isShown", isShown, "boolean")
+
+    -- Set show on map
+    server.setVehicleShowOnMap(self.ID, isShown)
+end
+
+--[[
+    Reset this body's state.
+]]
+function Noir.Classes.BodyClass:ResetState()
+    server.resetVehicleState(self.ID)
+end
+
+--[[
+    Set this body's tooltip.
+]]
+---@param tooltip string
+function Noir.Classes.BodyClass:SetTooltip(tooltip)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:SetTooltip()", "tooltip", tooltip, "string")
+
+    -- Set tooltip
+    server.setVehicleTooltip(self.ID, tooltip)
+end
+
+--[[
+    Get a battey's data (by name).
+]]
+---@param batteryName string
+---@return SWVehicleBatteryData|nil
+function Noir.Classes.BodyClass:GetBattery(batteryName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetBattery()", "batteryName", batteryName, "string")
+
+    -- Get battery
+    return (server.getVehicleBattery(self.ID, batteryName))
+end
+
+--[[
+    Get a battey's data (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@return SWVehicleBatteryData|nil
+function Noir.Classes.BodyClass:GetBatteryByVoxel(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetBatteryByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetBatteryByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetBatteryByVoxel()", "voxelZ", voxelZ, "number")
+
+    -- Get battery
+    return (server.getVehicleBattery(self.ID, voxelX, voxelY, voxelZ))
+end
+
+--[[
+    Get a button's data (by name).
+]]
+---@param buttonName string
+---@return SWVehicleButtonData|nil
+function Noir.Classes.BodyClass:GetButton(buttonName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetButton()", "buttonName", buttonName, "string")
+
+    -- Get button
+    return (server.getVehicleButton(self.ID, buttonName))
+end
+
+--[[
+    Get a button's data (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@return SWVehicleButtonData|nil
+function Noir.Classes.BodyClass:GetButtonByVoxel(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetButtonByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetButtonByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetButtonByVoxel()", "voxelZ", voxelZ, "number")
+
+    -- Get button
+    return (server.getVehicleButton(self.ID, voxelX, voxelY, voxelZ))
+end
+
+--[[
+    Get this body's components.
+]]
+---@return SWLoadedVehicleData|nil
+function Noir.Classes.BodyClass:GetComponents()
+    -- Get components
+    return (server.getVehicleComponents(self.ID))
+end
+
+--[[
+    Get this body's data.
+]]
+---@return SWVehicleData|nil
+function Noir.Classes.BodyClass:GetData()
+    -- Get data
+    return (server.getVehicleData(self.ID))
+end
+
+--[[
+    Get a dial's data (by name).
+]]
+---@param dialName string
+---@return SWVehicleDialData|nil
+function Noir.Classes.BodyClass:GetDial(dialName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetDial()", "dialName", dialName, "string")
+
+    -- Get dial
+    return (server.getVehicleDial(self.ID, dialName))
+end
+
+--[[
+    Get a dial's data (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@return SWVehicleDialData|nil
+function Noir.Classes.BodyClass:GetDialByVoxel(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetDialByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetDialByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetDialByVoxel()", "voxelZ", voxelZ, "number")
+
+    -- Get dial
+    return (server.getVehicleDial(self.ID, voxelX, voxelY, voxelZ))
+end
+
+--[[
+    Returns the number of surfaces that are on fire.
+]]
+---@return integer|nil
+function Noir.Classes.BodyClass:GetFireCount()
+    -- Get fire count
+    return (server.getVehicleFireCount(self.ID))
+end
+
+--[[
+    Get a hopper's data (by name).
+]]
+---@param hopperName string
+---@return SWVehicleHopperData|nil
+function Noir.Classes.BodyClass:GetHopper(hopperName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetHopper()", "hopperName", hopperName, "string")
+
+    -- Get hopper
+    return (server.getVehicleHopper(self.ID, hopperName))
+end
+
+--[[
+    Get a hopper's data (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@return SWVehicleHopperData|nil
+function Noir.Classes.BodyClass:GetHopperByVoxel(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetHopperByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetHopperByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetHopperByVoxel()", "voxelZ", voxelZ, "number")
+
+    -- Get hopper
+    return (server.getVehicleHopper(self.ID, voxelX, voxelY, voxelZ))
+end
+
+--[[
+    Get a rope hook's data (by name).
+]]
+---@param hookName string
+---@return SWVehicleRopeHookData|nil
+function Noir.Classes.BodyClass:GetRopeHook(hookName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetRopeHook()", "hookName", hookName, "string")
+
+    -- Get rope hook
+    return (server.getVehicleRopeHook(self.ID, hookName))
+end
+
+--[[
+    Get a rope hook's data (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@return SWVehicleRopeHookData|nil
+function Noir.Classes.BodyClass:GetRopeHookByVoxel(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetRopeHookByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetRopeHookByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetRopeHookByVoxel()", "voxelZ", voxelZ, "number")
+
+    -- Get rope hook
+    return (server.getVehicleRopeHook(self.ID, voxelX, voxelY, voxelZ))
+end
+
+--[[
+    Get a seat's data (by name).
+]]
+---@param seatName string
+---@return SWVehicleSeatData|nil
+function Noir.Classes.BodyClass:GetSeat(seatName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetSeat()", "seatName", seatName, "string")
+
+    -- Get seat
+    return (server.getVehicleSeat(self.ID, seatName))
+end
+
+--[[
+    Get a seat's data (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@return SWVehicleSeatData|nil
+function Noir.Classes.BodyClass:GetSeatByVoxel(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetSeatByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetSeatByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetSeatByVoxel()", "voxelZ", voxelZ, "number")
+
+    -- Get seat
+    return (server.getVehicleSeat(self.ID, voxelX, voxelY, voxelZ))
+end
+
+--[[
+    Get a sign's data (by name).
+]]
+---@param signName string
+---@return SWVehicleSignData|nil
+function Noir.Classes.BodyClass:GetSign(signName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetSign()", "signName", signName, "string")
+
+    -- Get sign
+    return (server.getVehicleSign(self.ID, signName))
+end
+
+--[[
+    Get a sign's data (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@return SWVehicleSignData|nil
+function Noir.Classes.BodyClass:GetSignByVoxel(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetSignByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetSignByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetSignByVoxel()", "voxelZ", voxelZ, "number")
+
+    -- Get sign
+    return (server.getVehicleSign(self.ID, voxelX, voxelY, voxelZ))
+end
+
+--[[
+    Get a tank's data (by name).
+]]
+---@param tankName string
+---@return SWVehicleTankData|nil
+function Noir.Classes.BodyClass:GetTank(tankName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetTank()", "tankName", tankName, "string")
+
+    -- Get tank
+    return (server.getVehicleTank(self.ID, tankName))
+end
+
+--[[
+    Get a tank's data (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@return SWVehicleTankData|nil
+function Noir.Classes.BodyClass:GetTankByVoxel(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetTankByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetTankByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetTankByVoxel()", "voxelZ", voxelZ, "number")
+
+    -- Get tank
+    return (server.getVehicleTank(self.ID, voxelX, voxelY, voxelZ))
+end
+
+--[[
+    Get a weapon's data (by name).
+]]
+---@param weaponName string
+---@return SWVehicleWeaponData|nil
+function Noir.Classes.BodyClass:GetWeapon(weaponName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetWeapon()", "weaponName", weaponName, "string")
+
+    -- Get weapon
+    return (server.getVehicleWeapon(self.ID, weaponName))
+end
+
+--[[
+    Get a weapon's data (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@return SWVehicleWeaponData|nil
+function Noir.Classes.BodyClass:GetWeaponByVoxel(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetWeaponByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetWeaponByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:GetWeaponByVoxel()", "voxelZ", voxelZ, "number")
+
+    -- Get weapon
+    return (server.getVehicleWeapon(self.ID, voxelX, voxelY, voxelZ))
+end
+
+--[[
+    Presses a button on this body (by name).
+]]
+---@param buttonName string
+function Noir.Classes.BodyClass:PressButton(buttonName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:PressButton()", "buttonName", buttonName, "string")
+
+    -- Press button
+    server.pressVehicleButton(self.ID, buttonName)
+end
+
+--[[
+    Presses a button on this body (by voxel).
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+function Noir.Classes.BodyClass:PressButtonByVoxel(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:PressButtonByVoxel()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:PressButtonByVoxel()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:PressButtonByVoxel()", "voxelZ", voxelZ, "number")
+
+    -- Press button
+    server.pressVehicleButton(self.ID, voxelX, voxelY, voxelZ)
+end
+
+--[[
+    Despawn the body.
+]]
+function Noir.Classes.BodyClass:Despawn()
+    server.despawnVehicle(self.ID, true)
+end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+--[[
+    Represents a serialized version of the NoirBody class.
+]]
+---@class NoirSerializedBody
+---@field ID integer
+---@field Owner integer
+---@field SpawnPosition SWMatrix
+---@field Cost number
+---@field ParentVehicle integer
+
+--------------------------------------------------------
 -- [Noir] Classes - Command
 --------------------------------------------------------
 
@@ -616,7 +1479,7 @@ end
 ---@field Callback function The callback that is assigned to this connection
 ---@field ParentEvent NoirEvent The event that this connection is connected to
 ---@field Connected boolean Whether or not this connection is connected
----@field Index integer The index of this connection in ParentEvent.ConnectionsOrder
+---@field Index integer The index of this connection in `ParentEvent.ConnectionsOrder`
 Noir.Classes.ConnectionClass = Noir.Class("NoirConnection")
 
 --[[
@@ -637,13 +1500,14 @@ end
     Triggers the callback's stored function.
 ]]
 ---@param ... any
+---@return any
 function Noir.Classes.ConnectionClass:Fire(...)
     if not self.Connected then
         Noir.Libraries.Logging:Error("NoirConnection", "Attempted to fire an event connection when it is not connected.", true)
         return
     end
 
-    self.Callback(...)
+    return self.Callback(...)
 end
 
 --[[
@@ -698,9 +1562,9 @@ end
 ---@field New fun(self: NoirEvent): NoirEvent
 ---@field CurrentID integer The ID that will be passed to new connections. Increments by 1 every connection
 ---@field Connections table<integer, NoirConnection> The connections that are connected to this event
----@field ConnectionsOrder integer[] Array of connection IDs into Connections table
----@field ConnectionsToRemove NoirConnection[]? Array of connections to remove after the firing of the event
----@field ConnectionsToAdd NoirConnection[]? Array of connections to add after the firing of the event
+---@field ConnectionsOrder table<integer, integer> Array of connection IDs into Connections table
+---@field ConnectionsToRemove table<integer, NoirConnection> Array of connections to remove after the firing of the event
+---@field ConnectionsToAdd table<integer, NoirConnection> Array of connections to add after the firing of the event
 ---@field IsFiring boolean Weather or not this event is currently calling connection callbacks
 ---@field HasFiredOnce boolean Whether or not this event has fired atleast once
 Noir.Classes.EventClass = Noir.Class("NoirEvent")
@@ -729,7 +1593,13 @@ function Noir.Classes.EventClass:Fire(...)
     self.IsFiring = true
 
     for _, connection_id in ipairs(self.ConnectionsOrder) do
-        self.Connections[connection_id]:Fire(...)
+        local connection = self.Connections[connection_id]
+        local result = connection:Fire(...)
+
+        -- Disconnect if prompted
+        if result == Noir.Libraries.Events.DismissAction then
+            connection:Disconnect()
+        end
     end
 
     self.IsFiring = false
@@ -912,9 +1782,9 @@ end
 ]]
 ---@class NoirHTTPRequest: NoirClass
 ---@field New fun(self: NoirHTTPRequest, URL: string, port: integer): NoirHTTPRequest
----@field URL string
----@field Port integer
----@field OnResponse NoirEvent
+---@field URL string The URL of the request (eg: "/hello")
+---@field Port integer The port of the request
+---@field OnResponse NoirEvent Arguments: response (NoirHTTPResponse) | Fired when this request receives a response
 Noir.Classes.HTTPRequestClass = Noir.Class("NoirHTTPRequest")
 
 --[[
@@ -969,7 +1839,7 @@ end
 ]]
 ---@class NoirHTTPResponse: NoirClass
 ---@field New fun(self: NoirHTTPResponse, response: string): NoirHTTPResponse
----@field Text string
+---@field Text string The raw response.
 Noir.Classes.HTTPResponseClass = Noir.Class("NoirHTTPResponse")
 
 --[[
@@ -1036,10 +1906,10 @@ end
 ]]
 ---@class NoirLibrary: NoirClass
 ---@field New fun(self: NoirLibrary, name: string, shortDescription: string, longDescription: string, authors: table<integer, string>): NoirLibrary
----@field Name string
----@field ShortDescription string
----@field LongDescription string
----@field Authors table<integer, string>
+---@field Name string The name of the library
+---@field ShortDescription string The short description of the library
+---@field LongDescription string The long description of the library
+---@field Authors table<integer, string> The authors of the library
 Noir.Classes.LibraryClass = Noir.Class("NoirLibrary")
 
 --[[
@@ -1060,6 +1930,131 @@ function Noir.Classes.LibraryClass:Init(name, shortDescription, longDescription,
     self.LongDescription = longDescription
     self.Authors = authors
 end
+
+--------------------------------------------------------
+-- [Noir] Classes - Message
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a message.
+]]
+---@class NoirMessage: NoirClass
+---@field New fun(self: NoirMessage, author: NoirPlayer|nil, isAddon: boolean, content: string, title: string, sentAt: number|nil, recipient: NoirPlayer|nil): NoirMessage
+---@field Author NoirPlayer|nil The author of the message, or nil if sent by an addon
+---@field IsAddon boolean Whether or not the message was sent by an addon
+---@field Content string The actual message
+---@field Title string If this message wasn't sent by an addon, this will be the author's name
+---@field SentAt number Represents when the message was sent
+---@field Recipient NoirPlayer|nil Who received the message, nil = everyone
+Noir.Classes.MessageClass = Noir.Class("NoirMessage")
+
+--[[
+    Initializes message class objects.
+]]
+---@param author NoirPlayer|nil
+---@param isAddon boolean
+---@param content string
+---@param title string
+---@param sentAt number|nil
+---@param recipient NoirPlayer|nil
+function Noir.Classes.MessageClass:Init(author, isAddon, content, title, sentAt, recipient)
+    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "author", author, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "isAddon", isAddon, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "content", content, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "title", title, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "sentAt", sentAt, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "recipient", recipient, Noir.Classes.PlayerClass, "nil")
+
+    self.Author = author
+    self.IsAddon = isAddon
+    self.Content = content
+    self.Title = title
+    self.SentAt = sentAt or server.getTimeMillisec()
+    self.Recipient = recipient
+end
+
+--[[
+    Serializes the message into a g_savedata-safe format.<br>
+    Used internally.
+]]
+---@return NoirSerializedMessage
+function Noir.Classes.MessageClass:_Serialize()
+    return {
+        Author = self.Author and self.Author.ID or nil,
+        IsAddon = self.IsAddon,
+        Content = self.Content,
+        Title = self.Title,
+        SentAt = self.SentAt,
+        Recipient = self.Recipient
+    }
+end
+
+--[[
+    Deserializes the message from a g_savedata-safe format.<br>
+    Used internally.
+]]
+---@param serializedMessage NoirSerializedMessage
+function Noir.Classes.MessageClass:_Deserialize(serializedMessage)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:_Deserialize()", "serializedMessage", serializedMessage, "table")
+
+    -- Create the message
+    local message = self:New(
+        serializedMessage.Author and Noir.Services.PlayerService:GetPlayer(serializedMessage.Author),
+        serializedMessage.IsAddon,
+        serializedMessage.Content,
+        serializedMessage.Title,
+        serializedMessage.SentAt,
+        serializedMessage.Recipient and Noir.Services.PlayerService:GetPlayer(serializedMessage.Recipient)
+    )
+
+    -- Return the message
+    return message
+end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+--[[
+    Represents a serialized version of the NoirMessage class.
+]]
+---@class NoirSerializedMessage
+---@field Author integer|nil
+---@field IsAddon boolean
+---@field Content string
+---@field Title string
+---@field SentAt number
+---@field Recipient integer|nil
 
 --------------------------------------------------------
 -- [Noir] Classes - Object
@@ -1141,12 +2136,12 @@ end
 ]]
 ---@param serializedObject NoirSerializedObject
 ---@return NoirObject
-function Noir.Classes.ObjectClass._Deserialize(serializedObject)
+function Noir.Classes.ObjectClass:_Deserialize(serializedObject)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass._Deserialize()", "serializedObject", serializedObject, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:_Deserialize()", "serializedObject", serializedObject, "table")
 
     -- Create object from serialized object
-    local object = Noir.Classes.ObjectClass:New(serializedObject.ID)
+    local object = self:New(serializedObject.ID)
 
     -- Return it
     return object
@@ -1253,7 +2248,7 @@ function Noir.Classes.ObjectClass:GetHealth()
 end
 
 --[[
-    Set this character's tooltip (if character).
+    Set this character's/creature's tooltip (if character or creature).
 ]]
 ---@param tooltip string
 function Noir.Classes.ObjectClass:SetTooltip(tooltip)
@@ -1264,10 +2259,24 @@ end
 --[[
     Set this character's AI state (if character).
 ]]
----@param state integer 0 = none, 1 = path to destination
+---@param state integer **Ship Pilot**: 0 = none, 1 = path to destination<br>**Heli Pilot**: 0 = None, 1 = path to destination, 2 = path to destination (accurate), 3 = gun run<br>**Plane Pilot**: 0 = none, 1 = path to destination, 2 = gun run<br>**Gunner**: 0 = none, 1 = fire at target<br>**Designator**: 0 = none, 1 = aim at target
 function Noir.Classes.ObjectClass:SetAIState(state)
     Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIState()", "state", state, "number")
     server.setAIState(self.ID, state)
+end
+
+--[[
+    Returns this character's AI target (if character).
+]]
+---@return NoirAITarget|nil
+function Noir.Classes.ObjectClass:GetAITarget()
+    local data = server.getAITarget(self.ID)
+
+    if not data then
+        return
+    end
+
+    return Noir.Classes.AITargetClass:New(data)
 end
 
 --[[
@@ -1280,12 +2289,24 @@ function Noir.Classes.ObjectClass:SetAICharacterTarget(target)
 end
 
 --[[
-    Set this character's AI vehicle target (if character).
+    Set this character's AI body target (if character).
 ]]
----@param vehicle_id integer
-function Noir.Classes.ObjectClass:SetAIVehicleTarget(vehicle_id)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIVehicleTarget()", "vehicle_id", vehicle_id, "number")
-    server.setAITargetVehicle(self.ID, vehicle_id)
+---@param body NoirBody
+function Noir.Classes.ObjectClass:SetAIBodyTarget(body)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIBodyTarget()", "body", body, Noir.Classes.BodyClass)
+    server.setAITargetVehicle(self.ID, body.ID)
+end
+
+---@deprecated
+Noir.Classes.ObjectClass.SetAIVehicleTarget = Noir.Classes.ObjectClass.SetAIBodyTarget
+
+--[[
+    Set this character's AI position target (if character).
+]]
+---@param position SWMatrix
+function Noir.Classes.ObjectClass:SetAIPositionTarget(position)
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIPositionTarget()", "position", position, "table")
+    server.setAITarget(self.ID, position)
 end
 
 --[[
@@ -1298,8 +2319,9 @@ end
 --[[
     Returns the vehicle this character is sat in (if character).
 ]]
----@return integer|nil
+---@return NoirBody|nil
 function Noir.Classes.ObjectClass:GetVehicle()
+    -- Get the vehicle ID
     local vehicle_id, success = server.getCharacterVehicle(self.ID)
 
     if not success then
@@ -1307,7 +2329,8 @@ function Noir.Classes.ObjectClass:GetVehicle()
         return
     end
 
-    return vehicle_id
+    -- Get the body
+    return Noir.Services.VehicleService:GetBody(vehicle_id)
 end
 
 --[[
@@ -1371,14 +2394,14 @@ end
 --[[
     Seat this character in a seat (if character).
 ]]
----@param vehicle_id integer
+---@param body NoirBody
 ---@param name string|nil
 ---@param voxelX integer|nil
 ---@param voxelY integer|nil
 ---@param voxelZ integer|nil
-function Noir.Classes.ObjectClass:Seat(vehicle_id, name, voxelX, voxelY, voxelZ)
+function Noir.Classes.ObjectClass:Seat(body, name, voxelX, voxelY, voxelZ)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "vehicle_id", vehicle_id, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "body", body, Noir.Classes.BodyClass)
     Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "name", name, "string", "nil")
     Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "voxelX", voxelX, "number", "nil")
     Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "voxelY", voxelY, "number", "nil")
@@ -1386,9 +2409,9 @@ function Noir.Classes.ObjectClass:Seat(vehicle_id, name, voxelX, voxelY, voxelZ)
 
     -- Set seated
     if name then
-        server.setSeated(self.ID, vehicle_id, name)
+        server.setSeated(self.ID, body.ID, name)
     elseif voxelX and voxelY and voxelZ then
-        server.setSeated(self.ID, vehicle_id, voxelX, voxelY, voxelZ)
+        server.setSeated(self.ID, body.ID, voxelX, voxelY, voxelZ)
     else
         Noir.Libraries.Logging:Error("NoirObject", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().", true)
     end
@@ -1676,6 +2699,15 @@ function Noir.Classes.PlayerClass:GetPosition()
     end
 
     return pos
+end
+
+--[[
+    Set the player's audio mood.
+]]
+---@param mood SWAudioMoodEnum
+function Noir.Classes.PlayerClass:SetAudioMood(mood)
+    Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:SetAudioMood()", "mood", mood, "number")
+    server.setAudioMood(self.ID, mood)
 end
 
 --[[
@@ -2125,6 +3157,377 @@ function Noir.Classes.TaskClass:Remove()
 end
 
 --------------------------------------------------------
+-- [Noir] Classes - Tick Iteration
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a process in which code iterates through a table in chunks of x over how ever many necessary ticks.
+]]
+---@class NoirTickIterationProcess: NoirClass
+---@field New fun(self: NoirTickIterationProcess, ID: number, tbl: table<integer, table<integer, any>>, chunkSize: integer): NoirTickIterationProcess
+---@field ID integer The ID of this process
+---@field IterationEvent NoirEvent Arguments: value (any), tick (integer), completed (boolean) | Fired when an iteration during a tick is occuring
+---@field ChunkSize integer The number of values to iterate through per tick
+---@field TableToIterate table The table to iterate through across ticks
+---@field TableSize integer The number of values in the table
+---@field CurrentTick integer Represents the current tick the iteration is at
+---@field Completed boolean Whether or not the iteration is completed
+---@field Chunks table<integer, table<integer, any>> The chunks of the table
+Noir.Classes.TickIterationClass = Noir.Class("NoirTickIterationProcess")
+
+--[[
+    Initializes tick iteration process class objects.
+]]
+---@param ID integer
+---@param tbl table<integer, table<integer, any>>
+---@param chunkSize integer
+function Noir.Classes.TickIterationClass:Init(ID, tbl, chunkSize)
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "chunkSize", chunkSize, "number")
+
+    self.ID = ID
+    self.IterationEvent = Noir.Libraries.Events:Create()
+    self.ChunkSize = chunkSize
+    self.TableToIterate = tbl
+    self.TableSize = #self.TableToIterate
+    self.CurrentTick = 0
+    self.Completed = false
+
+    self.Chunks = self:CalculateChunks()
+end
+
+--[[
+    Iterate through the table in chunks of x over how ever many necessary ticks.
+]]
+---@return boolean completed
+function Noir.Classes.TickIterationClass:Iterate()
+    -- Increment the current tick
+    self.CurrentTick = self.CurrentTick + 1
+
+    -- Check if this is the final iteration
+    if not self.Chunks[self.CurrentTick] then
+        Noir.Libraries.Logging:Warning("NoirTickIterationProcess", ":Iterate() was called when the iteration process has already reached the end of the table")
+        return true
+    end
+
+    -- Check if this is the final iteration
+    local chunk = self.Chunks[self.CurrentTick]
+
+    for index, value in pairs(chunk) do
+        -- Set completed
+        local completed = self.CurrentTick >= #self.Chunks and index >= #chunk
+        self.Completed = completed
+
+        -- Fire event
+        self.IterationEvent:Fire(value, self.CurrentTick, completed)
+    end
+
+    -- Return
+    return self.Completed
+end
+
+--[[
+    Calculate the chunks of the table.
+]]
+---@return table<integer, table<integer, any>>
+function Noir.Classes.TickIterationClass:CalculateChunks()
+    -- Calculate chunks
+    local chunks = {}
+
+    for index = 1, self.TableSize, self.ChunkSize do
+        table.insert(chunks, Noir.Libraries.Table:Slice(self.TableToIterate, index, index + self.ChunkSize - 1))
+    end
+
+    -- Return
+    return chunks
+end
+
+--------------------------------------------------------
+-- [Noir] Classes - Vehicle
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    Represents a vehicle.<br>
+    In Stormworks, this is actually a vehicle group.
+]]
+---@class NoirVehicle: NoirClass
+---@field New fun(self: NoirVehicle, ID: integer, owner: NoirPlayer|nil, spawnPosition: SWMatrix, cost: number): NoirVehicle
+---@field ID integer The ID of this vehicle
+---@field Owner NoirPlayer|nil The owner of this vehicle, or nil if spawned by an addon OR if the player who owns the vehicle left before Noir starts again (eg: after save load or addon reload)
+---@field SpawnPosition SWMatrix The position this vehicle was spawned at
+---@field Cost number The cost of this vehicle
+---@field Bodies table<integer, NoirBody> A table of all of the the bodies apart of this vehicle
+---@field PrimaryBody NoirBody|nil This will be nil if there are no bodies (occurs when the vehicle is despawned)
+---@field OnDespawn NoirEvent Fired when this vehicle is despawned
+Noir.Classes.VehicleClass = Noir.Class("NoirVehicle")
+
+--[[
+    Initializes vehicle class objects.
+]]
+---@param ID any
+---@param owner NoirPlayer|nil
+---@param spawnPosition SWMatrix
+---@param cost number
+function Noir.Classes.VehicleClass:Init(ID, owner, spawnPosition, cost)
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "owner", owner, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "spawnPosition", spawnPosition, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "cost", cost, "number")
+
+    self.ID = ID
+    self.Owner = owner
+    self.SpawnPosition = spawnPosition
+    self.Cost = cost
+    self.Bodies = {}
+    self.PrimaryBody = nil
+
+    self.OnDespawn = Noir.Libraries.Events:Create()
+end
+
+--[[
+    Serialize the vehicle.<br>
+    Used internally.
+]]
+---@return NoirSerializedVehicle
+function Noir.Classes.VehicleClass:_Serialize()
+    local bodies = {}
+
+    for _, body in pairs(self.Bodies) do
+        table.insert(bodies, body.ID)
+    end
+
+    return {
+        ID = self.ID,
+        Owner = self.Owner and self.Owner.ID,
+        SpawnPosition = self.SpawnPosition,
+        Cost = self.Cost,
+        Bodies = bodies
+    }
+end
+
+--[[
+    Deserialize a serialized vehicle.<br>
+]]
+---@param serializedVehicle NoirSerializedVehicle
+---@param addBodies boolean|nil
+---@return NoirVehicle
+function Noir.Classes.VehicleClass:_Deserialize(serializedVehicle, addBodies)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:_Deserialize()", "serializedVehicle", serializedVehicle, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:_Deserialize()", "addBodies", addBodies, "boolean", "nil")
+
+    -- Deserialize
+    local vehicle = self:New(
+        serializedVehicle.ID,
+        serializedVehicle.Owner and Noir.Services.PlayerService:GetPlayer(serializedVehicle.Owner),
+        serializedVehicle.SpawnPosition,
+        serializedVehicle.Cost
+    )
+
+    if addBodies then
+        for _, bodyID in pairs(serializedVehicle.Bodies) do
+            local body = Noir.Services.VehicleService:GetBody(bodyID)
+
+            if not body then
+                Noir.Libraries.Logging:Error("NoirVehicle", "Couldn't find a body for a deserialized vehicle.", false)
+                goto continue
+            end
+
+            vehicle:_AddBody(body)
+
+            ::continue::
+        end
+    end
+
+    -- Return
+    return vehicle
+end
+
+--[[
+    Calculate the primary body.<br>
+    Used internally.
+]]
+function Noir.Classes.VehicleClass:_CalculatePrimaryBody()
+    local previousBody, previousID
+
+    for _, body in pairs(self.Bodies) do
+        if not previousBody then
+            previousBody, previousID = body, body.ID
+            goto continue
+        end
+
+        if body.ID < previousID then
+            previousBody, previousID = body, body.ID
+        end
+
+        ::continue::
+    end
+
+    self.PrimaryBody = previousBody
+end
+
+--[[
+    Add a body to the vehicle.<br>
+    Used internally.
+]]
+---@param body NoirBody
+function Noir.Classes.VehicleClass:_AddBody(body)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:_AddBody()", "body", body, Noir.Classes.BodyClass)
+
+    -- Add body
+    self.Bodies[body.ID] = body
+    body.ParentVehicle = self
+
+    -- Recalculate primary body
+    self:_CalculatePrimaryBody()
+end
+
+--[[
+    Remove a body from the vehicle.<br>
+    Used internally.
+]]
+---@param body NoirBody
+function Noir.Classes.VehicleClass:_RemoveBody(body)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:_RemoveBody()", "body", body, Noir.Classes.BodyClass)
+
+    -- Remove body
+    self.Bodies[body.ID] = nil
+    body.ParentVehicle = nil
+
+    -- Recalculate primary body
+    self:_CalculatePrimaryBody()
+end
+
+--[[
+    Return this vehicle's position.<br>
+    Uses the vehicle's primary body internally.
+]]
+---@param voxelX integer|nil
+---@param voxelY integer|nil
+---@param voxelZ integer|nil
+---@return SWMatrix
+function Noir.Classes.VehicleClass:GetPosition(voxelX, voxelY, voxelZ)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:GetPosition()", "voxelX", voxelX, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:GetPosition()", "voxelY", voxelY, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:GetPosition()", "voxelZ", voxelZ, "number", "nil")
+
+    -- Get and return position
+    return self.PrimaryBody and self.PrimaryBody:GetPosition(voxelX, voxelY, voxelZ) or matrix.translation(0, 0, 0)
+end
+
+--[[
+    Get a child body by its ID.
+]]
+---@param ID integer
+---@return NoirBody|nil
+function Noir.Classes.VehicleClass:GetBody(ID)
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:GetBody()", "ID", ID, "number")
+    return self.Bodies[ID]
+end
+
+--[[
+    Teleport the vehicle to a new position.
+]]
+---@param position SWMatrix
+function Noir.Classes.VehicleClass:Teleport(position)
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Teleport()", "position", position, "table")
+    server.setGroupPos(self.ID, position)
+end
+
+--[[
+    Move the vehicle to a new position, essentially teleports without reloading the vehicle.<br>
+    Note that rotation is ignored.
+]]
+---@param position SWMatrix
+function Noir.Classes.VehicleClass:Move(position)
+    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Move()", "position", position, "table")
+    server.moveGroup(self.ID, position)
+end
+
+--[[
+    Despawn the vehicle.
+]]
+function Noir.Classes.VehicleClass:Despawn()
+    server.despawnVehicleGroup(self.ID, true)
+end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+--[[
+    Represents a serialized version of the NoirVehicle class.
+]]
+---@class NoirSerializedVehicle
+---@field ID integer
+---@field Owner integer
+---@field SpawnPosition SWMatrix
+---@field Cost number
+---@field Bodies table<integer, integer>
+
+--------------------------------------------------------
 -- [Noir] Libraries
 --------------------------------------------------------
 
@@ -2235,7 +3638,7 @@ end
 ]]
 ---@class NoirBase64Lib: NoirLibrary
 Noir.Libraries.Base64 = Noir.Libraries:Create(
-    "NoirBase64",
+    "Base64Library",
     "A library containing helper methods to serialize strings into Base64 and back.",
     "",
     {"Cuh4"}
@@ -2431,7 +3834,7 @@ end
 ]]
 ---@class NoirDataclassesLib: NoirLibrary
 Noir.Libraries.Dataclasses = Noir.Libraries:Create(
-    "NoirDataclasses",
+    "DataclassesLibrary",
     "A library that allows you to create dataclasses, similar to Python.",
     nil,
     {"Cuh4"}
@@ -2576,7 +3979,7 @@ end
 ]]
 ---@class NoirEventsLib: NoirLibrary
 Noir.Libraries.Events = Noir.Libraries:Create(
-    "NoirEvents",
+    "EventsLibrary",
     "A library that allows you to create events.",
     "A library that allows you to create events. Functions can then be connected or disconnected from these events. Events can be fired which calls all connected functions with the provided arguments.",
     {"Cuh4", "Avril112113"}
@@ -2585,7 +3988,7 @@ Noir.Libraries.Events = Noir.Libraries:Create(
 --[[
     Create an event. This event can then be fired with the :Fire() method.
 
-    local MyEvent = Events:Create()
+    local MyEvent = Noir.Libraries.Events:Create()
 
     local connection = MyEvent:Connect(function()
         print("Fired")
@@ -2604,6 +4007,24 @@ function Noir.Libraries.Events:Create()
     local event = Noir.Classes.EventClass:New()
     return event
 end
+
+--[[
+    Return this in the function provided to `:Connect()` to disconnect the function from the connected event after it is called.<br>
+    This is similar to calling `:Disconnect()` after a connection to an event was fired.
+    
+    local MyEvent = Noir.Libraries.Events:Create()
+
+    MyEvent:Connect(function()
+        print("Fired")
+        return Noir.Libraries.Events.DismissAction
+    end)
+
+    MyEvent:Fire()
+    -- "Fired"
+    MyEvent:Fire()
+    -- N/A
+]]
+Noir.Libraries.Events.DismissAction = {}
 
 --------------------------------------------------------
 -- [Noir] Libraries - HTTP
@@ -2643,7 +4064,7 @@ end
 ]]
 ---@class NoirHTTPLib: NoirLibrary
 Noir.Libraries.HTTP = Noir.Libraries:Create(
-    "NoirHTTP",
+    "HTTPLibrary",
     "A library containing helper methods relating to HTTP.",
     "A library containing helper methods relating to HTTP. Comes with methods for encoding/decoding URLs, etc.",
     {"Cuh4"}
@@ -2774,7 +4195,7 @@ end
 ]]
 ---@class NoirJSONLib: NoirLibrary
 Noir.Libraries.JSON = Noir.Libraries:Create(
-    "NoirJSON",
+    "JSONLibrary",
     "A library containing helper methods to serialize Lua objects into JSON and back.",
     nil,
     {"Cuh4"}
@@ -3138,7 +4559,7 @@ end
 ]]
 ---@class NoirLoggingLib: NoirLibrary
 Noir.Libraries.Logging = Noir.Libraries:Create(
-    "NoirLogging",
+    "LoggingLibrary",
     "A library containing methods related to logging.",
     nil,
     {"Cuh4"}
@@ -3336,7 +4757,7 @@ end
 ]]
 ---@class NoirMatrixLib: NoirLibrary
 Noir.Libraries.Matrix = Noir.Libraries:Create(
-    "NoirMatrix",
+    "MatrixLibrary",
     "A library containing helper methods relating to Stormworks matrices.",
     nil,
     {"Cuh4"}
@@ -3464,7 +4885,7 @@ end
 ]]
 ---@class NoirNumberLib: NoirLibrary
 Noir.Libraries.Number = Noir.Libraries:Create(
-    "NoirNumber",
+    "NumberLibrary",
     "Provides helper methods relating to numbers.",
     nil,
     {"Cuh4"}
@@ -3614,7 +5035,7 @@ end
 ]]
 ---@class NoirStringLib: NoirLibrary
 Noir.Libraries.String = Noir.Libraries:Create(
-    "NoirString",
+    "StringLibrary",
     "A library containing helper methods relating to strings.",
     nil,
     {"Cuh4"}
@@ -3665,6 +5086,52 @@ function Noir.Libraries.String:SplitLines(str)
     return self:Split(str, "\n")
 end
 
+--[[
+    Returns whether or not the provided string starts with the provided prefix.
+
+    local myString = "hello world"
+    Noir.Libraries.String:StartsWith(myString, "hello") -- true
+    Noir.Libraries.String:StartsWith(myString, "world") -- false
+]]
+---@param str string
+---@param prefix string
+---@return boolean
+function Noir.Libraries.String:StartsWith(str, prefix)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.String:StartsWith()", "str", str, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.String:StartsWith()", "prefix", prefix, "string")
+
+    -- Return
+    if prefix == "" then
+        return false
+    end
+
+    return str:sub(1, #prefix) == prefix
+end
+
+--[[
+    Returns whether or not the provided string ends with the provided suffix.
+
+    local myString = "hello world"
+    Noir.Libraries.String:EndsWith(myString, "world") -- true
+    Noir.Libraries.String:EndsWith(myString, "hello") -- false
+]]
+---@param str string
+---@param suffix string
+---@return boolean
+function Noir.Libraries.String:EndsWith(str, suffix)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.String:EndsWith()", "str", str, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.String:EndsWith()", "suffix", suffix, "string")
+
+    -- Return
+    if suffix == "" then
+        return false
+    end
+
+    return str:sub(-#suffix) == suffix
+end
+
 --------------------------------------------------------
 -- [Noir] Libraries - Table
 --------------------------------------------------------
@@ -3703,7 +5170,7 @@ end
 ]]
 ---@class NoirTableLib: NoirLibrary
 Noir.Libraries.Table = Noir.Libraries:Create(
-    "NoirTable",
+    "TableLibrary",
     "A library containing helper methods relating to tables.",
     nil,
     {"Cuh4"}
@@ -4554,10 +6021,10 @@ end
     end)
 ]]
 ---@class NoirHTTPService: NoirService
----@field ActiveRequests table<integer, NoirHTTPRequest>
----@field _PortRangeMin integer
----@field _PortRangeMax integer
----@field _HTTPReplyConnection NoirConnection
+---@field ActiveRequests table<integer, NoirHTTPRequest> A table of unanswered HTTP requests.
+---@field _PortRangeMin integer The minimum acceptable port number.
+---@field _PortRangeMax integer The maximum acceptable port number.
+---@field _HTTPReplyConnection NoirConnection A connection to the httpReply event
 Noir.Services.HTTPService = Noir.Services:CreateService(
     "HTTPService",
     true,
@@ -4675,6 +6142,280 @@ end
 ---@return table<integer, NoirHTTPRequest>
 function Noir.Services.HTTPService:GetActiveRequests()
     return self.ActiveRequests
+end
+
+--------------------------------------------------------
+-- [Noir] Services - Message Service
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A service for storing, accessing and sending messages.
+
+    ---@param message NoirMessage
+    Noir.Services.MessageService.OnMessage:Connect(function(message)
+        Noir.Libraries.Logging:Info("Message", "(%s) > %s (%s)", message.Title, message.Content, message.IsAddon and "Sent by addon" or "Sent by player")
+    end)
+
+    Noir.Services.MessageService:SendMessage(nil, "[Server]", "Hello world!")
+]]
+---@class NoirMessageService: NoirService
+---@field Messages table<integer, NoirMessage> A table of all messages that have been sent.
+---@field _SavedMessages table<integer, NoirSerializedMessage> A table of all messages that have been sent (g_savedata version).
+---@field _MessageLimit integer The maximum amount of messages that can be stored.
+---
+---@field OnMessage NoirEvent Arguments: NoirMessage | Fired when a message is sent.
+---
+---@field _OnChatMessageConnection NoirConnection The connection to the `onChatMessage` event.
+Noir.Services.MessageService = Noir.Services:CreateService(
+    "MessageService",
+    true,
+    "A service for storing, accessing and sending messages.",
+    nil,
+    {"Cuh4"}
+)
+
+function Noir.Services.MessageService:ServiceInit()
+    self.Messages = {}
+    self._SavedMessages = self:Load("Messages", {})
+
+    self.OnMessage = Noir.Libraries.Events:Create()
+
+    self._MessageLimit = 220
+end
+
+function Noir.Services.MessageService:ServiceStart()
+    self:_LoadSavedMessages()
+
+    self._OnChatMessageConnection = Noir.Callbacks:Connect("onChatMessage", function(peerID, title, message)
+        -- Get author of message (player)
+        local author = Noir.Services.PlayerService:GetPlayer(peerID)
+
+        if not author then
+            Noir.Libraries.Logging:Error("MessageService", "`onChatMessage` gave an unrecognized peer ID.", false)
+            return
+        end
+
+        -- Register message
+        self:_RegisterMessage(
+            title,
+            message,
+            author,
+            false,
+            nil,
+            nil,
+            true
+        )
+    end)
+end
+
+--[[
+    Load all saved messages.<br>
+    Used internally.
+]]
+function Noir.Services.MessageService:_LoadSavedMessages()
+    -- Get messages
+    local messages = Noir.Libraries.Table:Copy(self._SavedMessages)
+
+    -- Ensure correct order
+    table.sort(messages, function(a, b)
+        return a.SentAt < b.SentAt
+    end)
+
+    -- Clear saved messages
+    self._SavedMessages = {}
+    self:Save("Messages", self._SavedMessages)
+
+    -- Register saved messages
+    for _, message in pairs(messages) do
+        self:_RegisterMessage(
+            message.Title,
+            message.Content,
+            message.Author and Noir.Services.PlayerService:GetPlayer(message.Author),
+            message.IsAddon,
+            message.SentAt,
+            message.Recipient and Noir.Services.PlayerService:GetPlayer(message.Recipient),
+            false
+        )
+    end
+end
+
+--[[
+    Insert a value into a table, removing the first value if the table is full.<br>
+    Used internally.
+]]
+---@param tbl table
+---@param value any
+---@param limit integer
+function Noir.Services.MessageService:_InsertIntoTable(tbl, value, limit)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_InsertIntoTable()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_InsertIntoTable()", "limit", limit, "number")
+
+    -- Insert
+    table.insert(tbl, value)
+
+    -- Remove
+    if #tbl > limit then
+        table.remove(tbl, 1)
+    end
+end
+
+--[[
+    Register a message.<br>
+    Used internally.
+]]
+---@param title string
+---@param content string
+---@param author NoirPlayer|nil
+---@param isAddon boolean
+---@param sentAt number|nil
+---@param recipient NoirPlayer|nil
+---@param fireEvent boolean|nil
+---@return NoirMessage
+function Noir.Services.MessageService:_RegisterMessage(title, content, author, isAddon, sentAt, recipient, fireEvent)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "title", title, "string")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "content", content, "string")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "author", author, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "isAddon", isAddon, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "sentAt", sentAt, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "recipient", recipient, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "fireEvent", fireEvent, "boolean", "nil")
+
+    -- Create message
+    local message = Noir.Classes.MessageClass:New(
+        author,
+        isAddon,
+        content,
+        title,
+        sentAt or server.getTimeMillisec(),
+        recipient
+    )
+
+    -- Register
+    self:_InsertIntoTable(self.Messages, message, self._MessageLimit)
+
+    -- Save
+    self:_SaveMessage(message)
+
+    -- Fire event
+    if fireEvent then
+        self.OnMessage:Fire(message)
+    end
+
+    -- Return
+    return message
+end
+
+--[[
+    Save a message.<br>
+    Used internally.
+]]
+---@param message NoirMessage
+function Noir.Services.MessageService:_SaveMessage(message)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_SaveMessage()", "message", message, Noir.Classes.MessageClass)
+
+    -- Save
+    self:_InsertIntoTable(self._SavedMessages, message:_Serialize(), self._MessageLimit)
+    self:Save("Messages", self._SavedMessages)
+end
+
+--[[
+    Send a message to a player or all players.
+
+    Noir.Services.MessageService:SendMessage(nil, "[Server]", "Hello, %s!", "world") -- "[Server] Hello, world!"
+]]
+---@param player NoirPlayer|nil nil = everyone
+---@param title string
+---@param content string
+---@param ... any
+---@return NoirMessage
+function Noir.Services.MessageService:SendMessage(player, title, content, ...)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:SendMessage()", "player", player, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:SendMessage()", "title", title, "string")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:SendMessage()", "content", content, "string")
+
+    -- Send message
+    local formattedContent = ... and content:format(...) or content
+    server.announce(title, formattedContent, player and player.ID)
+
+    -- Register message
+    local message = self:_RegisterMessage(
+        title,
+        formattedContent,
+        nil,
+        true,
+        nil,
+        player,
+        true
+    )
+
+    -- Return message
+    return message
+end
+
+--[[
+    Returns all messages sent by a player.
+]]
+---@param player NoirPlayer
+---@return table<integer, NoirMessage>
+function Noir.Services.MessageService:GetMessagesByPlayer(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:GetMessagesByPlayer()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Get messages
+    local messages = {}
+
+    for _, message in pairs(self:GetAllMessages()) do
+        if message.Author and Noir.Services.PlayerService:IsSamePlayer(player, message.Author) then
+            table.insert(messages, message)
+        end
+    end
+
+    -- Return
+    return messages
+end
+
+--[[
+    Returns all messages.<br>
+    Earliest entries in table = Oldest messages
+]]
+---@param copy boolean|nil Whether or not to copy the table (recommended), but may be slow
+---@return table<integer, NoirMessage>
+function Noir.Services.MessageService:GetAllMessages(copy)
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:GetAllMessages()", "copy", copy, "boolean", "nil")
+    return copy and Noir.Libraries.Table:Copy(self.Messages) or self.Messages
 end
 
 --------------------------------------------------------
@@ -4904,6 +6645,7 @@ function Noir.Services.ObjectService:ServiceStart()
         local object = self:GetObject(object_id) -- creates an object if it doesn't already exist
 
         if not object then
+            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnLoadConnection callback.", false)
             return
         end
 
@@ -4921,6 +6663,7 @@ function Noir.Services.ObjectService:ServiceStart()
         local object = self:GetObject(object_id)
 
         if not object then
+            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnUnloadConnection callback.", false)
             return
         end
 
@@ -5721,6 +7464,23 @@ function Noir.Services.PlayerService:GetPlayerByName(name)
 end
 
 --[[
+    Get a player by their character.
+]]
+---@param character NoirObject
+---@return NoirPlayer|nil
+function Noir.Services.PlayerService:GetPlayerByCharacter(character)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerByCharacter()", "character", character, Noir.Classes.ObjectClass)
+
+    -- Get player
+    for _, player in pairs(self:GetPlayers(true)) do
+        if player:GetCharacter() == character then
+            return player
+        end
+    end
+end
+
+--[[
     Searches for a player by their name, similar to a Google search but way simpler under the hood.
 ]]
 ---@param name string
@@ -5801,8 +7561,10 @@ end
     task:SetDuration(10) -- Duration changes from 5 to 10
 ]]
 ---@class NoirTaskService: NoirService
----@field _IncrementalID integer The ID of the most recent task
 ---@field Tasks table<integer, NoirTask> A table containing active tasks
+---@field _TaskID integer The ID of the most recent task
+---@field TickIterationProcesses table<integer, NoirTickIterationProcess> A table of tick iteration processes
+---@field _TickIterationProcessID integer The ID of the most recent tick iteration process
 ---@field _OnTickConnection NoirConnection Represents the connection to the onTick game callback
 Noir.Services.TaskService = Noir.Services:CreateService(
     "TaskService",
@@ -5814,14 +7576,28 @@ Noir.Services.TaskService = Noir.Services:CreateService(
 
 function Noir.Services.TaskService:ServiceInit()
     -- Create attributes
-    self._IncrementalID = 0
     self.Tasks = {}
+    self._TaskID = 0
+
+    self.TickIterationProcesses = {}
+    self._TickIterationProcessID = 0
 end
 
 function Noir.Services.TaskService:ServiceStart()
-    -- Connect to onTick, and constantly check tasks
+    -- Connect to onTick
     self._OnTickConnection = Noir.Callbacks:Connect("onTick", function()
-        for _, task in pairs(self.Tasks) do
+        -- Check tick iteration processes
+        for _, tickIterationProcess in pairs(self:GetTickIterationProcesses(true)) do
+            -- Check if the iteration process is done
+            if tickIterationProcess.Completed then
+                self:RemoveTickIterationProcess(tickIterationProcess)
+            else
+                tickIterationProcess:Iterate()
+            end
+        end
+
+        -- Check tasks
+        for _, task in pairs(self:GetTasks(true)) do
             -- Get time so far in seconds
             local time = self:GetTimeSeconds()
 
@@ -5882,16 +7658,29 @@ function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepe
     isRepeating = isRepeating or false
 
     -- Increment ID
-    self._IncrementalID = self._IncrementalID + 1
+    self._TaskID = self._TaskID + 1
 
     -- Create task
-    local task = Noir.Classes.TaskClass:New(self._IncrementalID, duration, isRepeating, arguments)
+    local task = Noir.Classes.TaskClass:New(self._TaskID, duration, isRepeating, arguments)
     task.OnCompletion:Connect(callback)
 
     self.Tasks[task.ID] = task
 
     -- Return the task
     return task
+end
+
+--[[
+    Returns all active tasks.
+]]
+---@param copy boolean|nil
+---@return table<integer, NoirTask>
+function Noir.Services.TaskService:GetTasks(copy)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:GetTasks()", "copy", copy, "boolean", "nil")
+
+    -- Return tasks
+    return copy and Noir.Libraries.Table:Copy(self.Tasks) or self.Tasks
 end
 
 --[[
@@ -5904,6 +7693,70 @@ function Noir.Services.TaskService:RemoveTask(task)
 
     -- Remove task
     self.Tasks[task.ID] = nil
+end
+
+--[[
+    Iterate a table over how many necessary ticks in chunks of x.<br>
+    Useful for iterating through large tables without freezes due to taking too long in a tick.<br>
+    Only works for tables that are sequential. Please use `Noir.Libraries.Table:Values()` to convert a non-sequential table into a sequential table.
+
+    local tbl = {}
+
+    for value = 1, 100000 do
+        table.insert(tbl, value)
+    end
+
+    Noir.Services.TaskService:IterateOverTicks(tbl, 1000, function(value, currentTick, completed)
+        print(value)
+    end)
+]]
+---@param tbl table<integer, any>
+---@param chunkSize integer How many values to iterate per tick
+---@param callback fun(value: any, currentTick: integer|nil, completed: boolean|nil)
+---@return NoirTickIterationProcess
+function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:IterateOverTicks()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:IterateOverTicks()", "chunkSize", chunkSize, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:IterateOverTicks()", "callback", callback, "function")
+
+    -- Increment ID
+    self._TickIterationProcessID = self._TickIterationProcessID + 1
+
+    -- Create iteration process
+    local iterationProcess = Noir.Classes.TickIterationClass:New(self._TickIterationProcessID, tbl, chunkSize)
+    iterationProcess.IterationEvent:Connect(callback)
+
+    -- Store iteration process
+    self.TickIterationProcesses[self._TickIterationProcessID] = iterationProcess
+
+    -- Return iteration
+    return iterationProcess
+end
+
+--[[
+    Get all active tick iteration processes.
+]]
+---@param copy boolean|nil
+---@return table<integer, NoirTickIterationProcess>
+function Noir.Services.TaskService:GetTickIterationProcesses(copy)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:GetTickIterationProcesses()", "copy", copy, "boolean", "nil")
+
+    -- Return tick iteration processes
+    return copy and Noir.Libraries.Table:Copy(self.TickIterationProcesses) or self.TickIterationProcesses
+end
+
+--[[
+    Removes a tick iteration process.
+]]
+---@param tickIterationProcess NoirTickIterationProcess
+function Noir.Services.TaskService:RemoveTickIterationProcess(tickIterationProcess)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTickIterationProcess()", "tickIterationProcess", tickIterationProcess, Noir.Classes.TickIterationClass)
+
+    -- Remove iteration process
+    self.TickIterationProcesses[tickIterationProcess.ID] = nil
 end
 
 --------------------------------------------------------
@@ -6053,6 +7906,644 @@ end
 function Noir.Services.TPSService:SetPrecision(precision)
     Noir.TypeChecking:Assert("Noir.Services.TPSService:SetPrecision()", "precision", precision, "number")
     self._AverageTPSPrecision = precision
+end
+
+--------------------------------------------------------
+-- [Noir] Services - Vehicle Service
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A service for interacting with vehicles.<br>
+    Note that vehicles are referred to as bodies, while vehicle groups are referred to as vehicles.
+
+    ---@param body NoirBody
+    Noir.Services.VehicleService.OnBodyLoad:Connect(function(body)
+        -- Set tooltip
+        body:SetTooltip("#"..body.ID)
+        
+        -- Set all tanks to have 0 contents
+        local tanks = body:GetComponents().components.tanks
+
+        for _, tank in pairs(tanks) do
+            body:SetTankByVoxel(tank.pos.x, tank.pos.y, tank.pos.z, 0, tank.fluid_type)
+        end
+
+        -- Send notification when the vehicle body despawns
+        body.OnDespawn:Once(function()
+            Noir.Services.NotificationService:Error("Body Despawned", "A vehicle body belonging to you despawned!", body.Owner)
+        end)
+    end)
+]]
+---@class NoirVehicleService: NoirService
+---@field Vehicles table<integer, NoirVehicle> A table of all spawned vehicles (in SW: vehicle groups)
+---@field _SavedVehicles table<integer, NoirSerializedVehicle> A table of all saved vehicles
+---@field Bodies table<integer, NoirBody> A table of all spawned bodies (in SW: vehicles)
+---@field _SavedBodies table<integer, NoirSerializedBody> A table of all saved bodies
+---
+---@field OnVehicleSpawn NoirEvent Arguments: NoirVehicle | Fired when a vehicle is spawned
+---@field OnVehicleDespawn NoirEvent Arguments: NoirVehicle | Fired when a vehicle is despawned
+---@field OnBodySpawn NoirEvent Arguments: NoirBody | Fired when a body is spawned
+---@field OnBodyDespawn NoirEvent Arguments: NoirBody | Fired when a body is despawned
+---@field OnBodyLoad NoirEvent Arguments: NoirBody | Fired when a body is loaded
+---@field OnBodyUnload NoirEvent Arguments: NoirBody | Fired when a body is unloaded
+---
+---@field _OnGroupSpawnConnection NoirConnection A connection to the onGroupSpawn event
+---@field _OnBodySpawnConnection NoirConnection A connection to the onVehicleSpawn event
+---@field _OnBodyDespawnConnection NoirConnection A connection to the onVehicleDespawn event
+---@field _OnBodyLoadConnection NoirConnection A connection to the onVehicleLoad event
+---@field _OnBodyUnloadConnection NoirConnection A connection to the onVehicleUnload event
+Noir.Services.VehicleService = Noir.Services:CreateService(
+    "VehicleService",
+    true,
+    "A service for interacting with vehicles.",
+    "A service for interacting with vehicles in an OOP-like manner.",
+    {"Cuh4"}
+)
+
+function Noir.Services.VehicleService:ServiceInit()
+    self.Vehicles = {}
+    self._SavedVehicles = self:Load("SavedVehicles", {})
+
+    self.Bodies = {}
+    self._SavedBodies = self:Load("SavedBodies", {})
+
+    self.OnVehicleSpawn = Noir.Libraries.Events:Create()
+    self.OnVehicleDespawn = Noir.Libraries.Events:Create()
+
+    self.OnBodySpawn = Noir.Libraries.Events:Create()
+    self.OnBodyDespawn = Noir.Libraries.Events:Create()
+    self.OnBodyLoad = Noir.Libraries.Events:Create()
+    self.OnBodyUnload = Noir.Libraries.Events:Create()
+end
+
+function Noir.Services.VehicleService:ServiceStart()
+    -- Load saved vehicles and bodies
+    self:_LoadSavedBodies()
+    self:_LoadSavedVehicles()
+
+    -- Listen for vehicles spawning
+    self._OnGroupSpawnConnection = Noir.Callbacks:Connect("onGroupSpawn", function(group_id, peer_id, x, y, z, group_cost)
+        local player = Noir.Services.PlayerService:GetPlayer(peer_id)
+        self:_RegisterVehicle(group_id, player, matrix.translation(x, y, z), group_cost, true)
+    end)
+
+    -- Listen for bodies spawning
+    self._OnBodySpawnConnection = Noir.Callbacks:Connect("onVehicleSpawn", function(vehicle_id, peer_id, x, y, z, group_cost, group_id)
+        local player = Noir.Services.PlayerService:GetPlayer(peer_id)
+        self:_RegisterBody(vehicle_id, player, matrix.translation(x, y, z), group_cost, true)
+    end)
+
+    -- Listen for bodies despawning
+    self._OnBodyDespawnConnection = Noir.Callbacks:Connect("onVehicleDespawn", function(vehicle_id, peer_id)
+        local body = self:GetBody(vehicle_id)
+
+        if not body then
+            Noir.Libraries.Logging:Error("VehicleService", "A body was despawned that isn't recognized. ID: %s", false, vehicle_id)
+            return
+        end
+
+        self:_UnregisterBody(body, true, true)
+    end)
+
+    -- Listen for bodies loading
+    self._OnBodyLoadConnection = Noir.Callbacks:Connect("onVehicleLoad", function(vehicle_id)
+        local body = self:GetBody(vehicle_id)
+
+        if not body then
+            return
+        end
+
+        self:_LoadBody(body, true)
+    end)
+
+    -- Listen for bodies unloading
+    self._OnBodyUnloadConnection = Noir.Callbacks:Connect("onVehicleUnload", function(vehicle_id)
+        local body = self:GetBody(vehicle_id)
+
+        if not body then
+            return
+        end
+
+        self:_UnloadBody(body, true)
+    end)
+end
+
+--[[
+    Load all saved vehicles. It is important bodies are loaded beforehand. If this is not the case, they will be created automatically but possibly with incorrect data.<br>
+    Used internally.
+]]
+function Noir.Services.VehicleService:_LoadSavedVehicles()
+    for _, vehicle in pairs(self._SavedVehicles) do
+        self:_RegisterVehicle(vehicle.ID, vehicle.Owner and Noir.Services.PlayerService:GetPlayer(vehicle.Owner), vehicle.SpawnPosition, vehicle.Cost, false)
+    end
+end
+
+--[[
+    Load all saved bodies.<br>
+    Used internally.
+]]
+function Noir.Services.VehicleService:_LoadSavedBodies()
+    for _, body in pairs(self._SavedBodies) do
+        self:_RegisterBody(body.ID, body.Owner and Noir.Services.PlayerService:GetPlayer(body.Owner), body.SpawnPosition, body.Cost, false)
+    end
+end
+
+--[[
+    Register a vehicle to the vehicle service.<br>
+    Used internally.
+]]
+---@param ID integer
+---@param player NoirPlayer|nil
+---@param spawnPosition SWMatrix
+---@param cost number
+---@param fireEvent boolean
+---@return NoirVehicle|nil
+function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition, cost, fireEvent)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "player", player, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "spawnPosition", spawnPosition, "table")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "cost", cost, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "fireEvent", fireEvent, "boolean")
+
+    -- Check if already registered
+    if self:GetVehicle(ID) then
+        return
+    end
+
+    -- Get bodies
+    local bodyIDs, success = server.getVehicleGroup(ID)
+
+    if not success then
+        Noir.Libraries.Logging:Error("VehicleService", "Failed to get bodies for a vehicle.", false)
+        return
+    end
+
+    -- Create bodies
+    local bodies = {} ---@type table<integer, NoirBody>
+
+    for _, bodyID in pairs(bodyIDs) do
+        local body = self:GetBody(bodyID) or self:_RegisterBody(bodyID, player, spawnPosition, cost, fireEvent)
+
+        if not body then
+            goto continue
+        end
+
+        table.insert(bodies, body)
+
+        ::continue::
+    end
+
+    -- Create vehicle
+    local vehicle = Noir.Classes.VehicleClass:New(ID, player, spawnPosition, cost)
+    self.Vehicles[vehicle.ID] = vehicle
+
+    -- Add bodies
+    for _, body in pairs(bodies) do
+        vehicle:_AddBody(body)
+    end
+
+    -- Save
+    self:_SaveVehicle(vehicle)
+
+    -- Fire event
+    if fireEvent then
+        self.OnVehicleSpawn:Fire(vehicle)
+    end
+
+    -- Return vehicle
+    return vehicle
+end
+
+--[[
+    Save a vehicle.<br>
+    Used internally.
+]]
+---@param vehicle NoirVehicle
+function Noir.Services.VehicleService:_SaveVehicle(vehicle)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SaveVehicle()", "vehicle", vehicle, Noir.Classes.VehicleClass)
+
+    -- Save
+    self._SavedVehicles[vehicle.ID] = vehicle:_Serialize()
+    self:Save("SavedVehicles", self._SavedVehicles)
+end
+
+--[[
+    Unsave a vehicle.<br>
+    Used internally.
+]]
+---@param vehicle NoirVehicle
+function Noir.Services.VehicleService:_UnsaveVehicle(vehicle)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnsaveVehicle()", "vehicle", vehicle, Noir.Classes.VehicleClass)
+
+    -- Unsave
+    self._SavedVehicles[vehicle.ID] = nil
+    self:Save("SavedVehicles", self._SavedVehicles)
+end
+
+--[[
+    Unregister a vehicle from the vehicle service.<br>
+    Used internally.
+]]
+---@param vehicle NoirVehicle
+---@param fireEvent boolean
+function Noir.Services.VehicleService:_UnregisterVehicle(vehicle, fireEvent)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterVehicle()", "vehicle", vehicle, Noir.Classes.VehicleClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterVehicle()", "fireEvent", fireEvent, "boolean")
+
+    -- Check if exists
+    if not self:GetVehicle(vehicle.ID) then
+        Noir.Libraries.Logging:Error("VehicleService", "Failed to unregister a vehicle because it doesn't exist.", false)
+        return
+    end
+
+    -- Remove vehicle
+    self.Vehicles[vehicle.ID] = nil
+
+    -- Remove bodies
+    for _, body in pairs(vehicle.Bodies) do
+        self:_UnregisterBody(body, false, fireEvent)
+    end
+
+    -- Remove from saved
+    self:_UnsaveVehicle(vehicle)
+
+    -- Fire event
+    if fireEvent then
+        self.OnVehicleDespawn:Fire(vehicle)
+        vehicle.OnDespawn:Fire()
+    end
+end
+
+--[[
+    Register a body to the vehicle service.<br>
+    Used internally.
+]]
+---@param ID integer
+---@param player NoirPlayer|nil
+---@param spawnPosition SWMatrix
+---@param cost number
+---@param fireEvent boolean
+---@return NoirBody|nil
+function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, cost, fireEvent)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "player", player, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "spawnPosition", spawnPosition, "table")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "cost", cost, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "fireEvent", fireEvent, "boolean")
+
+    -- Check if already registered
+    if self:GetBody(ID) then
+        return
+    end
+
+    -- Create body
+    local body = Noir.Classes.BodyClass:New(ID, player, spawnPosition, cost)
+    self.Bodies[body.ID] = body
+
+    -- Save
+    self:_SaveBody(body)
+
+    -- Fire event
+    if fireEvent then
+        self.OnBodySpawn:Fire(body)
+    end
+
+    -- Return body
+    return body
+end
+
+--[[
+    Save a body.<br>
+    Used internally.
+]]
+---@param body NoirBody
+function Noir.Services.VehicleService:_SaveBody(body)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SaveBody()", "body", body, Noir.Classes.BodyClass)
+
+    -- Save
+    self._SavedBodies[body.ID] = body:_Serialize()
+    self:Save("SavedBodies", self._SavedBodies)
+end
+
+--[[
+    Unsave a body.<br>
+    Used internally.
+]]
+---@param body NoirBody
+function Noir.Services.VehicleService:_UnsaveBody(body)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnsaveBody()", "body", body, Noir.Classes.BodyClass)
+
+    -- Unsave
+    self._SavedBodies[body.ID] = nil
+    self:Save("SavedBodies", self._SavedBodies)
+end
+
+--[[
+    Load a body internally.<br>
+    Used internally.
+]]
+---@param body NoirBody
+---@param fireEvent boolean
+function Noir.Services.VehicleService:_LoadBody(body, fireEvent)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_LoadBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_LoadBody()", "fireEvent", fireEvent, "boolean")
+
+    -- Check if exists
+    if not self:GetBody(body.ID) then
+        Noir.Libraries.Logging:Error("VehicleService", "Failed to load a body because it doesn't exist.", false)
+        return
+    end
+
+    -- Load body
+    body.Loaded = true
+
+    -- Save
+    self:_SaveBody(body)
+
+    -- Fire event
+    if fireEvent then
+        body.OnLoad:Fire()
+        self.OnBodyLoad:Fire(body)
+    end
+end
+
+--[[
+    Unload a body internally.<br>
+    Used internally.
+]]
+---@param body NoirBody
+---@param fireEvent boolean
+function Noir.Services.VehicleService:_UnloadBody(body, fireEvent)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnloadBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnloadBody()", "fireEvent", fireEvent, "boolean")
+
+    -- Check if exists
+    if not self:GetBody(body.ID) then
+        Noir.Libraries.Logging:Error("VehicleService", "Failed to unload a body because it doesn't exist.", false)
+        return
+    end
+
+    -- Unload body
+    body.Loaded = false
+
+    -- Save
+    self:_SaveBody(body)
+
+    -- Fire event
+    if fireEvent then
+        body.OnUnload:Fire()
+        self.OnBodyUnload:Fire(body)
+    end
+end
+
+--[[
+    Unregister a body from the vehicle service.<br>
+    Used internally.
+]]
+---@param body NoirBody
+---@param autoDespawnParentVehicle boolean
+---@param fireEvent boolean
+function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVehicle, fireEvent)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "autoDespawnParentVehicle", autoDespawnParentVehicle, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "fireEvent", fireEvent, "boolean")
+
+    -- Check if exists
+    if not self:GetBody(body.ID) then
+        Noir.Libraries.Logging:Error("VehicleService", "Failed to unregister a body because it doesn't exist.", false)
+        return
+    end
+
+    -- Remove body from service
+    self.Bodies[body.ID] = nil
+
+    -- Remove body from vehicle
+    local parentVehicle = body.ParentVehicle
+
+    if parentVehicle then
+        parentVehicle:_RemoveBody(body)
+        self:_SaveVehicle(parentVehicle)
+    end
+
+    -- Unsave
+    self:_UnsaveBody(body)
+
+    -- Fire event
+    if fireEvent then
+        self.OnBodyDespawn:Fire(body)
+        body.OnDespawn:Fire()
+    end
+
+    -- If the parent vehicle has no more bodies, unregister it
+    if autoDespawnParentVehicle and parentVehicle then
+        local bodyCount = Noir.Libraries.Table:Length(parentVehicle.Bodies) -- questionable variable name
+
+        if bodyCount <= 0 then
+            self:_UnregisterVehicle(parentVehicle, fireEvent)
+        end
+    end
+end
+
+--[[
+    Spawn a vehicle.<br>
+    Uses `server.spawnAddonVehicle` under the hood.
+]]
+---@param componentID integer
+---@param position SWMatrix
+---@param addonIndex integer|nil Defaults to this addon's index
+---@return NoirVehicle|nil
+function Noir.Services.VehicleService:SpawnVehicle(componentID, position, addonIndex)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicle()", "componentID", componentID, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicle()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicle()", "addonIndex", addonIndex, "number", "nil")
+
+    -- Spawn vehicle
+    local primaryVehicleID, success, vehicleIDs = server.spawnAddonVehicle(position, addonIndex or (server.getAddonIndex()), componentID)
+
+    -- Check if successful
+    if not success then
+        Noir.Libraries.Logging:Error("VehicleService", ":SpawnVehicle() - Failed to spawn a vehicle. `server.spawnAddonVehicle` returned unsuccessful.", false)
+        return
+    end
+
+    -- Create bodies
+    local primaryBody
+
+    for _, vehicleID in pairs(vehicleIDs) do
+        local body = self:_RegisterBody(vehicleID, nil, position, 0, true)
+
+        if primaryVehicleID == vehicleID then
+            primaryBody = body
+        end
+    end
+
+    -- Check if primaryBody exists
+    if not primaryBody then
+        Noir.Libraries.Logging:Error("VehicleService", ":SpawnVehicle() - Failed to spawn a vehicle. `primaryBody` is nil.", false)
+        return
+    end
+
+    -- Get group ID
+    local primaryBodyData = primaryBody:GetData()
+
+    if not primaryBodyData then
+        Noir.Libraries.Logging:Error("VehicleService", ":SpawnVehicle() - Failed to spawn a vehicle. `primaryBodyData` is nil.", false)
+        return
+    end
+
+    local groupID = primaryBodyData.group_id
+
+    -- Create vehicle
+    local vehicle = self:_RegisterVehicle(groupID, nil, position, 0, true)
+
+    -- Return vehicle
+    return vehicle
+end
+
+--[[
+    Get a vehicle from the vehicle service.
+
+    local vehicle = Noir.Services.VehicleService:GetVehicle(51)
+
+    if vehicle then
+        vehicle:Teleport(matrix.translation(0, 10, 0))
+    end
+]]
+---@param ID integer
+---@return NoirVehicle|nil
+function Noir.Services.VehicleService:GetVehicle(ID)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetVehicle()", "ID", ID, "number")
+    return self.Vehicles[ID]
+end
+
+--[[
+    Get a body from the vehicle service.
+
+    local body = Noir.Services.VehicleService:GetBody(51)
+
+    if body then
+        body:SetTooltip("Hello World")
+    end
+]]
+---@param ID integer
+---@return NoirBody|nil
+function Noir.Services.VehicleService:GetBody(ID)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetBody()", "ID", ID, "number")
+    return self.Bodies[ID]
+end
+
+--[[
+    Get all spawned vehicles.
+
+    for _, vehicle in pairs(Noir.Services.VehicleService:GetVehicles()) do
+        vehicle:Move(matrix.translation(0, 10, 0))
+    end
+]]
+---@return table<integer, NoirVehicle>
+function Noir.Services.VehicleService:GetVehicles()
+    return self.Vehicles
+end
+
+--[[
+    Get all spawned bodies.<br>
+
+    for _, body in pairs(Noir.Services.VehicleService:GetBodies()) do
+        body:SetEditable(false)
+    end
+]]
+---@return table<integer, NoirBody>
+function Noir.Services.VehicleService:GetBodies()
+    return self.Bodies
+end
+
+--[[
+    Get all bodies spawned by a player.
+]]
+---@param player NoirPlayer
+---@return table<integer, NoirBody>
+function Noir.Services.VehicleService:GetBodiesFromPlayer(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetBodiesFromPlayer()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Get bodies
+    local bodies = {}
+
+    for _, body in pairs(self:GetBodies()) do
+        if not body.Owner then
+            goto continue
+        end
+
+        if Noir.Services.PlayerService:IsSamePlayer(body.Owner, player) then
+            table.insert(bodies, body)
+        end
+
+        ::continue::
+    end
+
+    -- Return
+    return bodies
+end
+
+--[[
+    Get all vehicles spawned by a player.
+]]
+---@param player NoirPlayer
+---@return table<integer, NoirVehicle>
+function Noir.Services.VehicleService:GetVehiclesFromPlayer(player)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetVehiclesFromPlayer()", "player", player, Noir.Classes.PlayerClass)
+
+    -- Get vehicles
+    local vehicles = {}
+
+    for _, vehicle in pairs(self:GetVehicles()) do
+        if vehicle.Owner and Noir.Services.PlayerService:IsSamePlayer(vehicle.Owner, player) then
+            table.insert(vehicles, vehicle)
+        end
+    end
+
+    -- Return
+    return vehicles
 end
 
 --------------------------------------------------------
@@ -6528,7 +9019,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.12.0"
+Noir.Version = "1.13.0"
 
 --[[
     Returns the MAJOR, MINOR, and PATCH of the current Noir version.
