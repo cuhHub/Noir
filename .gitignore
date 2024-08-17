@@ -7,6 +7,11 @@ TODO.md
 # Docs
 build-api-reference.py
 
-# Files relating to publishing
+# Files relating to publishing/building
 publish.py
 release-description.md
+specs
+build
+
+# Cache
+__pycache__
