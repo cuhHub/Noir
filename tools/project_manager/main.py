@@ -335,7 +335,7 @@ class Project():
         Creates the `playlist.xml` file.
         """
         
-        self.playlistPath.write_text(self.playlist.format(escapedAddonName = self.name, addonName = self.rawName), newline = False)
+        self.playlistPath.write_text(self.playlist.format(escapedAddonName = self.name, addonName = self.rawName))
         
     def _createScript(self):
         """
