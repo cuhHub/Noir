@@ -46,6 +46,7 @@
 ---@field OnDespawn NoirEvent Fired when this body is despawned
 ---@field OnLoad NoirEvent Fired when this body is loaded
 ---@field OnUnload NoirEvent Fired when this body is unloaded
+---@field OnDamage NoirEvent Arguments: damage (number), voxelX (number), voxelY (number), voxelZ (number) | Fired when this body is damaged
 Noir.Classes.BodyClass = Noir.Class("NoirBody")
 
 --[[
@@ -71,6 +72,7 @@ function Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost)
     self.OnDespawn = Noir.Libraries.Events:Create()
     self.OnLoad = Noir.Libraries.Events:Create()
     self.OnUnload = Noir.Libraries.Events:Create()
+    self.OnDamage = Noir.Libraries.Events:Create()
 end
 
 --[[

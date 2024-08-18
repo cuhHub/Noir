@@ -59,18 +59,20 @@
 ---@field Bodies table<integer, NoirBody> A table of all spawned bodies (in SW: vehicles)
 ---@field _SavedBodies table<integer, NoirSerializedBody> A table of all saved bodies
 ---
----@field OnVehicleSpawn NoirEvent Arguments: NoirVehicle | Fired when a vehicle is spawned
----@field OnVehicleDespawn NoirEvent Arguments: NoirVehicle | Fired when a vehicle is despawned
----@field OnBodySpawn NoirEvent Arguments: NoirBody | Fired when a body is spawned
----@field OnBodyDespawn NoirEvent Arguments: NoirBody | Fired when a body is despawned
----@field OnBodyLoad NoirEvent Arguments: NoirBody | Fired when a body is loaded
----@field OnBodyUnload NoirEvent Arguments: NoirBody | Fired when a body is unloaded
+---@field OnVehicleSpawn NoirEvent Arguments: vehicle (NoirVehicle) | Fired when a vehicle is spawned
+---@field OnVehicleDespawn NoirEvent Arguments: vehicle (NoirVehicle) | Fired when a vehicle is despawned
+---@field OnBodySpawn NoirEvent Arguments: body (NoirBody) | Fired when a body is spawned
+---@field OnBodyDespawn NoirEvent Arguments: body (NoirBody) | Fired when a body is despawned
+---@field OnBodyLoad NoirEvent Arguments: body (NoirBody) | Fired when a body is loaded
+---@field OnBodyUnload NoirEvent Arguments: body (NoirBody) | Fired when a body is unloaded
+---@field OnBodyDamage NoirEvent Arguments: body (NoirBody), damage (number), voxelX (number), voxelY (number), voxelZ (number) | Fired when a body is damaged
 ---
 ---@field _OnGroupSpawnConnection NoirConnection A connection to the onGroupSpawn event
 ---@field _OnBodySpawnConnection NoirConnection A connection to the onVehicleSpawn event
 ---@field _OnBodyDespawnConnection NoirConnection A connection to the onVehicleDespawn event
 ---@field _OnBodyLoadConnection NoirConnection A connection to the onVehicleLoad event
 ---@field _OnBodyUnloadConnection NoirConnection A connection to the onVehicleUnload event
+---@field _OnBodyDamageConnection NoirConnection A connection to the onVehicleDamage event
 Noir.Services.VehicleService = Noir.Services:CreateService(
     "VehicleService",
     true,
@@ -93,6 +95,7 @@ function Noir.Services.VehicleService:ServiceInit()
     self.OnBodyDespawn = Noir.Libraries.Events:Create()
     self.OnBodyLoad = Noir.Libraries.Events:Create()
     self.OnBodyUnload = Noir.Libraries.Events:Create()
+    self.OnBodyDamage = Noir.Libraries.Events:Create()
 end
 
 function Noir.Services.VehicleService:ServiceStart()
@@ -144,6 +147,17 @@ function Noir.Services.VehicleService:ServiceStart()
         end
 
         self:_UnloadBody(body, true)
+    end)
+
+    -- Listen for bodies taking damage
+    self._OnBodyDamageConnection = Noir.Callbacks:Connect("onVehicleDamaged", function(vehicle_id, damage, x, y, z, body_index)
+        local body = self:GetBody(vehicle_id)
+
+        if not body then
+            return
+        end
+
+        self:_DamageBody(body, x, y, z, damage)
     end)
 end
 
@@ -422,6 +436,19 @@ function Noir.Services.VehicleService:_UnloadBody(body, fireEvent)
         body.OnUnload:Fire()
         self.OnBodyUnload:Fire(body)
     end
+end
+
+--[[
+    Fire events for body damage.
+]]
+---@param body NoirBody
+---@param x number
+---@param y number
+---@param z number
+---@param damage number
+function Noir.Services.VehicleService:_DamageBody(body, x, y, z, damage)
+    body.OnDamage:Fire(damage, x, y, z)
+    self.OnBodyDamage:Fire(damage, x, y, z)
 end
 
 --[[
