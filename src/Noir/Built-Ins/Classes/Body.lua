@@ -143,6 +143,26 @@ function Noir.Classes.BodyClass:GetPosition(voxelX, voxelY, voxelZ)
 end
 
 --[[
+    Damage this body at the provided voxel.
+]]
+---@param damageAmount number
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@param radius number
+function Noir.Classes.BodyClass:Damage(damageAmount, voxelX, voxelY, voxelZ, radius)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Damage()", "damageAmount", damageAmount, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Damage()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Damage()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Damage()", "voxelZ", voxelZ, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Damage()", "radius", radius, "number")
+
+    -- Add damage
+    server.addDamage(self.ID, damageAmount, voxelX, voxelY, voxelZ, radius)
+end
+
+--[[
     Makes the body invulnerable/vulnerable to damage.
 ]]
 ---@param invulnerable boolean
