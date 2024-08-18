@@ -514,6 +514,7 @@ end
 ---@field OnDespawn NoirEvent Fired when this body is despawned
 ---@field OnLoad NoirEvent Fired when this body is loaded
 ---@field OnUnload NoirEvent Fired when this body is unloaded
+---@field OnDamage NoirEvent Arguments: damage (number), voxelX (number), voxelY (number), voxelZ (number) | Fired when this body is damaged
 Noir.Classes.BodyClass = Noir.Class("NoirBody")
 
 --[[
@@ -539,6 +540,7 @@ function Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost)
     self.OnDespawn = Noir.Libraries.Events:Create()
     self.OnLoad = Noir.Libraries.Events:Create()
     self.OnUnload = Noir.Libraries.Events:Create()
+    self.OnDamage = Noir.Libraries.Events:Create()
 end
 
 --[[
@@ -606,6 +608,26 @@ function Noir.Classes.BodyClass:GetPosition(voxelX, voxelY, voxelZ)
 
     -- Get and return position
     return (server.getVehiclePos(self.ID))
+end
+
+--[[
+    Damage this body at the provided voxel.
+]]
+---@param damageAmount number
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@param radius number
+function Noir.Classes.BodyClass:Damage(damageAmount, voxelX, voxelY, voxelZ, radius)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Damage()", "damageAmount", damageAmount, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Damage()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Damage()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Damage()", "voxelZ", voxelZ, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Damage()", "radius", radius, "number")
+
+    -- Add damage
+    server.addDamage(self.ID, damageAmount, voxelX, voxelY, voxelZ, radius)
 end
 
 --[[
@@ -3154,7 +3176,7 @@ function Noir.Classes.TaskClass:Remove()
 end
 
 --------------------------------------------------------
--- [Noir] Classes - Tick Iteration
+-- [Noir] Classes - Tick Iteration Process
 --------------------------------------------------------
 
 --[[
@@ -3199,7 +3221,7 @@ end
 ---@field CurrentTick integer Represents the current tick the iteration is at
 ---@field Completed boolean Whether or not the iteration is completed
 ---@field Chunks table<integer, table<integer, any>> The chunks of the table
-Noir.Classes.TickIterationClass = Noir.Class("NoirTickIterationProcess")
+Noir.Classes.TickIterationProcessClass = Noir.Class("NoirTickIterationProcess")
 
 --[[
     Initializes tick iteration process class objects.
@@ -3207,10 +3229,10 @@ Noir.Classes.TickIterationClass = Noir.Class("NoirTickIterationProcess")
 ---@param ID integer
 ---@param tbl table<integer, table<integer, any>>
 ---@param chunkSize integer
-function Noir.Classes.TickIterationClass:Init(ID, tbl, chunkSize)
-    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "tbl", tbl, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.TickIterationClass:Init()", "chunkSize", chunkSize, "number")
+function Noir.Classes.TickIterationProcessClass:Init(ID, tbl, chunkSize)
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcessClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcessClass:Init()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcessClass:Init()", "chunkSize", chunkSize, "number")
 
     self.ID = ID
     self.IterationEvent = Noir.Libraries.Events:Create()
@@ -3227,7 +3249,7 @@ end
     Iterate through the table in chunks of x over how ever many necessary ticks.
 ]]
 ---@return boolean completed
-function Noir.Classes.TickIterationClass:Iterate()
+function Noir.Classes.TickIterationProcessClass:Iterate()
     -- Increment the current tick
     self.CurrentTick = self.CurrentTick + 1
 
@@ -3257,7 +3279,7 @@ end
     Calculate the chunks of the table.
 ]]
 ---@return table<integer, table<integer, any>>
-function Noir.Classes.TickIterationClass:CalculateChunks()
+function Noir.Classes.TickIterationProcessClass:CalculateChunks()
     -- Calculate chunks
     local chunks = {}
 
@@ -6203,10 +6225,11 @@ Noir.Services.MessageService = Noir.Services:CreateService(
 function Noir.Services.MessageService:ServiceInit()
     self.Messages = {}
     self._SavedMessages = self:Load("Messages", {})
+    self._MessageLimit = 220
 
     self.OnMessage = Noir.Libraries.Events:Create()
 
-    self._MessageLimit = 220
+    self:_LoadSavedMessages()
 end
 
 function Noir.Services.MessageService:ServiceStart()
@@ -6628,31 +6651,24 @@ function Noir.Services.ObjectService:ServiceInit()
     self.OnUnregister = Noir.Libraries.Events:Create()
     self.OnLoad = Noir.Libraries.Events:Create()
     self.OnUnload = Noir.Libraries.Events:Create()
+
+    -- Load saved objects
+    self:_LoadObjects()
 end
 
 function Noir.Services.ObjectService:ServiceStart()
-    -- Load saved objects
-    for _, object in pairs(self:_GetSavedObjects()) do
-        self:RegisterObject(object.ID, true)
-    end
-
     -- Listen for object loading/unloading
     self._OnObjectLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
         -- Get object
         local object = self:GetObject(object_id) -- creates an object if it doesn't already exist
 
         if not object then
-            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnLoadConnection callback.", false)
+            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnObjectLoadConnection callback.", false)
             return
         end
 
-        -- Fire event, set loaded
-        object.Loaded = true
-        object.OnLoad:Fire()
-        self.OnLoad:Fire(object)
-
-        -- Save
-        self:_SaveObjectSavedata(object)
+        -- Call method
+        self:_OnObjectLoad(object)
     end)
 
     self._OnObjectUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
@@ -6660,24 +6676,65 @@ function Noir.Services.ObjectService:ServiceStart()
         local object = self:GetObject(object_id)
 
         if not object then
-            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnUnloadConnection callback.", false)
+            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnObjectUnloadConnection callback.", false)
             return
         end
 
-        -- Fire events, set loaded
-        object.Loaded = false
-        object.OnUnload:Fire()
-        self.OnUnload:Fire(object)
-
-        -- Remove from g_savedata if the object was removed and unloaded, otherwise save
-        Noir.Services.TaskService:AddTask(function()
-            if not object:Exists() then
-                self:_RemoveObjectSavedata(object.ID)
-            else
-                self:_SaveObjectSavedata(object)
-            end
-        end, 0.01) -- untested, but this delay might be needed in case the object is unloaded first, then removed
+        -- Call method
+        self:_OnObjectUnload(object)
     end)
+end
+
+--[[
+    Load saved objects.<br>
+    Used internally. Do not use in your code.
+]]
+function Noir.Services.ObjectService:_LoadObjects()
+    for _, object in pairs(self:_GetSavedObjects()) do
+        self:RegisterObject(object.ID, true)
+    end
+end
+
+--[[
+    Run code that would normally be ran when an object is loaded.<br>
+    Used internally. Do not use in your code.
+]]
+---@param object NoirObject
+function Noir.Services.ObjectService:_OnObjectLoad(object)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectLoad()", "object", object, Noir.Classes.ObjectClass)
+
+    -- Fire event, set loaded
+    object.Loaded = true
+    object.OnLoad:Fire()
+    self.OnLoad:Fire(object)
+
+    -- Save
+    self:_SaveObjectSavedata(object)
+end
+
+--[[
+    Run code that would normally be ran when an object is unloaded.<br>
+    Used internally. Do not use in your code.
+]]
+---@param object NoirObject
+function Noir.Services.ObjectService:_OnObjectUnload(object)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectUnload()", "object", object, Noir.Classes.ObjectClass)
+
+    -- Fire events, set loaded
+    object.Loaded = false
+    object.OnUnload:Fire()
+    self.OnUnload:Fire(object)
+
+    -- Remove from g_savedata if the object was removed and unloaded, otherwise save
+    Noir.Services.TaskService:AddTask(function()
+        if not object:Exists() then
+            self:_RemoveObjectSavedata(object.ID)
+        else
+            self:_SaveObjectSavedata(object)
+        end
+    end, 0.01) -- untested, but this delay might be needed in case the object is unloaded first, then removed
 end
 
 --[[
@@ -7103,6 +7160,11 @@ function Noir.Services.PlayerService:ServiceInit()
 
     self:GetSaveData().PlayerProperties = self:_GetSavedProperties() or {}
     self:GetSaveData().RecognizedIDs = self:GetSaveData().RecognizedIDs or {}
+
+    -- Load players in game
+    if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
+        self:_LoadPlayers()
+    end
 end
 
 function Noir.Services.PlayerService:ServiceStart()
@@ -7165,45 +7227,47 @@ function Noir.Services.PlayerService:ServiceStart()
         -- Call respawn event
         self.OnRespawn:Fire(player)
     end)
+end
 
-    -- Load players in game
-    if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
-        for _, player in pairs(server.getPlayers()) do
-            -- Check if unnamed client
-            if player.steam_id == 0 then
-                goto continue
-            end
-
-            -- Check if already loaded
-            if self:GetPlayer(player.id) then
-                Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): %s already has data. Ignoring.", player.name)
-                goto continue
-            end
-
-            -- Give data
-            local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
-
-            if not createdPlayer then
-                Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
-                goto continue
-            end
-
-            -- Load saved properties (eg: permissions)
-            local savedProperties = self:_GetSavedPropertiesForPlayer(createdPlayer)
-
-            if savedProperties then
-                for property, value in pairs(savedProperties) do
-                    createdPlayer[property] = value
-                end
-            end
-
-            -- Call onJoin if unrecognized
-            if not self:_IsRecognized(createdPlayer) then
-                self.OnJoin:Fire(createdPlayer)
-            end
-
-            ::continue::
+--[[
+    Load players current in-game.
+]]
+function Noir.Services.PlayerService:_LoadPlayers()
+    for _, player in pairs(server.getPlayers()) do
+        -- Check if unnamed client
+        if player.steam_id == 0 then
+            goto continue
         end
+
+        -- Check if already loaded
+        if self:GetPlayer(player.id) then
+            Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): %s already has data. Ignoring.", player.name)
+            goto continue
+        end
+
+        -- Give data
+        local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
+
+        if not createdPlayer then
+            Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
+            goto continue
+        end
+
+        -- Load saved properties (eg: permissions)
+        local savedProperties = self:_GetSavedPropertiesForPlayer(createdPlayer)
+
+        if savedProperties then
+            for property, value in pairs(savedProperties) do
+                createdPlayer[property] = value
+            end
+        end
+
+        -- Call onJoin if unrecognized
+        if not self:_IsRecognized(createdPlayer) then
+            self.OnJoin:Fire(createdPlayer)
+        end
+
+        ::continue::
     end
 end
 
@@ -7721,7 +7785,7 @@ function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
     self._TickIterationProcessID = self._TickIterationProcessID + 1
 
     -- Create iteration process
-    local iterationProcess = Noir.Classes.TickIterationClass:New(self._TickIterationProcessID, tbl, chunkSize)
+    local iterationProcess = Noir.Classes.TickIterationProcessClass:New(self._TickIterationProcessID, tbl, chunkSize)
     iterationProcess.IterationEvent:Connect(callback)
 
     -- Store iteration process
@@ -7750,7 +7814,7 @@ end
 ---@param tickIterationProcess NoirTickIterationProcess
 function Noir.Services.TaskService:RemoveTickIterationProcess(tickIterationProcess)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTickIterationProcess()", "tickIterationProcess", tickIterationProcess, Noir.Classes.TickIterationClass)
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTickIterationProcess()", "tickIterationProcess", tickIterationProcess, Noir.Classes.TickIterationProcessClass)
 
     -- Remove iteration process
     self.TickIterationProcesses[tickIterationProcess.ID] = nil
@@ -7966,18 +8030,20 @@ end
 ---@field Bodies table<integer, NoirBody> A table of all spawned bodies (in SW: vehicles)
 ---@field _SavedBodies table<integer, NoirSerializedBody> A table of all saved bodies
 ---
----@field OnVehicleSpawn NoirEvent Arguments: NoirVehicle | Fired when a vehicle is spawned
----@field OnVehicleDespawn NoirEvent Arguments: NoirVehicle | Fired when a vehicle is despawned
----@field OnBodySpawn NoirEvent Arguments: NoirBody | Fired when a body is spawned
----@field OnBodyDespawn NoirEvent Arguments: NoirBody | Fired when a body is despawned
----@field OnBodyLoad NoirEvent Arguments: NoirBody | Fired when a body is loaded
----@field OnBodyUnload NoirEvent Arguments: NoirBody | Fired when a body is unloaded
+---@field OnVehicleSpawn NoirEvent Arguments: vehicle (NoirVehicle) | Fired when a vehicle is spawned
+---@field OnVehicleDespawn NoirEvent Arguments: vehicle (NoirVehicle) | Fired when a vehicle is despawned
+---@field OnBodySpawn NoirEvent Arguments: body (NoirBody) | Fired when a body is spawned
+---@field OnBodyDespawn NoirEvent Arguments: body (NoirBody) | Fired when a body is despawned
+---@field OnBodyLoad NoirEvent Arguments: body (NoirBody) | Fired when a body is loaded
+---@field OnBodyUnload NoirEvent Arguments: body (NoirBody) | Fired when a body is unloaded
+---@field OnBodyDamage NoirEvent Arguments: body (NoirBody), damage (number), voxelX (number), voxelY (number), voxelZ (number) | Fired when a body is damaged
 ---
 ---@field _OnGroupSpawnConnection NoirConnection A connection to the onGroupSpawn event
 ---@field _OnBodySpawnConnection NoirConnection A connection to the onVehicleSpawn event
 ---@field _OnBodyDespawnConnection NoirConnection A connection to the onVehicleDespawn event
 ---@field _OnBodyLoadConnection NoirConnection A connection to the onVehicleLoad event
 ---@field _OnBodyUnloadConnection NoirConnection A connection to the onVehicleUnload event
+---@field _OnBodyDamageConnection NoirConnection A connection to the onVehicleDamage event
 Noir.Services.VehicleService = Noir.Services:CreateService(
     "VehicleService",
     true,
@@ -8000,13 +8066,14 @@ function Noir.Services.VehicleService:ServiceInit()
     self.OnBodyDespawn = Noir.Libraries.Events:Create()
     self.OnBodyLoad = Noir.Libraries.Events:Create()
     self.OnBodyUnload = Noir.Libraries.Events:Create()
-end
+    self.OnBodyDamage = Noir.Libraries.Events:Create()
 
-function Noir.Services.VehicleService:ServiceStart()
     -- Load saved vehicles and bodies
     self:_LoadSavedBodies()
     self:_LoadSavedVehicles()
+end
 
+function Noir.Services.VehicleService:ServiceStart()
     -- Listen for vehicles spawning
     self._OnGroupSpawnConnection = Noir.Callbacks:Connect("onGroupSpawn", function(group_id, peer_id, x, y, z, group_cost)
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)
@@ -8051,6 +8118,17 @@ function Noir.Services.VehicleService:ServiceStart()
         end
 
         self:_UnloadBody(body, true)
+    end)
+
+    -- Listen for bodies taking damage
+    self._OnBodyDamageConnection = Noir.Callbacks:Connect("onVehicleDamaged", function(vehicle_id, damage, x, y, z, body_index)
+        local body = self:GetBody(vehicle_id)
+
+        if not body then
+            return
+        end
+
+        self:_DamageBody(body, x, y, z, damage)
     end)
 end
 
@@ -8329,6 +8407,28 @@ function Noir.Services.VehicleService:_UnloadBody(body, fireEvent)
         body.OnUnload:Fire()
         self.OnBodyUnload:Fire(body)
     end
+end
+
+--[[
+    Fire events for body damage.<br>
+    Used internally.
+]]
+---@param body NoirBody
+---@param x number
+---@param y number
+---@param z number
+---@param damage number
+function Noir.Services.VehicleService:_DamageBody(body, x, y, z, damage)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "x", x, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "y", y, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "z", z, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "damage", damage, "number")
+
+    -- Fire events
+    body.OnDamage:Fire(damage, x, y, z)
+    self.OnBodyDamage:Fire(damage, x, y, z)
 end
 
 --[[
