@@ -457,7 +457,7 @@ function Noir.Services.VehicleService:_DamageBody(body, x, y, z, damage)
 
     -- Fire events
     body.OnDamage:Fire(damage, x, y, z)
-    self.OnBodyDamage:Fire(damage, x, y, z)
+    self.OnBodyDamage:Fire(body, damage, x, y, z)
 end
 
 --[[
