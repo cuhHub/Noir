@@ -43,7 +43,7 @@
 ---@field RequiresAdmin boolean Whether or not this command requires admin
 ---@field CapsSensitive boolean Whether or not this command is case-sensitive
 ---@field Description string The description of this command
----@field OnUse NoirEvent Arguments: player, message, args, hasPermission | Fired when this command is used
+---@field OnUse NoirEvent Arguments: player (NoirPlayer), message (string), args (table<integer, string>), hasPermission (boolean) | Fired when this command is used
 Noir.Classes.CommandClass = Noir.Class("NoirCommand")
 
 --[[

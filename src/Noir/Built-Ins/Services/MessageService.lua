@@ -46,7 +46,7 @@
 ---@field _SavedMessages table<integer, NoirSerializedMessage> A table of all messages that have been sent (g_savedata version).
 ---@field _MessageLimit integer The maximum amount of messages that can be stored.
 ---
----@field OnMessage NoirEvent Arguments: NoirMessage | Fired when a message is sent.
+---@field OnMessage NoirEvent Arguments: message (NoirMessage) | Fired when a message is sent.
 ---
 ---@field _OnChatMessageConnection NoirConnection The connection to the `onChatMessage` event.
 Noir.Services.MessageService = Noir.Services:CreateService(

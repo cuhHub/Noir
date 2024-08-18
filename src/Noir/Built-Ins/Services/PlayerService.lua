@@ -44,10 +44,10 @@
     end)
 ]]
 ---@class NoirPlayerService: NoirService
----@field OnJoin NoirEvent Arguments: player | Fired when a player joins the server
----@field OnLeave NoirEvent Arguments: player | Fired when a player leaves the server
----@field OnDie NoirEvent Arguments: player | Fired when a player dies
----@field OnRespawn NoirEvent Arguments: player | Fired when a player respawns
+---@field OnJoin NoirEvent Arguments: player (NoirPlayer) | Fired when a player joins the server
+---@field OnLeave NoirEvent Arguments: player (NoirPlayer) | Fired when a player leaves the server
+---@field OnDie NoirEvent Arguments: player (NoirPlayer) | Fired when a player dies
+---@field OnRespawn NoirEvent Arguments: player (NoirPlayer) | Fired when a player respawns
 ---@field Players table<integer, NoirPlayer> The players in the server
 ---@field _JoinCallback NoirConnection A connection to the onPlayerDie event
 ---@field _LeaveCallback NoirConnection A connection to the onPlayerLeave event
