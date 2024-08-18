@@ -448,6 +448,14 @@ end
 ---@param z number
 ---@param damage number
 function Noir.Services.VehicleService:_DamageBody(body, x, y, z, damage)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "x", x, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "y", y, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "z", z, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "damage", damage, "number")
+
+    -- Fire events
     body.OnDamage:Fire(damage, x, y, z)
     self.OnBodyDamage:Fire(damage, x, y, z)
 end
