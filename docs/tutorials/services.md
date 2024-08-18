@@ -54,11 +54,11 @@ You probably noticed in the example that there are two strange methods - `Servic
 
 Here's a quick rundown:
 
-`ServiceInit` is called when the service is initialized by Noir after `Noir:Start()` is called.
+`ServiceInit` is called when the service is initialized by Noir after `Noir:Start()` is called. This method is called just before `Noir.Started` is fired.
 
-`ServiceStart` is called when the service is started by Noir after `Noir:Start()` is called.
+`ServiceStart` is called when the service is started by Noir after `Noir:Start()` is called. This method is called straight after `Noir.Started` is fired.
 
-Both of these methods are optional, but be sure to use `ServiceInit` if you need to store data within your service or setup things like events.
+Both of these methods are optional, but be sure to use `ServiceInit` if you need to store data within your service, setup things like events, or load data from your service's `g_savedata` accessible via `Service:GetSaveData()`, `Service:Load()`, etc.
 
 Services can be stored as a variable and retrieved at anytime throughout your code, but you can also use `Noir.Services:GetService("MyService")` to retrieve a service. Note that this method only works if the service has been initialized (always the case after Noir has started).
 
@@ -84,7 +84,7 @@ It is recommended to create a separate .lua file for each service you create. Th
 
 ### :ServiceInit()
 
-Now, we're not all done. We can optionally add a [method](https://www.lua.org/pil/16.html) to our service called `ServiceInit`. This isn't required but is often used to setup events and generally store attributes. See the code sample below.
+Now, we're not all done. We can optionally add a [method](https://www.lua.org/pil/16.html) to our service called `ServiceInit`. This isn't required but is often used to setup events and setup attributes, etc. See the code sample below.
 
 {% code title="MyService.lua" lineNumbers="true" %}
 ```lua
@@ -94,12 +94,12 @@ end
 ```
 {% endcode %}
 
-As mentioned under [#what-are-services](services.md#what-are-services "mention"), `ServiceInit` is called when the service is initialized by Noir after `Noir:Start()` is called. This method is often used to store values in the service for later use.
+As mentioned under [#what-are-services](services.md#what-are-services "mention"), `ServiceInit` is called when the service is initialized by Noir's bootstrapper after `Noir:Start()` is called but before the `Noir.Started` event is fired. This method is often used to store values in the service for later use.
 
 You may be wondering what `self` is. Well, `:ServiceInit()` is a method, and `self` is automatically added as an argument because of the colon before `ServiceInit()`. Behind the scenes, Noir calls `ServiceInit` like so:
 
 ```lua
-Service:ServiceInit()
+MyService:ServiceInit()
 ```
 
 Due to the `:`, `Service` is passed as the first argument to `ServiceInit`. This means that `self` in the example above is equivalent to `MyService`.
@@ -110,10 +110,10 @@ This is known as OOP (Object-Oriented Programming). Check [this](https://www.lua
 
 ### :ServiceStart()
 
-Optionally, we can add another method to our service called `ServiceStart` which is called when the service is started by Noir.
+Optionally, we can add another method to our service called `ServiceStart` which is called when the service is started by Noir which happens straight after the `Noir.Started` event is fired.
 
 <pre class="language-lua" data-title="MyService.lua" data-line-numbers data-full-width="false"><code class="lang-lua"><strong>function MyService:ServiceStart()
-</strong>    Noir.Callbacks:Connect("onPlayerJoin", function()
+</strong>    Noir.Callbacks:Connect("onPlayerJoin", function(...)
         server.announce("Server", "A player joined!")
     end)
 end
