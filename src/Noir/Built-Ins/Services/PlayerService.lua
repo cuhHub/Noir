@@ -73,6 +73,11 @@ function Noir.Services.PlayerService:ServiceInit()
 
     self:GetSaveData().PlayerProperties = self:_GetSavedProperties() or {}
     self:GetSaveData().RecognizedIDs = self:GetSaveData().RecognizedIDs or {}
+
+    -- Load players in game
+    if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
+        self:_LoadPlayers()
+    end
 end
 
 function Noir.Services.PlayerService:ServiceStart()
@@ -135,45 +140,47 @@ function Noir.Services.PlayerService:ServiceStart()
         -- Call respawn event
         self.OnRespawn:Fire(player)
     end)
+end
 
-    -- Load players in game
-    if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
-        for _, player in pairs(server.getPlayers()) do
-            -- Check if unnamed client
-            if player.steam_id == 0 then
-                goto continue
-            end
-
-            -- Check if already loaded
-            if self:GetPlayer(player.id) then
-                Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): %s already has data. Ignoring.", player.name)
-                goto continue
-            end
-
-            -- Give data
-            local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
-
-            if not createdPlayer then
-                Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
-                goto continue
-            end
-
-            -- Load saved properties (eg: permissions)
-            local savedProperties = self:_GetSavedPropertiesForPlayer(createdPlayer)
-
-            if savedProperties then
-                for property, value in pairs(savedProperties) do
-                    createdPlayer[property] = value
-                end
-            end
-
-            -- Call onJoin if unrecognized
-            if not self:_IsRecognized(createdPlayer) then
-                self.OnJoin:Fire(createdPlayer)
-            end
-
-            ::continue::
+--[[
+    Load players current in-game.
+]]
+function Noir.Services.PlayerService:_LoadPlayers()
+    for _, player in pairs(server.getPlayers()) do
+        -- Check if unnamed client
+        if player.steam_id == 0 then
+            goto continue
         end
+
+        -- Check if already loaded
+        if self:GetPlayer(player.id) then
+            Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): %s already has data. Ignoring.", player.name)
+            goto continue
+        end
+
+        -- Give data
+        local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
+
+        if not createdPlayer then
+            Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
+            goto continue
+        end
+
+        -- Load saved properties (eg: permissions)
+        local savedProperties = self:_GetSavedPropertiesForPlayer(createdPlayer)
+
+        if savedProperties then
+            for property, value in pairs(savedProperties) do
+                createdPlayer[property] = value
+            end
+        end
+
+        -- Call onJoin if unrecognized
+        if not self:_IsRecognized(createdPlayer) then
+            self.OnJoin:Fire(createdPlayer)
+        end
+
+        ::continue::
     end
 end
 

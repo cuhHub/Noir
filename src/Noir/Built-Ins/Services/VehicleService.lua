@@ -96,13 +96,13 @@ function Noir.Services.VehicleService:ServiceInit()
     self.OnBodyLoad = Noir.Libraries.Events:Create()
     self.OnBodyUnload = Noir.Libraries.Events:Create()
     self.OnBodyDamage = Noir.Libraries.Events:Create()
-end
 
-function Noir.Services.VehicleService:ServiceStart()
     -- Load saved vehicles and bodies
     self:_LoadSavedBodies()
     self:_LoadSavedVehicles()
+end
 
+function Noir.Services.VehicleService:ServiceStart()
     -- Listen for vehicles spawning
     self._OnGroupSpawnConnection = Noir.Callbacks:Connect("onGroupSpawn", function(group_id, peer_id, x, y, z, group_cost)
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)

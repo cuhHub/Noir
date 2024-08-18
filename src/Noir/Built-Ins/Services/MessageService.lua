@@ -60,10 +60,11 @@ Noir.Services.MessageService = Noir.Services:CreateService(
 function Noir.Services.MessageService:ServiceInit()
     self.Messages = {}
     self._SavedMessages = self:Load("Messages", {})
+    self._MessageLimit = 220
 
     self.OnMessage = Noir.Libraries.Events:Create()
 
-    self._MessageLimit = 220
+    self:_LoadSavedMessages()
 end
 
 function Noir.Services.MessageService:ServiceStart()
