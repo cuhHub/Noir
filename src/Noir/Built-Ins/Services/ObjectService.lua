@@ -73,31 +73,24 @@ function Noir.Services.ObjectService:ServiceInit()
     self.OnUnregister = Noir.Libraries.Events:Create()
     self.OnLoad = Noir.Libraries.Events:Create()
     self.OnUnload = Noir.Libraries.Events:Create()
+
+    -- Load saved objects
+    self:_LoadObjects()
 end
 
 function Noir.Services.ObjectService:ServiceStart()
-    -- Load saved objects
-    for _, object in pairs(self:_GetSavedObjects()) do
-        self:RegisterObject(object.ID, true)
-    end
-
     -- Listen for object loading/unloading
     self._OnObjectLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
         -- Get object
         local object = self:GetObject(object_id) -- creates an object if it doesn't already exist
 
         if not object then
-            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnLoadConnection callback.", false)
+            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnObjectLoadConnection callback.", false)
             return
         end
 
-        -- Fire event, set loaded
-        object.Loaded = true
-        object.OnLoad:Fire()
-        self.OnLoad:Fire(object)
-
-        -- Save
-        self:_SaveObjectSavedata(object)
+        -- Call method
+        self:_OnObjectLoad(object)
     end)
 
     self._OnObjectUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
@@ -105,24 +98,65 @@ function Noir.Services.ObjectService:ServiceStart()
         local object = self:GetObject(object_id)
 
         if not object then
-            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnUnloadConnection callback.", false)
+            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnObjectUnloadConnection callback.", false)
             return
         end
 
-        -- Fire events, set loaded
-        object.Loaded = false
-        object.OnUnload:Fire()
-        self.OnUnload:Fire(object)
-
-        -- Remove from g_savedata if the object was removed and unloaded, otherwise save
-        Noir.Services.TaskService:AddTask(function()
-            if not object:Exists() then
-                self:_RemoveObjectSavedata(object.ID)
-            else
-                self:_SaveObjectSavedata(object)
-            end
-        end, 0.01) -- untested, but this delay might be needed in case the object is unloaded first, then removed
+        -- Call method
+        self:_OnObjectUnload(object)
     end)
+end
+
+--[[
+    Load saved objects.<br>
+    Used internally. Do not use in your code.
+]]
+function Noir.Services.ObjectService:_LoadObjects()
+    for _, object in pairs(self:_GetSavedObjects()) do
+        self:RegisterObject(object.ID, true)
+    end
+end
+
+--[[
+    Run code that would normally be ran when an object is loaded.<br>
+    Used internally. Do not use in your code.
+]]
+---@param object NoirObject
+function Noir.Services.ObjectService:_OnObjectLoad(object)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectLoad()", "object", object, Noir.Classes.ObjectClass)
+
+    -- Fire event, set loaded
+    object.Loaded = true
+    object.OnLoad:Fire()
+    self.OnLoad:Fire(object)
+
+    -- Save
+    self:_SaveObjectSavedata(object)
+end
+
+--[[
+    Run code that would normally be ran when an object is unloaded.<br>
+    Used internally. Do not use in your code.
+]]
+---@param object NoirObject
+function Noir.Services.ObjectService:_OnObjectUnload(object)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectUnload()", "object", object, Noir.Classes.ObjectClass)
+
+    -- Fire events, set loaded
+    object.Loaded = false
+    object.OnUnload:Fire()
+    self.OnUnload:Fire(object)
+
+    -- Remove from g_savedata if the object was removed and unloaded, otherwise save
+    Noir.Services.TaskService:AddTask(function()
+        if not object:Exists() then
+            self:_RemoveObjectSavedata(object.ID)
+        else
+            self:_SaveObjectSavedata(object)
+        end
+    end, 0.01) -- untested, but this delay might be needed in case the object is unloaded first, then removed
 end
 
 --[[
