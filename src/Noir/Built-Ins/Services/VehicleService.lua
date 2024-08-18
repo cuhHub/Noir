@@ -439,7 +439,8 @@ function Noir.Services.VehicleService:_UnloadBody(body, fireEvent)
 end
 
 --[[
-    Fire events for body damage.
+    Fire events for body damage.<br>
+    Used internally.
 ]]
 ---@param body NoirBody
 ---@param x number
