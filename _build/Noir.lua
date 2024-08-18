@@ -9016,7 +9016,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.13.0"
+Noir.Version = "1.13.1"
 
 --[[
     Returns the MAJOR, MINOR, and PATCH of the current Noir version.
