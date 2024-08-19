@@ -53,7 +53,7 @@ Noir.Classes.ObjectClass = Noir.Class("NoirObject")
 function Noir.Classes.ObjectClass:Init(ID)
     Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Init()", "ID", ID, "number")
 
-    self.ID = ID
+    self.ID = math.floor(ID)
     self.Loaded = false
 
     self.OnLoad = Noir.Libraries.Events:Create()

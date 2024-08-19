@@ -66,7 +66,7 @@ function Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions
     Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "permissions", permissions, "table")
 
     self.Name = name
-    self.ID = ID
+    self.ID = math.floor(ID)
     self.Steam = steam
     self.Admin = admin
     self.Auth = auth

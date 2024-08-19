@@ -59,7 +59,7 @@ function Noir.Classes.VehicleClass:Init(ID, owner, spawnPosition, cost)
     Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "spawnPosition", spawnPosition, "table")
     Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "cost", cost, "number")
 
-    self.ID = ID
+    self.ID = math.floor(ID)
     self.Owner = owner
     self.SpawnPosition = spawnPosition
     self.Cost = cost

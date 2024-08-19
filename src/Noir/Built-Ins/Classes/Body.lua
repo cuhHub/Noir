@@ -64,7 +64,7 @@ function Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost, loaded)
     Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "cost", cost, "number")
     Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "loaded", loaded, "boolean")
 
-    self.ID = ID
+    self.ID = math.floor(ID)
     self.Owner = owner
     self.SpawnPosition = spawnPosition
     self.Cost = cost
