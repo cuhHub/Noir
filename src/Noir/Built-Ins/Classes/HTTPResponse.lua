@@ -45,7 +45,6 @@ Noir.Classes.HTTPResponseClass = Noir.Class("NoirHTTPResponse")
 ---@param response string
 function Noir.Classes.HTTPResponseClass:Init(response)
     Noir.TypeChecking:Assert("Noir.Classes.HTTPResponseClass:Init()", "response", response, "string")
-
     self.Text = response
 end
 
