@@ -61,6 +61,8 @@ Noir.Services.PlayerService = Noir.Services:CreateService(
     {"Cuh4"}
 )
 
+Noir.Services.PlayerService.InitPriority = 1
+
 function Noir.Services.PlayerService:ServiceInit()
     self.OnJoin = Noir.Libraries.Events:Create()
     self.OnLeave = Noir.Libraries.Events:Create()
