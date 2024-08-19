@@ -182,6 +182,8 @@ function Noir.Services.PlayerService:_LoadPlayers()
 
         ::continue::
     end
+
+    self:_ClearRecognized() -- prevent table getting massive over time, especially on popular saves
 end
 
 --[[
@@ -300,6 +302,14 @@ function Noir.Services.PlayerService:_IsRecognized(player)
 
     -- Return true if recognized
     return self:GetSaveData().RecognizedIDs[player.ID] ~= nil
+end
+
+--[[
+    Clear the list of recognized players.<br>
+    Used internally.
+]]
+function Noir.Services.PlayerService:_ClearRecognized()
+    self:GetSaveData().RecognizedIDs = {}
 end
 
 --[[
