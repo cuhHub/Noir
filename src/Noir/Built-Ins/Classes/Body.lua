@@ -36,7 +36,7 @@
     In Stormworks, this is actually a vehicle apart of a vehicle group.
 ]]
 ---@class NoirBody: NoirClass
----@field New fun(self: NoirBody, ID: integer, owner: NoirPlayer|nil, spawnPosition: SWMatrix, cost: number): NoirBody
+---@field New fun(self: NoirBody, ID: integer, owner: NoirPlayer|nil, spawnPosition: SWMatrix, cost: number, loaded: boolean): NoirBody
 ---@field ID integer The ID of this body
 ---@field Owner NoirPlayer|nil The owner of this body, or nil if spawned by an addon OR if the player who owns the body left before Noir starts again (eg: after save load or addon reload)
 ---@field SpawnPosition SWMatrix The position this body was spawned at
@@ -56,18 +56,20 @@ Noir.Classes.BodyClass = Noir.Class("NoirBody")
 ---@param owner NoirPlayer|nil
 ---@param spawnPosition SWMatrix
 ---@param cost number
-function Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost)
+---@param loaded boolean
+function Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost, loaded)
     Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "ID", ID, "number")
     Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "owner", owner, Noir.Classes.PlayerClass, "nil")
     Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "spawnPosition", spawnPosition, "table")
     Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "cost", cost, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "loaded", loaded, "boolean")
 
     self.ID = ID
     self.Owner = owner
     self.SpawnPosition = spawnPosition
     self.Cost = cost
     self.ParentVehicle = nil
-    self.Loaded = false
+    self.Loaded = loaded
 
     self.OnDespawn = Noir.Libraries.Events:Create()
     self.OnLoad = Noir.Libraries.Events:Create()
@@ -86,7 +88,8 @@ function Noir.Classes.BodyClass:_Serialize()
         Owner = self.Owner and self.Owner.ID,
         SpawnPosition = self.SpawnPosition,
         Cost = self.Cost,
-        ParentVehicle = self.ParentVehicle and self.ParentVehicle.ID
+        ParentVehicle = self.ParentVehicle and self.ParentVehicle.ID,
+        Loaded = self.Loaded
     }
 end
 
@@ -107,7 +110,8 @@ function Noir.Classes.BodyClass:_Deserialize(serializedBody, setParentVehicle)
         serializedBody.ID,
         serializedBody.Owner and Noir.Services.PlayerService:GetPlayer(serializedBody.Owner),
         serializedBody.SpawnPosition,
-        serializedBody.Cost
+        serializedBody.Cost,
+        serializedBody.Loaded
     )
 
     -- Set parent vehicle
@@ -814,6 +818,24 @@ function Noir.Classes.BodyClass:Despawn()
     server.despawnVehicle(self.ID, true)
 end
 
+--[[
+    Returns whether or not the body exists.
+]]
+---@return boolean
+function Noir.Classes.BodyClass:Exists()
+    local _, exists = server.getVehicleSimulating(self.ID)
+    return exists
+end
+
+--[[
+    Returns whether or not the body is simulating.
+]]
+---@return boolean
+function Noir.Classes.BodyClass:IsSimulating()
+    local simulating, success = server.getVehicleSimulating(self.ID)
+    return simulating and success
+end
+
 -------------------------------
 -- // Intellisense
 -------------------------------
@@ -827,3 +849,4 @@ end
 ---@field SpawnPosition SWMatrix
 ---@field Cost number
 ---@field ParentVehicle integer
+---@field Loaded boolean

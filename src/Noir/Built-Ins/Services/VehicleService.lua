@@ -335,7 +335,18 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, c
     end
 
     -- Create body
-    local body = Noir.Classes.BodyClass:New(ID, player, spawnPosition, cost)
+    local body = Noir.Classes.BodyClass:New(ID, player, spawnPosition, cost, false)
+
+    -- Check if the body even exists anymore
+    if not body:Exists() then
+        self:_UnregisterBody(body, false, false)
+        return
+    end
+
+    -- Set loaded
+    body.Loaded = body:IsSimulating()
+
+    -- Register body
     self.Bodies[body.ID] = body
 
     -- Save
