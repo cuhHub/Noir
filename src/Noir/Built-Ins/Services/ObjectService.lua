@@ -505,3 +505,17 @@ function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit,
     -- Return
     return object
 end
+
+--[[
+    Spawn an explosion.
+]]
+---@param position SWMatrix
+---@param magnitude number 0-1
+function Noir.Services.ObjectService:SpawnExplosion(position, magnitude)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnExplosion()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnExplosion()", "magnitude", magnitude, "number")
+
+    -- Spawn the explosion
+    server.spawnExplosion(position, magnitude)
+end
