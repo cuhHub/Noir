@@ -118,7 +118,7 @@ function Noir.Libraries.JSON:SkipDelim(str, pos, delim, errIfMissing)
 
     if str:sub(pos, pos) ~= delim then
         if errIfMissing then
-            Noir.Libraries.Logging:Error("JSON", "Expected %s at position %d", true, delim, pos)
+            -- Noir.Libraries.Logging:Error("JSON", "Expected %s at position %d", true, delim, pos)
             return 0, false
         end
 
@@ -146,10 +146,10 @@ function Noir.Libraries.JSON:ParseStringValue(str, pos, val)
     -- Parsing
     val = val or ""
 
-    local earlyEndError = "End of input found while parsing string."
+    -- local earlyEndError = "End of input found while parsing string."
 
     if pos > #str then
-        Noir.Libraries.Logging:Error("JSON", earlyEndError, true)
+        -- Noir.Libraries.Logging:Error("JSON", earlyEndError, true)
         return "", 0
     end
 
@@ -167,7 +167,7 @@ function Noir.Libraries.JSON:ParseStringValue(str, pos, val)
     local nextc = str:sub(pos + 1, pos + 1)
 
     if not nextc then
-        Noir.Libraries.Logging:Error("JSON", earlyEndError, true)
+        -- Noir.Libraries.Logging:Error("JSON", earlyEndError, true)
         return "", 0
     end
 
@@ -192,7 +192,7 @@ function Noir.Libraries.JSON:ParseNumberValue(str, pos)
     local val = tonumber(numStr)
 
     if not val then
-        Noir.Libraries.Logging:Error("JSON", "Error parsing number at position %s.", true, pos)
+        -- Noir.Libraries.Logging:Error("JSON", "Error parsing number at position %s.", true, pos)
         return 0, 0
     end
 
@@ -219,7 +219,7 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
 
     if kind == "array" then
         if asKey then
-            Noir.Libraries.Logging:Error("JSON", "Can't encode array as key.", true)
+            -- Noir.Libraries.Logging:Error("JSON", "Can't encode array as key.", true)
             return ""
         end
 
@@ -236,7 +236,7 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
         s[#s + 1] = "]"
     elseif kind == "table" then
         if asKey then
-            Noir.Libraries.Logging:Error("JSON", "Can't encode table as key.", true)
+            -- Noir.Libraries.Logging:Error("JSON", "Can't encode table as key.", true)
             return ""
         end
 
@@ -266,7 +266,7 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
     elseif kind == "nil" then
         return "null"
     else
-        Noir.Libraries.Logging:Error("JSON", "Type of %s cannot be JSON encoded.", true, kind)
+        -- Noir.Libraries.Logging:Error("JSON", "Type of %s cannot be JSON encoded.", true, kind)
         return ""
     end
 
@@ -294,7 +294,8 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
     pos = pos or 1
 
     if pos > #str then
-        Noir.Libraries.Logging:Error("JSON", "Reached unexpected end of input.", true)
+        -- Noir.Libraries.Logging:Error("JSON", "Reached unexpected end of input.", true)
+        return nil, 0
     end
 
     pos = pos + #str:match("^%s*", pos)
@@ -312,11 +313,12 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
             end
 
             if not delimFound then
-                Noir.Libraries.Logging:Error("JSON", "Comma missing between object items.", true)
+                -- Noir.Libraries.Logging:Error("JSON", "Comma missing between object items.", true)
                 return nil, 0
             end
 
             pos = self:SkipDelim(str, pos, ":", true)
+
             obj[key], pos = self:Decode(str, pos)
             pos, delimFound = self:SkipDelim(str, pos, ",")
         end
@@ -332,7 +334,7 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
             end
 
             if not delimFound then
-                Noir.Libraries.Logging:Error("JSON", "Comma missing between array items.", true)
+                -- Noir.Libraries.Logging:Error("JSON", "Comma missing between array items.", true)
                 return nil, 0
             end
 
@@ -357,7 +359,7 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
         end
 
         local posInfoStr = "position "..pos..": "..str:sub(pos, pos + 10)
-        Noir.Libraries.Logging:Error("JSON", "Invalid json syntax starting at %s", true, posInfoStr)
+        -- Noir.Libraries.Logging:Error("JSON", "Invalid json syntax starting at %s", true, posInfoStr)
 
         return nil, 0
     end
