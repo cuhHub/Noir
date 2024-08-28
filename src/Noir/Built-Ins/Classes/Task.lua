@@ -42,11 +42,12 @@
     end)
 ]]
 ---@class NoirTask: NoirClass
----@field New fun(self: NoirTask, ID: integer, duration: number, isRepeating: boolean, arguments: table<integer, any>): NoirTask
+---@field New fun(self: NoirTask, ID: integer, taskType: NoirTaskType, duration: number, isRepeating: boolean, arguments: table<integer, any>, startedAt: number): NoirTask
 ---@field ID integer The ID of this task
----@field StartedAt integer The time that this task started at
----@field Duration integer The duration of this task
----@field StopsAt integer The time that this task will stop at if it is not repeating
+---@field TaskType NoirTaskType The type of this task
+---@field StartedAt number The point that this task started at
+---@field Duration number The duration of this task
+---@field StopsAt number The point that this task will stop at if it is not repeating
 ---@field IsRepeating boolean Whether or not this task is repeating
 ---@field Arguments table<integer, any> The arguments that will be passed to this task upon completion
 ---@field OnCompletion NoirEvent The event that will be fired when this task is completed
@@ -56,17 +57,22 @@ Noir.Classes.TaskClass = Noir.Class("NoirTask")
     Initializes task class objects.
 ]]
 ---@param ID integer
+---@param taskType NoirTaskType
 ---@param duration number
 ---@param isRepeating boolean
 ---@param arguments table<integer, any>
-function Noir.Classes.TaskClass:Init(ID, duration, isRepeating, arguments)
+---@param startedAt number
+function Noir.Classes.TaskClass:Init(ID, taskType, duration, isRepeating, arguments, startedAt)
     Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "taskType", taskType, "string")
     Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "duration", duration, "number")
     Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "isRepeating", isRepeating, "boolean")
     Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "arguments", arguments, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "startedAt", startedAt, "number", "nil")
 
     self.ID = ID
-    self.StartedAt = Noir.Services.TaskService:GetTimeSeconds()
+    self.TaskType = taskType
+    self.StartedAt = startedAt
 
     self:SetDuration(duration)
     self:SetRepeating(isRepeating)
@@ -75,9 +81,12 @@ function Noir.Classes.TaskClass:Init(ID, duration, isRepeating, arguments)
     self.OnCompletion = Noir.Libraries.Events:Create()
 end
 
+    --[[
+]]
+
 --[[
     Sets whether or not this task is repeating.<br>
-    If repeating, the task will be triggered every Task.Duration seconds.<br>
+    If repeating, the task will be triggered repeatedly as implied.<br>
     If not, the task will be triggered once, then removed from the TaskService.
 ]]
 ---@param isRepeating boolean
@@ -112,3 +121,14 @@ end
 function Noir.Classes.TaskClass:Remove()
     Noir.Services.TaskService:RemoveTask(self)
 end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+--[[
+    Represents a task type.
+]]
+---@alias NoirTaskType
+---| "Time" The task will use `server.getTimeMillisec()`
+---| "Ticks" The task will count ticks in `onTick` while considering the amount of ticks passed in a single tick
