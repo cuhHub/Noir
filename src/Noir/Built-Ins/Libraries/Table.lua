@@ -358,3 +358,37 @@ function Noir.Libraries.Table:Find(tbl, value)
         end
     end
 end
+
+--[[
+    Find a value in a table. Unlike `:Find()`, this method will recursively search through nested tables to find the value.
+
+    local myTbl = {
+        mySecondTbl = {
+            hello = true
+        }
+    }
+    
+    local index, table = Noir.Libraries.Table:FindDeep(myTbl, true)
+    print(index) -- "hello"
+    print(table) -- {["hello"] = true}
+]]
+---@param tbl table
+---@param value any
+---@return any|nil, table|nil
+function Noir.Libraries.Table:FindDeep(tbl, value)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:FindDeep()", "tbl", tbl, "table")
+
+    -- Find the value
+    for index, iterValue in pairs(tbl) do
+        if iterValue == value then
+            return index, tbl
+        elseif type(iterValue) == "table" then
+            local _index, _tbl = self:FindDeep(iterValue, value)
+
+            if _index and _tbl then
+                return _index, _tbl
+            end
+        end
+    end
+end
