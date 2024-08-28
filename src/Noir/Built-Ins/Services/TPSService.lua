@@ -40,8 +40,9 @@
     Noir.Services.TPSService:SetPrecision(10) -- The average TPS will now be calculated every 10 ticks, meaning higher accuracy but slower
 ]]
 ---@class NoirTPSService: NoirService
----@field TPS number The TPS of the server
----@field AverageTPS number The average TPS of the server
+---@field TPS number The TPS of the server, this accounts for sped up time which happens when all players sleep
+---@field AverageTPS number The average TPS of the server, this accounts for sped up time which happens when all players sleep
+---@field RawTPS number The raw TPS of the server, this doesn't account for sped up time which happens when all players sleep
 ---@field DesiredTPS number The desired TPS. This service will slow the game enough to achieve this. 0 = disabled
 ---@field _AverageTPSPrecision integer Tick rate for calculating the average TPS. Higher = more accurate, but slower. Use :SetPrecision() to modify
 ---@field _AverageTPSAccumulation table<integer, integer> TPS over time. Gets cleared after it is filled enough
@@ -58,6 +59,7 @@ Noir.Services.TPSService = Noir.Services:CreateService(
 function Noir.Services.TPSService:ServiceInit()
     self.TPS = 0
     self.AverageTPS = 0
+    self.RawTPS = 0
     self.DesiredTPS = 0
 
     self._AverageTPSPrecision = 10
@@ -67,7 +69,7 @@ end
 
 function Noir.Services.TPSService:ServiceStart()
     self._OnTickConnection = Noir.Callbacks:Connect("onTick", function(ticks)
-        -- Calculate TPS
+        -- Slow TPS to desired TPS
         local now = server.getTimeMillisec()
 
         if self.DesiredTPS ~= 0 then -- below is from Woe (https://discord.com/channels/357480372084408322/905791966904729611/1261911499723509820) @ https://discord.gg/stormworks
@@ -76,7 +78,9 @@ function Noir.Services.TPSService:ServiceStart()
             end
         end
 
+        -- Calculate TPS
         self.TPS = self:_CalculateTPS(self._Last, now, ticks)
+        self.RawTPS = self:_CalculateTPS(self._Last, now, 1)
         self._Last = server.getTimeMillisec()
 
         -- Calculate Average TPS
