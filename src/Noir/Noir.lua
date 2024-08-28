@@ -77,7 +77,7 @@ Noir.IsDedicatedServer = false
 --[[
     This represents whether or not the addon was:<br>
     - Reloaded<br>
-    - Started via a save being loaded<br>
+    - Started via a save load<br>
     - Started via a save creation
 ]]
 Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
@@ -157,6 +157,6 @@ Noir.Bootstrapper:WrapServiceMethodsForAllServices()
 -------------------------------
 
 ---@alias NoirAddonReason
----| "AddonReload"
----| "SaveCreate"
----| "SaveLoad"
+---| "AddonReload" The addon was reloaded
+---| "SaveCreate" A save was created with the addon enabled
+---| "SaveLoad" A save with loaded into with the addon enabled
