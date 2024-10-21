@@ -76,12 +76,12 @@ end
 ---@return NoirSerializedMessage
 function Noir.Classes.MessageClass:_Serialize()
     return {
-        Author = self.Author and self.Author.ID or nil,
+        Author = self.Author and self.Author.ID,
         IsAddon = self.IsAddon,
         Content = self.Content,
         Title = self.Title,
         SentAt = self.SentAt,
-        Recipient = self.Recipient
+        Recipient = self.Recipient and self.Recipient.ID
     }
 end
 
