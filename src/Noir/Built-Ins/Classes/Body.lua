@@ -43,6 +43,7 @@
 ---@field Cost number The cost of this body
 ---@field ParentVehicle NoirVehicle|nil The vehicle this body belongs to. This can be nil if the body or vehicle is despawned
 ---@field Loaded boolean Whether or not this body is loaded
+---@field Spawned boolean Whether or not this body is spawned. This is set to false when the body is despawned
 ---@field OnDespawn NoirEvent Fired when this body is despawned
 ---@field OnLoad NoirEvent Fired when this body is loaded
 ---@field OnUnload NoirEvent Fired when this body is unloaded
@@ -70,6 +71,7 @@ function Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost, loaded)
     self.Cost = cost
     self.ParentVehicle = nil
     self.Loaded = loaded
+    self.Spawned = true
 
     self.OnDespawn = Noir.Libraries.Events:Create()
     self.OnLoad = Noir.Libraries.Events:Create()

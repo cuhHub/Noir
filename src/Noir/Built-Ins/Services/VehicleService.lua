@@ -294,6 +294,7 @@ function Noir.Services.VehicleService:_UnregisterVehicle(vehicle, fireEvent)
     end
 
     -- Remove vehicle
+    vehicle.Spawned = false
     self.Vehicles[vehicle.ID] = nil
 
     -- Remove bodies
@@ -491,6 +492,7 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
     end
 
     -- Remove body from service
+    body.Spawned = false
     self.Bodies[body.ID] = nil
 
     -- Remove body from vehicle

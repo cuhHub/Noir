@@ -43,6 +43,7 @@
 ---@field Cost number The cost of this vehicle
 ---@field Bodies table<integer, NoirBody> A table of all of the the bodies apart of this vehicle
 ---@field PrimaryBody NoirBody|nil This will be nil if there are no bodies (occurs when the vehicle is despawned)
+---@field Spawned boolean Whether or not this vehicle is spawned. This is set to false when the vehicle is despawned
 ---@field OnDespawn NoirEvent Fired when this vehicle is despawned
 Noir.Classes.VehicleClass = Noir.Class("NoirVehicle")
 
@@ -65,6 +66,7 @@ function Noir.Classes.VehicleClass:Init(ID, owner, spawnPosition, cost)
     self.Cost = cost
     self.Bodies = {}
     self.PrimaryBody = nil
+    self.Spawned = true
 
     self.OnDespawn = Noir.Libraries.Events:Create()
 end
