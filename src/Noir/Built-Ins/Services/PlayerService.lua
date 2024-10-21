@@ -47,12 +47,16 @@
 ---@field OnJoin NoirEvent Arguments: player (NoirPlayer) | Fired when a player joins the server
 ---@field OnLeave NoirEvent Arguments: player (NoirPlayer) | Fired when a player leaves the server
 ---@field OnDie NoirEvent Arguments: player (NoirPlayer) | Fired when a player dies
+---@field OnSit NoirEvent Arguments: player (NoirPlayer), body (NoirBody), seatName (string) | Fired when a player sits in a seat
+---@field OnUnsit NoirEvent Arguments: player (NoirPlayer), body (NoirBody), seatName (string) | Fired when a player unsits in a seat
 ---@field OnRespawn NoirEvent Arguments: player (NoirPlayer) | Fired when a player respawns
 ---@field Players table<integer, NoirPlayer> The players in the server
 ---@field _JoinCallback NoirConnection A connection to the onPlayerDie event
 ---@field _LeaveCallback NoirConnection A connection to the onPlayerLeave event
 ---@field _DieCallback NoirConnection A connection to the onPlayerDie event
 ---@field _RespawnCallback NoirConnection A connection to the onPlayerRespawn event
+---@field _SitCallback NoirConnection A connection to the onPlayerSit event
+---@field _UnsitCallback NoirConnection A connection to the onPlayerUnsit event
 Noir.Services.PlayerService = Noir.Services:CreateService(
     "PlayerService",
     true,
@@ -68,6 +72,8 @@ function Noir.Services.PlayerService:ServiceInit()
     self.OnLeave = Noir.Libraries.Events:Create()
     self.OnDie = Noir.Libraries.Events:Create()
     self.OnRespawn = Noir.Libraries.Events:Create()
+    self.OnSit = Noir.Libraries.Events:Create()
+    self.OnUnsit = Noir.Libraries.Events:Create()
 
     self.Players = {}
 
@@ -139,6 +145,48 @@ function Noir.Services.PlayerService:ServiceStart()
 
         -- Call respawn event
         self.OnRespawn:Fire(player)
+    end)
+
+    self._SitCallback = Noir.Callbacks:Connect("onPlayerSit", function(peer_id, vehicle_id, seat_name)
+        -- Get player
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just sat in a body, but they don't have data.", false)
+            return
+        end
+
+        -- Get body
+        local body = Noir.Services.VehicleService:GetBody(vehicle_id)
+
+        if not body then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just sat in a body, but that body doesn't exist.", false)
+            return
+        end
+
+        -- Call sit event
+        self.OnSit:Fire(player, body, seat_name)
+    end)
+
+    self._UnsitCallback = Noir.Callbacks:Connect("onPlayerUnsit", function(peer_id, vehicle_id, seat_name)
+        -- Get player
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just got up from a body seat, but they don't have data.", false)
+            return
+        end
+
+        -- Get body
+        local body = Noir.Services.VehicleService:GetBody(vehicle_id)
+
+        if not body then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just got up from a body seat, but that body doesn't exist.", false)
+            return
+        end
+
+        -- Call unsit event
+        self.OnUnsit:Fire(player, body, seat_name)
     end)
 end
 
