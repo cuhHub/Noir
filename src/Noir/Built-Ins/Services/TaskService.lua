@@ -359,7 +359,7 @@ end
 ]]
 ---@param tbl table<integer, any>
 ---@param chunkSize integer How many values to iterate per tick
----@param callback fun(value: any, currentTick: integer|nil, completed: boolean|nil) `currentTick` and `completed` are never nil. They are marked as so to mark the paramters as optional
+---@param callback fun(index: any, value: any, currentTick: integer|nil, completed: boolean|nil) `currentTick` and `completed` are never nil. this is just to mark the paramters as optional
 ---@return NoirTickIterationProcess
 function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
     -- Type checking
