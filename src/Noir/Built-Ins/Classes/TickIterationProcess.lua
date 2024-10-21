@@ -63,9 +63,11 @@ function Noir.Classes.TickIterationProcessClass:Init(ID, tbl, chunkSize)
     self.TableToIterate = tbl
     self.TableSize = #self.TableToIterate
     self.CurrentTick = 0
-    self.Completed = false
+    self.Completed = self.TableSize == 0 -- prevent iterating on an empty/non-sequential table
 
-    self.Chunks = self:CalculateChunks()
+    if not self.Completed then
+        self.Chunks = self:CalculateChunks()
+    end
 end
 
 --[[
