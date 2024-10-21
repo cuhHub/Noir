@@ -134,13 +134,13 @@ end
 ]]
 ---@param URL string
 ---@param port integer
----@param callback fun(response: NoirHTTPResponse)
+---@param callback fun(response: NoirHTTPResponse)|nil
 ---@return NoirHTTPRequest|nil
 function Noir.Services.HTTPService:GET(URL, port, callback)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "URL", URL, "string")
     Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "port", port, "number")
-    Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "callback", callback, "function", "nil")
 
     -- Check if port is valid
     if not self:IsPortValid(port) then
@@ -150,7 +150,10 @@ function Noir.Services.HTTPService:GET(URL, port, callback)
 
     -- Create request object
     local request = Noir.Classes.HTTPRequestClass:New(URL, port)
-    request.OnResponse:Once(callback)
+
+    if callback then
+        request.OnResponse:Once(callback)
+    end
 
     -- Send request
     server.httpGet(port, URL)
