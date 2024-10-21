@@ -46,6 +46,7 @@
 ---@field Admin boolean Whether or not this player is an admin
 ---@field Auth boolean Whether or not this player is authed
 ---@field Permissions table<string, boolean> The permissions this player has
+---@field InGame boolean Whether or not this player is in the game. This is set to false when the player leaves
 Noir.Classes.PlayerClass = Noir.Class("NoirPlayer")
 
 --[[
@@ -71,6 +72,7 @@ function Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions
     self.Admin = admin
     self.Auth = auth
     self.Permissions = permissions
+    self.InGame = true
 end
 
 --[[

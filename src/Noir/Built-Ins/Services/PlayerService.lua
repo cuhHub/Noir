@@ -300,6 +300,7 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
     end
 
     -- Remove player
+    player.InGame = false
     self.Players[player.ID] = nil
 
     -- Remove saved properties
