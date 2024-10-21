@@ -494,7 +494,7 @@ def project_manager():
         
         rich.print(f"[blue]Create[/blue]: Sets up the addon by creating directories, files, etc.{" [bold red]The project has already been created.[/bold red]" if project.projectExists() else ""}")
         rich.print(f"[blue]Update[/blue]: Updates Noir and any tools.{" [bold red]The project has not been created yet.[/bold red]" if not project.projectExists() else ""}")
-        rich.print(f"[blue]Open[/blue]: Opens the addon in VSCode.{" [bold red]The project has not been created yet.[/bold red]" if not project.projectExists() else ""}")
+        rich.print(f"[blue]Open[/blue]: Opens the addon in VSCode (or file explorer if not possible).{" [bold red]The project has not been created yet.[/bold red]" if not project.projectExists() else ""}")
         rich.print("[blue]Quit[/blue]: Closes the tool.")
         choice = Prompt.ask("> ", choices = ["create", "update", "open", "quit"], default = "create", show_default = False)
         
