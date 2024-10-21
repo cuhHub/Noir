@@ -27,7 +27,6 @@ limitations under the License.
 from pathlib import Path
 from tools.combine import Combiner
 import subprocess
-import time
 
 # ---- // Functions
 def buildNoir():
