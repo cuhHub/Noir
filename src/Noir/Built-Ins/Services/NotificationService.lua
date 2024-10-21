@@ -71,17 +71,23 @@ end
 ---@param title string
 ---@param message string
 ---@param notificationType SWNotificationTypeEnum
----@param player NoirPlayer|table<integer, NoirPlayer>
+---@param player NoirPlayer|table<integer, NoirPlayer>|nil
 ---@param ... any
 function Noir.Services.NotificationService:Notify(title, message, notificationType, player, ...)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "title", title, "string")
     Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "message", message, "string")
     Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "notificationType", notificationType, "number")
-    Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "player", player, Noir.Classes.PlayerClass, "table")
+    Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "player", player, Noir.Classes.PlayerClass, "table", "nil")
 
     -- Convert to table if needed
-    local players = (type(player) == "table" and not Noir.Classes.PlayerClass:IsClass(player)) and player or {player}
+    local players
+
+    if player == nil then
+        players = Noir.Services.PlayerService:GetPlayers(true)
+    else
+        players = (type(player) == "table" and not Noir.Classes.PlayerClass:IsClass(player)) and player or {player}
+    end
 
     -- Format message
     local formattedMessage = ... and message:format(...) or message
@@ -97,7 +103,7 @@ end
 ]]
 ---@param title string
 ---@param message string
----@param player NoirPlayer|table<integer, NoirPlayer>
+---@param player NoirPlayer|table<integer, NoirPlayer>|nil
 ---@param ... any
 function Noir.Services.NotificationService:Success(title, message, player, ...)
     self:Notify(self.SuccessTitlePrefix..title, message, 4, player, ...)
@@ -108,7 +114,7 @@ end
 ]]
 ---@param title string
 ---@param message string
----@param player NoirPlayer|table<integer, NoirPlayer>
+---@param player NoirPlayer|table<integer, NoirPlayer>|nil
 ---@param ... any
 function Noir.Services.NotificationService:Warning(title, message, player, ...)
     self:Notify(self.WarningTitlePrefix..title, message, 1, player, ...)
@@ -119,7 +125,7 @@ end
 ]]
 ---@param title string
 ---@param message string
----@param player NoirPlayer|table<integer, NoirPlayer>
+---@param player NoirPlayer|table<integer, NoirPlayer>|nil
 ---@param ... any
 function Noir.Services.NotificationService:Error(title, message, player, ...)
     self:Notify(self.ErrorTitlePrefix..title, message, 3, player, ...)
@@ -130,7 +136,7 @@ end
 ]]
 ---@param title string
 ---@param message string
----@param player NoirPlayer|table<integer, NoirPlayer>
+---@param player NoirPlayer|table<integer, NoirPlayer>|nil
 ---@param ... any
 function Noir.Services.NotificationService:Info(title, message, player, ...)
     self:Notify(self.InfoTitlePrefix..title, message, 7, player, ...)
