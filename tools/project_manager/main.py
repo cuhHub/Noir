@@ -124,6 +124,8 @@ class Project():
     script = multiline("""
     --[[
         This is your addon code. You can make another .lua file, but be sure to include it in the `__order.json` file!
+        Note that the above step is unnecessary if a folder containing `.lua` files is in the `__order.json` file as the files will be included automatically.
+
         To reflect changes to your code into Stormworks, run `build.bat`. Otherwise, changes won't get synced to Stormworks.
         
         Head over to `https://cuhhub.gitbook.io/noir` for documentation.
@@ -148,22 +150,77 @@ class Project():
     
     This is your addon's README file. You can remove this if you would like.
     
-    Your main addon code should go in `main.lua`. You can create more `.lua` files as long as you add them to `__order.json` too (after `Noir.lua`).
+    Your main addon code should go in `main.lua`. You can create more `.lua` files as long as you add them to `__order.json` too (after `Noir.lua`, and before `main.lua`).
 
     To reflect changes from your code into Stormworks, run `build.bat`. Otherwise, changes won't get synced to Stormworks.
     
     Head over to [here](https://cuhhub.gitbook.io/noir) for documentation.""")
     
+    exampleLibrary = multiline("""
+    --[[
+        This is an example of a library. You can have as many libraries as needed for different things. Libraries should not interact with the game or services, only each other.
+        Head over to `https://cuhhub.gitbook.io/noir` for documentation.
+    ]]
+    
+    --[[
+        An example library that does nothing meaningful. :-(
+    ]]
+    ---@class MyLibrary: NoirLibrary
+    MyLibrary = Noir.Libraries:Create("MyLibrary")
+    
+    --[[
+        Adds two numbers together.
+    ]]
+    ---@param num1 number
+    ---@param num2 number
+    ---@return number
+    function MyLibrary:Add(num1, num2)
+        return num1 + num2
+    end
+    """)
+    
+    exampleService = multiline("""
+    --[[
+        This is an example of a service. You can have as many services as needed for different things.
+        Head over to `https://cuhhub.gitbook.io/noir` for documentation.
+    ]]
+    
+    --[[
+        An example service that essentially does nothing meaningful. :-(
+    ]]
+    ---@class MyService: NoirService
+    ---@field Foo boolean
+    MyService = Noir.Services:CreateService("MyService")
+    
+    --[[
+        This is called when the service is initialized.
+        This is where you can setup your service by adding attributes and such.
+    ]]
+    function MyService:ServiceInit()
+        self.Foo = true
+    end
+    
+    --[[
+        This is called when the service is started.
+        This is where you can safely interact with other services as they are guaranteed to be initialized. This is also where you can setup timers, start core logic, etc.
+    ]]
+    function MyService:ServiceStart()
+        Noir.Services.MessageService:SendMessage(nil, "MyService", "Is Foo: %s", self.Foo)
+        self:SayHi("This message originated from MyService!")
+    end
+    
+    --[[
+        A method that announces a greeting via a notification.
+    ]]
+    ---@param message string
+    function MyService:SayHi(message)
+        Noir.Services.NotificationService:Info("Greeting", "Hey all! %s", nil, message)
+    end
+    """)
+    
     NoirDownloadURL = "https://github.com/cuhHub/Noir/releases/latest/download/Noir.lua"
     CombineDownloadURL = "https://github.com/cuhHub/Noir/releases/latest/download/combine.exe"
     IntellisenseDownloadURL = "https://raw.githubusercontent.com/Cuh4/StormworksAddonLuaDocumentation/main/docs/intellisense.lua"
-    
-    order = json.dumps({
-        "order" : [
-            "Noir.lua",
-            "main.lua"
-        ]
-    })
     
     build = "combine.exe --directory \".\" --destination \"{romScriptPath}\" --allow_file_extension \".lua\""
 
@@ -192,17 +249,23 @@ class Project():
 
         self.addonPath = addonPath # The path the user will be writing code in
         self.romAddonPath = self.SWAddonsPath / self.name # The path where the Stormworks addon will be placed
-        
         self.romPlaylistPath = self.romAddonPath / "playlist.xml"
         self.romScriptPath = self.romAddonPath / "script.lua"
 
+        self.addonPath = addonPath # The path the user will be writing code in
         self.NoirPath = self.addonPath / "Noir.lua"
         self.orderPath = self.addonPath / "__order.json"
         self.combinePath = self.addonPath / "combine.exe"
         self.buildPath = self.addonPath / "build.bat"
-        self.scriptPath = self.addonPath / "main.lua"
         self.intellisensePath = self.addonPath / "intellisense.lua"
         self.READMEPath = self.addonPath / "README.md"
+    
+        self.srcPath = self.addonPath / "src"
+        self.scriptPath = self.srcPath / "main.lua"
+        self.librariesPath = self.srcPath / "libraries"
+        self.exampleLibraryPath = self.librariesPath / "ExampleLib.lua"
+        self.servicesPath = self.srcPath / "services"
+        self.exampleServicePath = self.servicesPath / "ExampleService.lua"
 
     def create(self):
         """
@@ -212,19 +275,18 @@ class Project():
         if self.projectExists():
             raise Exception("Project already exists. If the project isn't fully created, delete all files and try again.")
 
-        # directories
         self._createDirectories()
 
-        # addon
         self._createNoir()
         self._createScript()
+        self._createLibraryExample()
+        self._createServiceExample()
         self._createOrder()
         self._createBuild()
         self._createIntellisense()
         self._createREADME()
         self._createCombine()
         
-        # rom addon
         self._createPlaylist()
         
     def update(self):
@@ -286,6 +348,9 @@ class Project():
         
         self.romAddonPath.mkdir(parents = True, exist_ok = True)
         self.addonPath.mkdir(parents = True, exist_ok = True)
+        self.srcPath.mkdir(parents = True, exist_ok = True)
+        self.librariesPath.mkdir(parents = True, exist_ok = True)
+        self.servicesPath.mkdir(parents = True, exist_ok = True)
         
     def _createNoir(self):
         """
@@ -349,7 +414,31 @@ class Project():
         Creates the `__order.json` file.
         """
         
-        self.orderPath.write_text(self.order)
+        order = json.dumps({
+            "order" : [
+                str(self.NoirPath.relative_to(self.addonPath)),
+                str(self.librariesPath.relative_to(self.addonPath)),
+                str(self.servicesPath.relative_to(self.addonPath)),
+                str(self.scriptPath.relative_to(self.addonPath))
+            ]
+        }, indent = 7)
+        
+        self.orderPath.write_text(order)
+        
+    def _createLibraryExample(self):
+        """
+        Creates the `ExampleLibrary.lua` file.
+        """
+        
+        self.librariesPath.mkdir(parents = True, exist_ok = True)
+        self.exampleLibraryPath.write_text(self.exampleLibrary)
+        
+    def _createServiceExample(self):
+        """
+        Creates the `ExampleService.lua` file.
+        """
+        
+        self.exampleServicePath.write_text(self.exampleService)
             
     def _createBuild(self):
         """
