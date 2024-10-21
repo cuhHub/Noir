@@ -143,7 +143,8 @@ function Noir.Services.TPSService:GetAverageTPS()
 end
 
 --[[
-    Set the tick rate for calculating the average TPS.
+    Set the amount of ticks to use when calculating the average TPS.<br>
+    Eg: if this is set to 10, the average TPS will be calculated over a period of 10 ticks.
 ]]
 ---@param precision integer
 function Noir.Services.TPSService:SetPrecision(precision)
