@@ -504,13 +504,14 @@ end
     In Stormworks, this is actually a vehicle apart of a vehicle group.
 ]]
 ---@class NoirBody: NoirClass
----@field New fun(self: NoirBody, ID: integer, owner: NoirPlayer|nil, spawnPosition: SWMatrix, cost: number): NoirBody
+---@field New fun(self: NoirBody, ID: integer, owner: NoirPlayer|nil, spawnPosition: SWMatrix, cost: number, loaded: boolean): NoirBody
 ---@field ID integer The ID of this body
 ---@field Owner NoirPlayer|nil The owner of this body, or nil if spawned by an addon OR if the player who owns the body left before Noir starts again (eg: after save load or addon reload)
 ---@field SpawnPosition SWMatrix The position this body was spawned at
 ---@field Cost number The cost of this body
 ---@field ParentVehicle NoirVehicle|nil The vehicle this body belongs to. This can be nil if the body or vehicle is despawned
 ---@field Loaded boolean Whether or not this body is loaded
+---@field Spawned boolean Whether or not this body is spawned. This is set to false when the body is despawned
 ---@field OnDespawn NoirEvent Fired when this body is despawned
 ---@field OnLoad NoirEvent Fired when this body is loaded
 ---@field OnUnload NoirEvent Fired when this body is unloaded
@@ -524,18 +525,21 @@ Noir.Classes.BodyClass = Noir.Class("NoirBody")
 ---@param owner NoirPlayer|nil
 ---@param spawnPosition SWMatrix
 ---@param cost number
-function Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost)
+---@param loaded boolean
+function Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost, loaded)
     Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "ID", ID, "number")
     Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "owner", owner, Noir.Classes.PlayerClass, "nil")
     Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "spawnPosition", spawnPosition, "table")
     Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "cost", cost, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.BodyClass:Init()", "loaded", loaded, "boolean")
 
-    self.ID = ID
+    self.ID = math.floor(ID)
     self.Owner = owner
     self.SpawnPosition = spawnPosition
     self.Cost = cost
     self.ParentVehicle = nil
-    self.Loaded = false
+    self.Loaded = loaded
+    self.Spawned = true
 
     self.OnDespawn = Noir.Libraries.Events:Create()
     self.OnLoad = Noir.Libraries.Events:Create()
@@ -554,7 +558,8 @@ function Noir.Classes.BodyClass:_Serialize()
         Owner = self.Owner and self.Owner.ID,
         SpawnPosition = self.SpawnPosition,
         Cost = self.Cost,
-        ParentVehicle = self.ParentVehicle and self.ParentVehicle.ID
+        ParentVehicle = self.ParentVehicle and self.ParentVehicle.ID,
+        Loaded = self.Loaded
     }
 end
 
@@ -575,7 +580,8 @@ function Noir.Classes.BodyClass:_Deserialize(serializedBody, setParentVehicle)
         serializedBody.ID,
         serializedBody.Owner and Noir.Services.PlayerService:GetPlayer(serializedBody.Owner),
         serializedBody.SpawnPosition,
-        serializedBody.Cost
+        serializedBody.Cost,
+        serializedBody.Loaded
     )
 
     -- Set parent vehicle
@@ -1282,6 +1288,24 @@ function Noir.Classes.BodyClass:Despawn()
     server.despawnVehicle(self.ID, true)
 end
 
+--[[
+    Returns whether or not the body exists.
+]]
+---@return boolean
+function Noir.Classes.BodyClass:Exists()
+    local _, exists = server.getVehicleSimulating(self.ID)
+    return exists
+end
+
+--[[
+    Returns whether or not the body is simulating.
+]]
+---@return boolean
+function Noir.Classes.BodyClass:IsSimulating()
+    local simulating, success = server.getVehicleSimulating(self.ID)
+    return simulating and success
+end
+
 -------------------------------
 -- // Intellisense
 -------------------------------
@@ -1295,6 +1319,7 @@ end
 ---@field SpawnPosition SWMatrix
 ---@field Cost number
 ---@field ParentVehicle integer
+---@field Loaded boolean
 
 --------------------------------------------------------
 -- [Noir] Classes - Command
@@ -1341,7 +1366,7 @@ end
 ---@field RequiresAdmin boolean Whether or not this command requires admin
 ---@field CapsSensitive boolean Whether or not this command is case-sensitive
 ---@field Description string The description of this command
----@field OnUse NoirEvent Arguments: player, message, args, hasPermission | Fired when this command is used
+---@field OnUse NoirEvent Arguments: player (NoirPlayer), message (string), args (table<integer, string>), hasPermission (boolean) | Fired when this command is used
 Noir.Classes.CommandClass = Noir.Class("NoirCommand")
 
 --[[
@@ -1870,7 +1895,6 @@ Noir.Classes.HTTPResponseClass = Noir.Class("NoirHTTPResponse")
 ---@param response string
 function Noir.Classes.HTTPResponseClass:Init(response)
     Noir.TypeChecking:Assert("Noir.Classes.HTTPResponseClass:Init()", "response", response, "string")
-
     self.Text = response
 end
 
@@ -2031,12 +2055,12 @@ end
 ---@return NoirSerializedMessage
 function Noir.Classes.MessageClass:_Serialize()
     return {
-        Author = self.Author and self.Author.ID or nil,
+        Author = self.Author and self.Author.ID,
         IsAddon = self.IsAddon,
         Content = self.Content,
         Title = self.Title,
         SentAt = self.SentAt,
-        Recipient = self.Recipient
+        Recipient = self.Recipient and self.Recipient.ID
     }
 end
 
@@ -2133,7 +2157,7 @@ Noir.Classes.ObjectClass = Noir.Class("NoirObject")
 function Noir.Classes.ObjectClass:Init(ID)
     Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Init()", "ID", ID, "number")
 
-    self.ID = ID
+    self.ID = math.floor(ID)
     self.Loaded = false
 
     self.OnLoad = Noir.Libraries.Events:Create()
@@ -2569,6 +2593,7 @@ end
 ---@field Admin boolean Whether or not this player is an admin
 ---@field Auth boolean Whether or not this player is authed
 ---@field Permissions table<string, boolean> The permissions this player has
+---@field InGame boolean Whether or not this player is in the game. This is set to false when the player leaves
 Noir.Classes.PlayerClass = Noir.Class("NoirPlayer")
 
 --[[
@@ -2589,11 +2614,12 @@ function Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions
     Noir.TypeChecking:Assert("Noir.Classes.PlayerClass:Init()", "permissions", permissions, "table")
 
     self.Name = name
-    self.ID = ID
+    self.ID = math.floor(ID)
     self.Steam = steam
     self.Admin = admin
     self.Auth = auth
     self.Permissions = permissions
+    self.InGame = true
 end
 
 --[[
@@ -3104,11 +3130,12 @@ end
     end)
 ]]
 ---@class NoirTask: NoirClass
----@field New fun(self: NoirTask, ID: integer, duration: number, isRepeating: boolean, arguments: table<integer, any>): NoirTask
+---@field New fun(self: NoirTask, ID: integer, taskType: NoirTaskType, duration: number, isRepeating: boolean, arguments: table<integer, any>, startedAt: number): NoirTask
 ---@field ID integer The ID of this task
----@field StartedAt integer The time that this task started at
----@field Duration integer The duration of this task
----@field StopsAt integer The time that this task will stop at if it is not repeating
+---@field TaskType NoirTaskType The type of this task
+---@field StartedAt number The point that this task started at
+---@field Duration number The duration of this task
+---@field StopsAt number The point that this task will stop at if it is not repeating
 ---@field IsRepeating boolean Whether or not this task is repeating
 ---@field Arguments table<integer, any> The arguments that will be passed to this task upon completion
 ---@field OnCompletion NoirEvent The event that will be fired when this task is completed
@@ -3118,17 +3145,22 @@ Noir.Classes.TaskClass = Noir.Class("NoirTask")
     Initializes task class objects.
 ]]
 ---@param ID integer
+---@param taskType NoirTaskType
 ---@param duration number
 ---@param isRepeating boolean
 ---@param arguments table<integer, any>
-function Noir.Classes.TaskClass:Init(ID, duration, isRepeating, arguments)
+---@param startedAt number
+function Noir.Classes.TaskClass:Init(ID, taskType, duration, isRepeating, arguments, startedAt)
     Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "taskType", taskType, "string")
     Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "duration", duration, "number")
     Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "isRepeating", isRepeating, "boolean")
     Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "arguments", arguments, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "startedAt", startedAt, "number", "nil")
 
     self.ID = ID
-    self.StartedAt = Noir.Services.TaskService:GetTimeSeconds()
+    self.TaskType = taskType
+    self.StartedAt = startedAt
 
     self:SetDuration(duration)
     self:SetRepeating(isRepeating)
@@ -3137,9 +3169,12 @@ function Noir.Classes.TaskClass:Init(ID, duration, isRepeating, arguments)
     self.OnCompletion = Noir.Libraries.Events:Create()
 end
 
+    --[[
+]]
+
 --[[
     Sets whether or not this task is repeating.<br>
-    If repeating, the task will be triggered every Task.Duration seconds.<br>
+    If repeating, the task will be triggered repeatedly as implied.<br>
     If not, the task will be triggered once, then removed from the TaskService.
 ]]
 ---@param isRepeating boolean
@@ -3174,6 +3209,17 @@ end
 function Noir.Classes.TaskClass:Remove()
     Noir.Services.TaskService:RemoveTask(self)
 end
+
+-------------------------------
+-- // Intellisense
+-------------------------------
+
+--[[
+    Represents a task type.
+]]
+---@alias NoirTaskType
+---| "Time" The task will use `server.getTimeMillisec()`
+---| "Ticks" The task will count ticks in `onTick` while considering the amount of ticks passed in a single tick
 
 --------------------------------------------------------
 -- [Noir] Classes - Tick Iteration Process
@@ -3336,6 +3382,7 @@ end
 ---@field Cost number The cost of this vehicle
 ---@field Bodies table<integer, NoirBody> A table of all of the the bodies apart of this vehicle
 ---@field PrimaryBody NoirBody|nil This will be nil if there are no bodies (occurs when the vehicle is despawned)
+---@field Spawned boolean Whether or not this vehicle is spawned. This is set to false when the vehicle is despawned
 ---@field OnDespawn NoirEvent Fired when this vehicle is despawned
 Noir.Classes.VehicleClass = Noir.Class("NoirVehicle")
 
@@ -3352,12 +3399,13 @@ function Noir.Classes.VehicleClass:Init(ID, owner, spawnPosition, cost)
     Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "spawnPosition", spawnPosition, "table")
     Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "cost", cost, "number")
 
-    self.ID = ID
+    self.ID = math.floor(ID)
     self.Owner = owner
     self.SpawnPosition = spawnPosition
     self.Cost = cost
     self.Bodies = {}
     self.PrimaryBody = nil
+    self.Spawned = true
 
     self.OnDespawn = Noir.Libraries.Events:Create()
 end
@@ -3949,6 +3997,91 @@ end
 ---@field Type NoirTypeCheckingType
 
 --------------------------------------------------------
+-- [Noir] Libraries - Deprecation
+--------------------------------------------------------
+
+--[[
+    ----------------------------
+
+    CREDIT:
+        Author(s): @Cuh4 (GitHub)
+        GitHub Repository: https://github.com/cuhHub/Noir
+
+    License:
+        Copyright (C) 2024 Cuh4
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    ----------------------------
+]]
+
+-------------------------------
+-- // Main
+-------------------------------
+
+--[[
+    A library that allows you to mark functions as deprecated.
+
+    ---@deprecated <-- intellisense. recommended to add
+    function HelloWorld()
+        Noir.Libraries.Deprecation:Deprecated("HelloWorld", "AnOptionalReplacementFunction", "An optional note appended to the deprecation message")
+        print("Hello World")
+    end
+]]
+---@class NoirDeprecationLib: NoirLibrary
+Noir.Libraries.Deprecation = Noir.Libraries:Create(
+    "DeprecationLibrary",
+    "A library that allows you to mark functions as deprecated.",
+    "A library that allows you to mark functions as deprecated. No function wrapping is used.",
+    {"Cuh4"}
+)
+
+--[[
+    Mark a function as deprecated.
+    
+    ---@deprecated <-- intellisense. recommended to add
+    function HelloWorld()
+        Noir.Libraries.Deprecation:Deprecated("HelloWorld", "AnOptionalReplacementFunction", "An optional note appended to the deprecation message")
+        print("Hello World")
+    end
+]]
+---@param name string
+---@param replacement string|nil
+---@param note string|nil
+function Noir.Libraries.Deprecation:Deprecated(name, replacement, note)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Deprecation:Deprecated()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Libraries.Deprecation:Deprecated()", "replacement", replacement, "string", "nil")
+    Noir.TypeChecking:Assert("Noir.Libraries.Deprecation:Deprecated()", "note", note, "string", "nil")
+
+    -- Setup message
+    local _replacement = ""
+
+    if replacement then
+        use = (" Please use '%s' instead.")
+    end
+
+    local _note = ""
+
+    if note then
+        note = "\n"..note
+    end
+
+    -- Send message
+    Noir.Libraries.Logging:Warning("Deprecated", "'%s' is deprecated.".._replacement.._note, name)
+end
+
+--------------------------------------------------------
 -- [Noir] Libraries - Events
 --------------------------------------------------------
 
@@ -4295,7 +4428,7 @@ function Noir.Libraries.JSON:SkipDelim(str, pos, delim, errIfMissing)
 
     if str:sub(pos, pos) ~= delim then
         if errIfMissing then
-            Noir.Libraries.Logging:Error("JSON", "Expected %s at position %d", true, delim, pos)
+            -- Noir.Libraries.Logging:Error("JSON", "Expected %s at position %d", true, delim, pos)
             return 0, false
         end
 
@@ -4323,10 +4456,10 @@ function Noir.Libraries.JSON:ParseStringValue(str, pos, val)
     -- Parsing
     val = val or ""
 
-    local earlyEndError = "End of input found while parsing string."
+    -- local earlyEndError = "End of input found while parsing string."
 
     if pos > #str then
-        Noir.Libraries.Logging:Error("JSON", earlyEndError, true)
+        -- Noir.Libraries.Logging:Error("JSON", earlyEndError, true)
         return "", 0
     end
 
@@ -4344,7 +4477,7 @@ function Noir.Libraries.JSON:ParseStringValue(str, pos, val)
     local nextc = str:sub(pos + 1, pos + 1)
 
     if not nextc then
-        Noir.Libraries.Logging:Error("JSON", earlyEndError, true)
+        -- Noir.Libraries.Logging:Error("JSON", earlyEndError, true)
         return "", 0
     end
 
@@ -4369,7 +4502,7 @@ function Noir.Libraries.JSON:ParseNumberValue(str, pos)
     local val = tonumber(numStr)
 
     if not val then
-        Noir.Libraries.Logging:Error("JSON", "Error parsing number at position %s.", true, pos)
+        -- Noir.Libraries.Logging:Error("JSON", "Error parsing number at position %s.", true, pos)
         return 0, 0
     end
 
@@ -4396,7 +4529,7 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
 
     if kind == "array" then
         if asKey then
-            Noir.Libraries.Logging:Error("JSON", "Can't encode array as key.", true)
+            -- Noir.Libraries.Logging:Error("JSON", "Can't encode array as key.", true)
             return ""
         end
 
@@ -4413,7 +4546,7 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
         s[#s + 1] = "]"
     elseif kind == "table" then
         if asKey then
-            Noir.Libraries.Logging:Error("JSON", "Can't encode table as key.", true)
+            -- Noir.Libraries.Logging:Error("JSON", "Can't encode table as key.", true)
             return ""
         end
 
@@ -4443,7 +4576,7 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
     elseif kind == "nil" then
         return "null"
     else
-        Noir.Libraries.Logging:Error("JSON", "Type of %s cannot be JSON encoded.", true, kind)
+        -- Noir.Libraries.Logging:Error("JSON", "Type of %s cannot be JSON encoded.", true, kind)
         return ""
     end
 
@@ -4471,7 +4604,8 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
     pos = pos or 1
 
     if pos > #str then
-        Noir.Libraries.Logging:Error("JSON", "Reached unexpected end of input.", true)
+        -- Noir.Libraries.Logging:Error("JSON", "Reached unexpected end of input.", true)
+        return nil, 0
     end
 
     pos = pos + #str:match("^%s*", pos)
@@ -4489,11 +4623,12 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
             end
 
             if not delimFound then
-                Noir.Libraries.Logging:Error("JSON", "Comma missing between object items.", true)
+                -- Noir.Libraries.Logging:Error("JSON", "Comma missing between object items.", true)
                 return nil, 0
             end
 
             pos = self:SkipDelim(str, pos, ":", true)
+
             obj[key], pos = self:Decode(str, pos)
             pos, delimFound = self:SkipDelim(str, pos, ",")
         end
@@ -4509,7 +4644,7 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
             end
 
             if not delimFound then
-                Noir.Libraries.Logging:Error("JSON", "Comma missing between array items.", true)
+                -- Noir.Libraries.Logging:Error("JSON", "Comma missing between array items.", true)
                 return nil, 0
             end
 
@@ -4534,7 +4669,7 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
         end
 
         local posInfoStr = "position "..pos..": "..str:sub(pos, pos + 10)
-        Noir.Libraries.Logging:Error("JSON", "Invalid json syntax starting at %s", true, posInfoStr)
+        -- Noir.Libraries.Logging:Error("JSON", "Invalid json syntax starting at %s", true, posInfoStr)
 
         return nil, 0
     end
@@ -5512,6 +5647,40 @@ function Noir.Libraries.Table:Find(tbl, value)
     end
 end
 
+--[[
+    Find a value in a table. Unlike `:Find()`, this method will recursively search through nested tables to find the value.
+
+    local myTbl = {
+        mySecondTbl = {
+            hello = true
+        }
+    }
+    
+    local index, table = Noir.Libraries.Table:FindDeep(myTbl, true)
+    print(index) -- "hello"
+    print(table) -- {["hello"] = true}
+]]
+---@param tbl table
+---@param value any
+---@return any|nil, table|nil
+function Noir.Libraries.Table:FindDeep(tbl, value)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:FindDeep()", "tbl", tbl, "table")
+
+    -- Find the value
+    for index, iterValue in pairs(tbl) do
+        if iterValue == value then
+            return index, tbl
+        elseif type(iterValue) == "table" then
+            local _index, _tbl = self:FindDeep(iterValue, value)
+
+            if _index and _tbl then
+                return _index, _tbl
+            end
+        end
+    end
+end
+
 --------------------------------------------------------
 -- [Noir] Services
 --------------------------------------------------------
@@ -6211,7 +6380,7 @@ end
 ---@field _SavedMessages table<integer, NoirSerializedMessage> A table of all messages that have been sent (g_savedata version).
 ---@field _MessageLimit integer The maximum amount of messages that can be stored.
 ---
----@field OnMessage NoirEvent Arguments: NoirMessage | Fired when a message is sent.
+---@field OnMessage NoirEvent Arguments: message (NoirMessage) | Fired when a message is sent.
 ---
 ---@field _OnChatMessageConnection NoirConnection The connection to the `onChatMessage` event.
 Noir.Services.MessageService = Noir.Services:CreateService(
@@ -6228,13 +6397,10 @@ function Noir.Services.MessageService:ServiceInit()
     self._MessageLimit = 220
 
     self.OnMessage = Noir.Libraries.Events:Create()
-
     self:_LoadSavedMessages()
 end
 
 function Noir.Services.MessageService:ServiceStart()
-    self:_LoadSavedMessages()
-
     self._OnChatMessageConnection = Noir.Callbacks:Connect("onChatMessage", function(peerID, title, message)
         -- Get author of message (player)
         local author = Noir.Services.PlayerService:GetPlayer(peerID)
@@ -6511,17 +6677,23 @@ end
 ---@param title string
 ---@param message string
 ---@param notificationType SWNotificationTypeEnum
----@param player NoirPlayer|table<integer, NoirPlayer>
+---@param player NoirPlayer|table<integer, NoirPlayer>|nil
 ---@param ... any
 function Noir.Services.NotificationService:Notify(title, message, notificationType, player, ...)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "title", title, "string")
     Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "message", message, "string")
     Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "notificationType", notificationType, "number")
-    Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "player", player, Noir.Classes.PlayerClass, "table")
+    Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "player", player, Noir.Classes.PlayerClass, "table", "nil")
 
     -- Convert to table if needed
-    local players = (type(player) == "table" and not Noir.Classes.PlayerClass:IsClass(player)) and player or {player}
+    local players
+
+    if player == nil then
+        players = Noir.Services.PlayerService:GetPlayers(true)
+    else
+        players = (type(player) == "table" and not Noir.Classes.PlayerClass:IsClass(player)) and player or {player}
+    end
 
     -- Format message
     local formattedMessage = ... and message:format(...) or message
@@ -6537,7 +6709,7 @@ end
 ]]
 ---@param title string
 ---@param message string
----@param player NoirPlayer|table<integer, NoirPlayer>
+---@param player NoirPlayer|table<integer, NoirPlayer>|nil
 ---@param ... any
 function Noir.Services.NotificationService:Success(title, message, player, ...)
     self:Notify(self.SuccessTitlePrefix..title, message, 4, player, ...)
@@ -6548,7 +6720,7 @@ end
 ]]
 ---@param title string
 ---@param message string
----@param player NoirPlayer|table<integer, NoirPlayer>
+---@param player NoirPlayer|table<integer, NoirPlayer>|nil
 ---@param ... any
 function Noir.Services.NotificationService:Warning(title, message, player, ...)
     self:Notify(self.WarningTitlePrefix..title, message, 1, player, ...)
@@ -6559,7 +6731,7 @@ end
 ]]
 ---@param title string
 ---@param message string
----@param player NoirPlayer|table<integer, NoirPlayer>
+---@param player NoirPlayer|table<integer, NoirPlayer>|nil
 ---@param ... any
 function Noir.Services.NotificationService:Error(title, message, player, ...)
     self:Notify(self.ErrorTitlePrefix..title, message, 3, player, ...)
@@ -6570,7 +6742,7 @@ end
 ]]
 ---@param title string
 ---@param message string
----@param player NoirPlayer|table<integer, NoirPlayer>
+---@param player NoirPlayer|table<integer, NoirPlayer>|nil
 ---@param ... any
 function Noir.Services.NotificationService:Info(title, message, player, ...)
     self:Notify(self.InfoTitlePrefix..title, message, 7, player, ...)
@@ -6728,13 +6900,13 @@ function Noir.Services.ObjectService:_OnObjectUnload(object)
     self.OnUnload:Fire(object)
 
     -- Remove from g_savedata if the object was removed and unloaded, otherwise save
-    Noir.Services.TaskService:AddTask(function()
+    Noir.Services.TaskService:AddTickTask(function()
         if not object:Exists() then
             self:_RemoveObjectSavedata(object.ID)
         else
             self:_SaveObjectSavedata(object)
         end
-    end, 0.01) -- untested, but this delay might be needed in case the object is unloaded first, then removed
+    end, 1) -- untested, but this delay might be needed in case the object is unloaded first, then removed
 end
 
 --[[
@@ -7084,6 +7256,19 @@ function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit,
     return object
 end
 
+--[[
+    Spawn an explosion.
+]]
+---@param position SWMatrix
+---@param magnitude number 0-1
+function Noir.Services.ObjectService:SpawnExplosion(position, magnitude)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnExplosion()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnExplosion()", "magnitude", magnitude, "number")
+
+    -- Spawn the explosion
+    server.spawnExplosion(position, magnitude)
+end
 
 --------------------------------------------------------
 -- [Noir] Services - Player Service
@@ -7131,15 +7316,19 @@ end
     end)
 ]]
 ---@class NoirPlayerService: NoirService
----@field OnJoin NoirEvent Arguments: player | Fired when a player joins the server
----@field OnLeave NoirEvent Arguments: player | Fired when a player leaves the server
----@field OnDie NoirEvent Arguments: player | Fired when a player dies
----@field OnRespawn NoirEvent Arguments: player | Fired when a player respawns
+---@field OnJoin NoirEvent Arguments: player (NoirPlayer) | Fired when a player joins the server
+---@field OnLeave NoirEvent Arguments: player (NoirPlayer) | Fired when a player leaves the server
+---@field OnDie NoirEvent Arguments: player (NoirPlayer) | Fired when a player dies
+---@field OnSit NoirEvent Arguments: player (NoirPlayer), body (NoirBody), seatName (string) | Fired when a player sits in a seat
+---@field OnUnsit NoirEvent Arguments: player (NoirPlayer), body (NoirBody), seatName (string) | Fired when a player unsits in a seat
+---@field OnRespawn NoirEvent Arguments: player (NoirPlayer) | Fired when a player respawns
 ---@field Players table<integer, NoirPlayer> The players in the server
 ---@field _JoinCallback NoirConnection A connection to the onPlayerDie event
 ---@field _LeaveCallback NoirConnection A connection to the onPlayerLeave event
 ---@field _DieCallback NoirConnection A connection to the onPlayerDie event
 ---@field _RespawnCallback NoirConnection A connection to the onPlayerRespawn event
+---@field _SitCallback NoirConnection A connection to the onPlayerSit event
+---@field _UnsitCallback NoirConnection A connection to the onPlayerUnsit event
 Noir.Services.PlayerService = Noir.Services:CreateService(
     "PlayerService",
     true,
@@ -7155,6 +7344,8 @@ function Noir.Services.PlayerService:ServiceInit()
     self.OnLeave = Noir.Libraries.Events:Create()
     self.OnDie = Noir.Libraries.Events:Create()
     self.OnRespawn = Noir.Libraries.Events:Create()
+    self.OnSit = Noir.Libraries.Events:Create()
+    self.OnUnsit = Noir.Libraries.Events:Create()
 
     self.Players = {}
 
@@ -7227,6 +7418,48 @@ function Noir.Services.PlayerService:ServiceStart()
         -- Call respawn event
         self.OnRespawn:Fire(player)
     end)
+
+    self._SitCallback = Noir.Callbacks:Connect("onPlayerSit", function(peer_id, vehicle_id, seat_name)
+        -- Get player
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just sat in a body, but they don't have data.", false)
+            return
+        end
+
+        -- Get body
+        local body = Noir.Services.VehicleService:GetBody(vehicle_id)
+
+        if not body then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just sat in a body, but that body doesn't exist.", false)
+            return
+        end
+
+        -- Call sit event
+        self.OnSit:Fire(player, body, seat_name)
+    end)
+
+    self._UnsitCallback = Noir.Callbacks:Connect("onPlayerUnsit", function(peer_id, vehicle_id, seat_name)
+        -- Get player
+        local player = self:GetPlayer(peer_id)
+
+        if not player then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just got up from a body seat, but they don't have data.", false)
+            return
+        end
+
+        -- Get body
+        local body = Noir.Services.VehicleService:GetBody(vehicle_id)
+
+        if not body then
+            Noir.Libraries.Logging:Error("PlayerService", "A player just got up from a body seat, but that body doesn't exist.", false)
+            return
+        end
+
+        -- Call unsit event
+        self.OnUnsit:Fire(player, body, seat_name)
+    end)
 end
 
 --[[
@@ -7269,6 +7502,8 @@ function Noir.Services.PlayerService:_LoadPlayers()
 
         ::continue::
     end
+
+    self:_ClearRecognized() -- prevent table getting massive over time, especially on popular saves
 end
 
 --[[
@@ -7337,6 +7572,7 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
     end
 
     -- Remove player
+    player.InGame = false
     self.Players[player.ID] = nil
 
     -- Remove saved properties
@@ -7387,6 +7623,14 @@ function Noir.Services.PlayerService:_IsRecognized(player)
 
     -- Return true if recognized
     return self:GetSaveData().RecognizedIDs[player.ID] ~= nil
+end
+
+--[[
+    Clear the list of recognized players.<br>
+    Used internally.
+]]
+function Noir.Services.PlayerService:_ClearRecognized()
+    self:GetSaveData().RecognizedIDs = {}
 end
 
 --[[
@@ -7622,10 +7866,13 @@ end
     task:SetDuration(10) -- Duration changes from 5 to 10
 ]]
 ---@class NoirTaskService: NoirService
+---@field Ticks integer The amount of `onTick` calls
+---@field DeltaTicks number The amount of ticks that have technically passed since the last tick
 ---@field Tasks table<integer, NoirTask> A table containing active tasks
 ---@field _TaskID integer The ID of the most recent task
 ---@field TickIterationProcesses table<integer, NoirTickIterationProcess> A table of tick iteration processes
 ---@field _TickIterationProcessID integer The ID of the most recent tick iteration process
+---@field _TaskTypeHandlers table<NoirTaskType, fun(task: NoirTask)>
 ---@field _OnTickConnection NoirConnection Represents the connection to the onTick game callback
 Noir.Services.TaskService = Noir.Services:CreateService(
     "TaskService",
@@ -7637,50 +7884,143 @@ Noir.Services.TaskService = Noir.Services:CreateService(
 
 function Noir.Services.TaskService:ServiceInit()
     -- Create attributes
+    self.Ticks = 0
+    self.DeltaTicks = 0
+
     self.Tasks = {}
     self._TaskID = 0
 
     self.TickIterationProcesses = {}
     self._TickIterationProcessID = 0
+
+    self._TaskTypeHandlers = {}
+
+    -- Create task handlers
+    self._TaskTypeHandlers["Time"] = function(task)
+        local time = self:GetTimeSeconds()
+
+        if time < task.StopsAt then
+            return
+        end
+
+        if task.IsRepeating then
+            task.StartedAt = time
+            task.StopsAt = time + task.Duration
+
+            task.OnCompletion:Fire(table.unpack(task.Arguments))
+        else
+            self:RemoveTask(task)
+            task.OnCompletion:Fire(table.unpack(task.Arguments))
+        end
+    end
+
+    self._TaskTypeHandlers["Ticks"] = function(task)
+        if self.Ticks < task.StopsAt then
+            return
+        end
+
+        if task.IsRepeating then
+            task.StartedAt = self.Ticks
+            task.StopsAt = self.Ticks + task.Duration
+
+            task.OnCompletion:Fire(table.unpack(task.Arguments))
+        else
+            self:RemoveTask(task)
+            task.OnCompletion:Fire(table.unpack(task.Arguments))
+        end
+    end
 end
 
 function Noir.Services.TaskService:ServiceStart()
     -- Connect to onTick
-    self._OnTickConnection = Noir.Callbacks:Connect("onTick", function()
-        -- Check tick iteration processes
-        for _, tickIterationProcess in pairs(self:GetTickIterationProcesses(true)) do
-            -- Check if the iteration process is done
-            if tickIterationProcess.Completed then
-                self:RemoveTickIterationProcess(tickIterationProcess)
-            else
-                tickIterationProcess:Iterate()
-            end
-        end
+    self._OnTickConnection = Noir.Callbacks:Connect("onTick", function(ticks)
+        -- Increment ticks
+        self.Ticks = self.Ticks + ticks
+        self.DeltaTicks = ticks
+
+        -- Handle tick iteration processes
+        self:_HandleTickIterationProcesses()
 
         -- Check tasks
-        for _, task in pairs(self:GetTasks(true)) do
-            -- Get time so far in seconds
-            local time = self:GetTimeSeconds()
-
-            -- Check if the task should be stopped
-            if time >= task.StopsAt then
-                if task.IsRepeating then
-                    -- Repeat the task
-                    task.StartedAt = time
-                    task.StopsAt = time + task.Duration
-
-                    -- Fire OnCompletion
-                    task.OnCompletion:Fire(table.unpack(task.Arguments))
-                else
-                    -- Stop the task
-                    self:RemoveTask(task)
-
-                    -- Fire OnCompletion
-                    task.OnCompletion:Fire(table.unpack(task.Arguments))
-                end
-            end
-        end
+        self:_HandleTasks()
     end)
+end
+
+--[[
+    Handles tick iteration processes.<br>
+    Used internally.
+]]
+function Noir.Services.TaskService:_HandleTickIterationProcesses()
+    for _, tickIterationProcess in pairs(self:GetTickIterationProcesses(true)) do
+        if tickIterationProcess.Completed then
+            self:RemoveTickIterationProcess(tickIterationProcess)
+        else
+            tickIterationProcess:Iterate()
+        end
+    end
+end
+
+--[[
+    Handles tasks.<br>
+    Used internally.
+]]
+function Noir.Services.TaskService:_HandleTasks()
+    for _, task in pairs(self:GetTasks(true)) do
+        if not self:_IsValidTaskType(task.TaskType) then
+            self:RemoveTask(task)
+            Noir.Libraries.Logging:Error("TaskService", ":_HandleTasks() - Task #%d has an invalid task type of '%s'. Removing and ignoring.", false, task.ID, task.TaskType)
+
+            goto continue
+        end
+
+        local handler = self._TaskTypeHandlers[task.TaskType]
+        handler(task)
+
+        ::continue::
+    end
+end
+
+--[[
+    Add a task to the TaskService.<br>
+    Used internally.
+]]
+---@param callback function
+---@param duration number
+---@param arguments table
+---@param isRepeating boolean
+---@param taskType NoirTaskType
+---@param startedAt number
+---@return NoirTask
+function Noir.Services.TaskService:_AddTask(callback, duration, arguments, isRepeating, taskType, startedAt)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:_AddTask()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:_AddTask()", "duration", duration, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:_AddTask()", "arguments", arguments, "table")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:_AddTask()", "isRepeating", isRepeating, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:_AddTask()", "taskType", taskType, "string")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:_AddTask()", "startedAt", startedAt, "number")
+
+    -- Increment ID
+    self._TaskID = self._TaskID + 1
+
+    -- Create task
+    local task = Noir.Classes.TaskClass:New(self._TaskID, taskType, duration, isRepeating, arguments, startedAt)
+    task.OnCompletion:Connect(callback)
+
+    self.Tasks[task.ID] = task
+
+    -- Return the task
+    return task
+end
+
+--[[
+    Returns whether or not a task type is valid.<br>
+    Used internally.
+]]
+---@param taskType string
+---@return boolean
+function Noir.Services.TaskService:_IsValidTaskType(taskType)
+    return self._TaskTypeHandlers[taskType] ~= nil
 end
 
 --[[
@@ -7693,42 +8033,113 @@ function Noir.Services.TaskService:GetTimeSeconds()
 end
 
 --[[
-    Creates and adds a task to the TaskService.
+    Creates and adds a task to the TaskService using the task type `"Time"`.<br>
+    This is less accurate than the other task types as it uses time to determine when to run the task. This is more convenient though.
 
-    local task = Noir.Services.TaskService:AddTask(function(toSay)
+    local task = Noir.Services.TaskService:AddTimeTask(function(toSay)
         server.announce("Server", toSay)
     end, 5, {"Hello World!"}, true) -- This task is repeating due to isRepeating being true (final argument)
 
-    local anotherTask = Noir.Services.TaskService:AddTask(server.announce, 5, {"Server", "Hello World!"}, true) -- This does the same as above
+    local anotherTask = Noir.Services.TaskService:AddTimeTask(server.announce, 5, {"Server", "Hello World!"}, true) -- This does the same as above
     Noir.Services.TaskService:RemoveTask(anotherTask) -- Removes the task
 ]]
 ---@param callback function
----@param duration number
+---@param duration number In seconds
+---@param arguments table|nil
+---@param isRepeating boolean|nil
+---@return NoirTask
+function Noir.Services.TaskService:AddTimeTask(callback, duration, arguments, isRepeating)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTimeTask()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTimeTask()", "duration", duration, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTimeTask()", "arguments", arguments, "table", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTimeTask()", "isRepeating", isRepeating, "boolean", "nil")
+
+    -- Create task
+    local task = self:_AddTask(callback, duration, arguments or {}, isRepeating or false, "Time", self:GetTimeSeconds())
+    return task
+end
+
+--[[
+    This is deprecated. Please use `:AddTimeTask()`.
+]]
+---@deprecated
+---@param callback function
+---@param duration number In seconds
 ---@param arguments table|nil
 ---@param isRepeating boolean|nil
 ---@return NoirTask
 function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepeating)
+    -- Deprecation
+    Noir.Libraries.Deprecation:Deprecated("Noir.Services.TaskService:AddTask()", ":AddTimeTask()", "Due to the addition of task types, this method has been deprecated.")
+
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "callback", callback, "function")
     Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "duration", duration, "number")
     Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "arguments", arguments, "table", "nil")
     Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTask()", "isRepeating", isRepeating, "boolean", "nil")
 
-    -- Defaults
-    arguments = arguments or {}
-    isRepeating = isRepeating or false
+    -- Create task
+    return self:AddTimeTask(callback, duration, arguments, isRepeating)
+end
 
-    -- Increment ID
-    self._TaskID = self._TaskID + 1
+--[[
+    Creates and adds a task to the TaskService using the task type `"Ticks"`.<br>
+    This is more accurate as it uses ticks to determine when to run the task.<br>
+    It is highly recommended to multiply any calculations by `Noir.Services.TaskService.DeltaTicks` to account for when all players sleep.
+
+    local last = Noir.Services.TaskService:GetTimeSeconds()
+    local time = 0
+
+    Noir.Services.TaskService:AddTickTask(function()
+        local now = Noir.Services.TaskService:GetTimeSeconds()
+        time = time + ((now - last) * Noir.Services.TaskService.DeltaTicks)
+        last = now
+
+        print(("%.1f seconds passed"):format(time))
+    end, 1, nil, true) -- This task reoeats every tick
+]]
+---@param callback function
+---@param duration integer In ticks
+---@param arguments table|nil
+---@param isRepeating boolean|nil
+---@return NoirTask
+function Noir.Services.TaskService:AddTickTask(callback, duration, arguments, isRepeating)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTickTask()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTickTask()", "duration", duration, "number")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTickTask()", "arguments", arguments, "table", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTickTask()", "isRepeating", isRepeating, "boolean", "nil")
 
     -- Create task
-    local task = Noir.Classes.TaskClass:New(self._TaskID, duration, isRepeating, arguments)
-    task.OnCompletion:Connect(callback)
-
-    self.Tasks[task.ID] = task
-
-    -- Return the task
+    local task = self:_AddTask(callback, duration, arguments or {}, isRepeating or false, "Ticks", self.Ticks)
     return task
+end
+
+--[[
+    Converts seconds to ticks, accounting for TPS.
+
+    local ticks = Noir.Services.TaskService:SecondsToTicks(2)
+    print(ticks) -- 120 (assuming TPS is 60)
+]]
+---@param seconds integer
+---@return integer
+function Noir.Services.TaskService:SecondsToTicks(seconds)
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:SecondsToTicks()", "seconds", seconds, "number")
+    return math.floor(seconds * Noir.Services.TPSService:GetTPS())
+end
+
+--[[
+    Converts ticks to seconds, accounting for TPS.
+
+    local seconds = Noir.Services.TaskService:TicksToSeconds(120)
+    print(seconds) -- 2 (assuming TPS is 60)
+]]
+---@param ticks integer
+---@return number
+function Noir.Services.TaskService:TicksToSeconds(ticks)
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:TicksToSeconds()", "ticks", ticks, "number")
+    return ticks / Noir.Services.TPSService:GetTPS()
 end
 
 --[[
@@ -7759,7 +8170,7 @@ end
 --[[
     Iterate a table over how many necessary ticks in chunks of x.<br>
     Useful for iterating through large tables without freezes due to taking too long in a tick.<br>
-    Only works for tables that are sequential. Please use `Noir.Libraries.Table:Values()` to convert a non-sequential table into a sequential table.
+    Works for sequential and non-sequential tables, although **order is NOT guaranteed**.
 
     local tbl = {}
 
@@ -7773,7 +8184,7 @@ end
 ]]
 ---@param tbl table<integer, any>
 ---@param chunkSize integer How many values to iterate per tick
----@param callback fun(value: any, currentTick: integer|nil, completed: boolean|nil)
+---@param callback fun(value: any, currentTick: integer|nil, completed: boolean|nil) `currentTick` and `completed` are never nil. They are marked as so to mark the paramters as optional
 ---@return NoirTickIterationProcess
 function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
     -- Type checking
@@ -7862,8 +8273,9 @@ end
     Noir.Services.TPSService:SetPrecision(10) -- The average TPS will now be calculated every 10 ticks, meaning higher accuracy but slower
 ]]
 ---@class NoirTPSService: NoirService
----@field TPS number The TPS of the server
----@field AverageTPS number The average TPS of the server
+---@field TPS number The TPS of the server, this accounts for sped up time which happens when all players sleep
+---@field AverageTPS number The average TPS of the server, this accounts for sped up time which happens when all players sleep
+---@field RawTPS number The raw TPS of the server, this doesn't account for sped up time which happens when all players sleep
 ---@field DesiredTPS number The desired TPS. This service will slow the game enough to achieve this. 0 = disabled
 ---@field _AverageTPSPrecision integer Tick rate for calculating the average TPS. Higher = more accurate, but slower. Use :SetPrecision() to modify
 ---@field _AverageTPSAccumulation table<integer, integer> TPS over time. Gets cleared after it is filled enough
@@ -7880,6 +8292,7 @@ Noir.Services.TPSService = Noir.Services:CreateService(
 function Noir.Services.TPSService:ServiceInit()
     self.TPS = 0
     self.AverageTPS = 0
+    self.RawTPS = 0
     self.DesiredTPS = 0
 
     self._AverageTPSPrecision = 10
@@ -7889,7 +8302,7 @@ end
 
 function Noir.Services.TPSService:ServiceStart()
     self._OnTickConnection = Noir.Callbacks:Connect("onTick", function(ticks)
-        -- Calculate TPS
+        -- Slow TPS to desired TPS
         local now = server.getTimeMillisec()
 
         if self.DesiredTPS ~= 0 then -- below is from Woe (https://discord.com/channels/357480372084408322/905791966904729611/1261911499723509820) @ https://discord.gg/stormworks
@@ -7898,7 +8311,9 @@ function Noir.Services.TPSService:ServiceStart()
             end
         end
 
+        -- Calculate TPS
         self.TPS = self:_CalculateTPS(self._Last, now, ticks)
+        self.RawTPS = self:_CalculateTPS(self._Last, now, 1)
         self._Last = server.getTimeMillisec()
 
         -- Calculate Average TPS
@@ -7961,7 +8376,8 @@ function Noir.Services.TPSService:GetAverageTPS()
 end
 
 --[[
-    Set the tick rate for calculating the average TPS.
+    Set the amount of ticks to use when calculating the average TPS.<br>
+    Eg: if this is set to 10, the average TPS will be calculated over a period of 10 ticks.
 ]]
 ---@param precision integer
 function Noir.Services.TPSService:SetPrecision(precision)
@@ -8265,6 +8681,7 @@ function Noir.Services.VehicleService:_UnregisterVehicle(vehicle, fireEvent)
     end
 
     -- Remove vehicle
+    vehicle.Spawned = false
     self.Vehicles[vehicle.ID] = nil
 
     -- Remove bodies
@@ -8306,7 +8723,18 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, c
     end
 
     -- Create body
-    local body = Noir.Classes.BodyClass:New(ID, player, spawnPosition, cost)
+    local body = Noir.Classes.BodyClass:New(ID, player, spawnPosition, cost, false)
+
+    -- Check if the body even exists anymore
+    if not body:Exists() then
+        self:_UnregisterBody(body, false, false)
+        return
+    end
+
+    -- Set loaded
+    body.Loaded = body:IsSimulating()
+
+    -- Register body
     self.Bodies[body.ID] = body
 
     -- Save
@@ -8428,7 +8856,7 @@ function Noir.Services.VehicleService:_DamageBody(body, x, y, z, damage)
 
     -- Fire events
     body.OnDamage:Fire(damage, x, y, z)
-    self.OnBodyDamage:Fire(damage, x, y, z)
+    self.OnBodyDamage:Fire(body, damage, x, y, z)
 end
 
 --[[
@@ -8451,6 +8879,7 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
     end
 
     -- Remove body from service
+    body.Spawned = false
     self.Bodies[body.ID] = nil
 
     -- Remove body from vehicle
@@ -9116,7 +9545,7 @@ end
     The current version of Noir.<br>
     Follows [Semantic Versioning.](https://semver.org)
 ]]
-Noir.Version = "1.13.1"
+Noir.Version = "1.14.0"
 
 --[[
     Returns the MAJOR, MINOR, and PATCH of the current Noir version.
@@ -9158,7 +9587,7 @@ Noir.IsDedicatedServer = false
 --[[
     This represents whether or not the addon was:<br>
     - Reloaded<br>
-    - Started via a save being loaded<br>
+    - Started via a save load<br>
     - Started via a save creation
 ]]
 Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
@@ -9238,6 +9667,6 @@ Noir.Bootstrapper:WrapServiceMethodsForAllServices()
 -------------------------------
 
 ---@alias NoirAddonReason
----| "AddonReload"
----| "SaveCreate"
----| "SaveLoad"
+---| "AddonReload" The addon was reloaded
+---| "SaveCreate" A save was created with the addon enabled
+---| "SaveLoad" A save with loaded into with the addon enabled
