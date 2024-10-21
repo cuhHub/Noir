@@ -63,13 +63,10 @@ function Noir.Services.MessageService:ServiceInit()
     self._MessageLimit = 220
 
     self.OnMessage = Noir.Libraries.Events:Create()
-
     self:_LoadSavedMessages()
 end
 
 function Noir.Services.MessageService:ServiceStart()
-    self:_LoadSavedMessages()
-
     self._OnChatMessageConnection = Noir.Callbacks:Connect("onChatMessage", function(peerID, title, message)
         -- Get author of message (player)
         local author = Noir.Services.PlayerService:GetPlayer(peerID)
