@@ -15,7 +15,7 @@ Notify a player or multiple players.
 - `title`: string
 - `message`: string
 - `notificationType`: SWNotificationTypeEnum
-- `player`: NoirPlayer|table<integer, NoirPlayer>
+- `player`: NoirPlayer|table<integer, NoirPlayer>|nil
 - `...`: any
 
 ---
@@ -28,7 +28,7 @@ Send a success notification to a player.
 ### Parameters
 - `title`: string
 - `message`: string
-- `player`: NoirPlayer|table<integer, NoirPlayer>
+- `player`: NoirPlayer|table<integer, NoirPlayer>|nil
 - `...`: any
 
 ---
@@ -41,7 +41,7 @@ Send a warning notification to a player.
 ### Parameters
 - `title`: string
 - `message`: string
-- `player`: NoirPlayer|table<integer, NoirPlayer>
+- `player`: NoirPlayer|table<integer, NoirPlayer>|nil
 - `...`: any
 
 ---
@@ -54,7 +54,7 @@ Send an error notification to a player.
 ### Parameters
 - `title`: string
 - `message`: string
-- `player`: NoirPlayer|table<integer, NoirPlayer>
+- `player`: NoirPlayer|table<integer, NoirPlayer>|nil
 - `...`: any
 
 ---
@@ -67,5 +67,5 @@ Send an info notification to a player.
 ### Parameters
 - `title`: string
 - `message`: string
-- `player`: NoirPlayer|table<integer, NoirPlayer>
+- `player`: NoirPlayer|table<integer, NoirPlayer>|nil
 - `...`: any

@@ -9,7 +9,7 @@ In Stormworks, this is actually a vehicle apart of a vehicle group.
 ---
 
 ```lua
-Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost)
+Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost, loaded)
 ```
 Initializes body class objects.
 
@@ -18,6 +18,7 @@ Initializes body class objects.
 - `owner`: NoirPlayer|nil
 - `spawnPosition`: SWMatrix
 - `cost`: number
+- `loaded`: boolean
 
 ---
 
@@ -57,6 +58,20 @@ Returns the position of this body.
 - `voxelX`: integer|nil
 - `voxelY`: integer|nil
 - `voxelZ`: integer|nil
+
+---
+
+```lua
+Noir.Classes.BodyClass:Damage(damageAmount, voxelX, voxelY, voxelZ, radius)
+```
+Damage this body at the provided voxel.
+
+### Parameters
+- `damageAmount`: number
+- `voxelX`: integer
+- `voxelY`: integer
+- `voxelZ`: integer
+- `radius`: number
 
 ---
 
@@ -597,3 +612,23 @@ Presses a button on this body (by voxel).
 Noir.Classes.BodyClass:Despawn()
 ```
 Despawn the body.
+
+---
+
+```lua
+Noir.Classes.BodyClass:Exists()
+```
+Returns whether or not the body exists.
+
+### Returns
+- `boolean`
+
+---
+
+```lua
+Noir.Classes.BodyClass:IsSimulating()
+```
+Returns whether or not the body is simulating.
+
+### Returns
+- `boolean`

@@ -141,3 +141,16 @@ Find a value in a table. Returns the index, or nil if not found.
 - `value`: any
 ### Returns
 - `any|nil`
+
+---
+
+```lua
+Noir.Libraries.Table:FindDeep(tbl, value)
+```
+Find a value in a table. Unlike `:Find()`, this method will recursively search through nested tables to find the value.
+
+### Parameters
+- `tbl`: table
+- `value`: any
+### Returns
+- `any|nil,`: table|nil

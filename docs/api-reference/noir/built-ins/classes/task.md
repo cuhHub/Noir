@@ -7,15 +7,17 @@ Represents a task.
 ---
 
 ```lua
-Noir.Classes.TaskClass:Init(ID, duration, isRepeating, arguments)
+Noir.Classes.TaskClass:Init(ID, taskType, duration, isRepeating, arguments, startedAt)
 ```
 Initializes task class objects.
 
 ### Parameters
 - `ID`: integer
+- `taskType`: NoirTaskType
 - `duration`: number
 - `isRepeating`: boolean
 - `arguments`: table<integer, any>
+- `startedAt`: number
 
 ---
 
@@ -24,7 +26,7 @@ Noir.Classes.TaskClass:SetRepeating(isRepeating)
 ```
 Sets whether or not this task is repeating.
 
-If repeating, the task will be triggered every Task.Duration seconds.
+If repeating, the task will be triggered repeatedly as implied.
 
 If not, the task will be triggered once, then removed from the TaskService.
 

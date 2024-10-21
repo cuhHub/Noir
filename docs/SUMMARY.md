@@ -31,6 +31,7 @@
     * [Libraries](api-reference/noir/built-ins/libraries/README.md)
       * [Base64](api-reference/noir/built-ins/libraries/base64.md)
       * [Dataclasses](api-reference/noir/built-ins/libraries/dataclasses.md)
+      * [Deprecation](api-reference/noir/built-ins/libraries/deprecation.md)
       * [Events](api-reference/noir/built-ins/libraries/events.md)
       * [HTTP](api-reference/noir/built-ins/libraries/http.md)
       * [JSON](api-reference/noir/built-ins/libraries/json.md)

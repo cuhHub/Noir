@@ -7,6 +7,13 @@ A service that wraps SW players in a class. Essentially makes players OOP.
 ---
 
 ```lua
+Noir.Services.PlayerService:_LoadPlayers()
+```
+Load players current in-game.
+
+---
+
+```lua
 Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, admin, auth)
 ```
 Gives data to a player.
@@ -75,6 +82,15 @@ Used internally.
 - `player`: NoirPlayer
 ### Returns
 - `boolean`
+
+---
+
+```lua
+Noir.Services.PlayerService:_ClearRecognized()
+```
+Clear the list of recognized players.
+
+Used internally.
 
 ---
 

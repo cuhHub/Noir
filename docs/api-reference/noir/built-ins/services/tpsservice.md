@@ -53,7 +53,9 @@ Get the average TPS of the server.
 ```lua
 Noir.Services.TPSService:SetPrecision(precision)
 ```
-Set the tick rate for calculating the average TPS.
+Set the amount of ticks to use when calculating the average TPS.
+
+Eg: if this is set to 10, the average TPS will be calculated over a period of 10 ticks.
 
 ### Parameters
 - `precision`: integer

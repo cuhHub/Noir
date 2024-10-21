@@ -150,6 +150,22 @@ Used internally.
 ---
 
 ```lua
+Noir.Services.VehicleService:_DamageBody(body, x, y, z, damage)
+```
+Fire events for body damage.
+
+Used internally.
+
+### Parameters
+- `body`: NoirBody
+- `x`: number
+- `y`: number
+- `z`: number
+- `damage`: number
+
+---
+
+```lua
 Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVehicle, fireEvent)
 ```
 Unregister a body from the vehicle service.

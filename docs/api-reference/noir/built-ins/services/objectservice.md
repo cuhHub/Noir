@@ -7,6 +7,39 @@ A service for wrapping SW objects in classes.
 ---
 
 ```lua
+Noir.Services.ObjectService:_LoadObjects()
+```
+Load saved objects.
+
+Used internally. Do not use in your code.
+
+---
+
+```lua
+Noir.Services.ObjectService:_OnObjectLoad(object)
+```
+Run code that would normally be ran when an object is loaded.
+
+Used internally. Do not use in your code.
+
+### Parameters
+- `object`: NoirObject
+
+---
+
+```lua
+Noir.Services.ObjectService:_OnObjectUnload(object)
+```
+Run code that would normally be ran when an object is unloaded.
+
+Used internally. Do not use in your code.
+
+### Parameters
+- `object`: NoirObject
+
+---
+
+```lua
 Noir.Services.ObjectService:_SaveObjects(objects)
 ```
 Overwrite saved objects.
@@ -183,3 +216,14 @@ Spawn a fire.
 - `explosionMagnitude`: number - The size of the explosion (0-5)
 ### Returns
 - `NoirObject|nil`
+
+---
+
+```lua
+Noir.Services.ObjectService:SpawnExplosion(position, magnitude)
+```
+Spawn an explosion.
+
+### Parameters
+- `position`: SWMatrix
+- `magnitude`: number - 0-1

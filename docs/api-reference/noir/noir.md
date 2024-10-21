@@ -40,7 +40,7 @@ This represents whether or not the addon was:
 
 - Reloaded
 
-- Started via a save being loaded
+- Started via a save load
 
 - Started via a save creation
 

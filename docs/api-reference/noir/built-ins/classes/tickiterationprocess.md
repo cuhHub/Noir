@@ -1,13 +1,13 @@
 # TickIterationProcess
 
-**Noir.Classes.TickIterationClass**: `NoirClass`
+**Noir.Classes.TickIterationProcessClass**: `NoirClass`
 
 Represents a process in which code iterates through a table in chunks of x over how ever many necessary ticks.
 
 ---
 
 ```lua
-Noir.Classes.TickIterationClass:Init(ID, tbl, chunkSize)
+Noir.Classes.TickIterationProcessClass:Init(ID, tbl, chunkSize)
 ```
 Initializes tick iteration process class objects.
 
@@ -19,7 +19,7 @@ Initializes tick iteration process class objects.
 ---
 
 ```lua
-Noir.Classes.TickIterationClass:Iterate()
+Noir.Classes.TickIterationProcessClass:Iterate()
 ```
 Iterate through the table in chunks of x over how ever many necessary ticks.
 
@@ -29,7 +29,7 @@ Iterate through the table in chunks of x over how ever many necessary ticks.
 ---
 
 ```lua
-Noir.Classes.TickIterationClass:CalculateChunks()
+Noir.Classes.TickIterationProcessClass:CalculateChunks()
 ```
 Calculate the chunks of the table.
 
