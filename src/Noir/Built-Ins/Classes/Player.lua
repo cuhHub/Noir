@@ -34,7 +34,9 @@
 --[[
     Represents a player.
 
-    player:GetCharacter() -- NoirCharacter
+    local character = player:GetCharacter() -- NoirObject
+    character:SetTooltip("A Tooltip")
+
     player:SetPermission("Awesome")
     player:HasPermission("Awesome") -- true
 ]]
