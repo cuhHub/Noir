@@ -133,6 +133,24 @@ function Noir.Classes.BodyClass:_Deserialize(serializedBody, setParentVehicle)
 end
 
 --[[
+    Returns the name of the body, or nil if there is none (relies on map icon component)
+]]
+---@return string|nil
+function Noir.Classes.BodyClass:GetName()
+    local data = self:GetData()
+
+    if not data then
+        return
+    end
+
+    if data.name == "" then
+        return
+    end
+
+    return data.name
+end
+
+--[[
     Returns the position of this body.
 ]]
 ---@param voxelX integer|nil
