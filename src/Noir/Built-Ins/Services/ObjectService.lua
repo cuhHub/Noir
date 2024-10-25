@@ -113,7 +113,7 @@ end
 ]]
 function Noir.Services.ObjectService:_LoadObjects()
     for _, object in pairs(self:_GetSavedObjects()) do
-        self:RegisterObject(object.ID, true)
+        self:_RegisterObject(object.ID, true)
     end
 end
 
@@ -152,11 +152,78 @@ function Noir.Services.ObjectService:_OnObjectUnload(object)
     -- Remove from g_savedata if the object was removed and unloaded, otherwise save
     Noir.Services.TaskService:AddTickTask(function()
         if not object:Exists() then
-            self:_RemoveObjectSavedata(object.ID)
+            self:_RemoveObject(object.ID)
         else
             self:_SaveObjectSavedata(object)
         end
     end, 1) -- untested, but this delay might be needed in case the object is unloaded first, then removed
+end
+
+
+--[[
+    Registers an object by ID.<br>
+    Used internally. Use :GetObject() to retrieve an object instead.
+]]
+---@param object_id integer
+---@param _preventEventTrigger boolean|nil
+---@return NoirObject|nil
+function Noir.Services.ObjectService:_RegisterObject(object_id, _preventEventTrigger)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_RegisterObject()", "object_id", object_id, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_RegisterObject()", "_preventEventTrigger", _preventEventTrigger, "boolean", "nil")
+
+    -- Check if the object exists and is loaded
+    local loaded, exists = server.getObjectSimulating(object_id)
+
+    if not exists then
+        self:_RemoveObjectSavedata(object_id) -- prevent memory leak
+        return
+    end
+
+    -- Create object
+    local object = Noir.Classes.ObjectClass:New(object_id)
+    object.Loaded = loaded
+
+    self.Objects[object_id] = object
+
+    -- Fire event
+    if not _preventEventTrigger then -- this is here for objects that are being registered from g_savedata
+        self.OnRegister:Fire(object)
+    end
+
+    -- Save to g_savedata
+    self:_SaveObjectSavedata(object)
+
+    -- Return
+    return object
+end
+
+--[[
+    Removes the object with the given ID.<br>
+    Used internally. Do not use in your code.
+]]
+---@param object_id integer
+function Noir.Services.ObjectService:_RemoveObject(object_id)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_RemoveObject()", "object_id", object_id, "number")
+
+    -- Get object
+    local object = self:GetObject(object_id)
+
+    if not object then
+        Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in :_RemoveObject().", false)
+        return
+    end
+
+    -- Fire event
+    object.OnDespawn:Fire()
+    self.OnUnregister:Fire(object)
+
+    -- Remove object
+    self.Objects[object_id] = nil
+
+    -- Remove from g_savedata
+    self:_RemoveObjectSavedata(object_id)
 end
 
 --[[
@@ -222,48 +289,6 @@ function Noir.Services.ObjectService:GetObjects()
 end
 
 --[[
-    Registers an object by ID.
-]]
----@param object_id integer
----@param _preventEventTrigger boolean|nil
----@return NoirObject|nil
-function Noir.Services.ObjectService:RegisterObject(object_id, _preventEventTrigger)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:RegisterObject()", "object_id", object_id, "number")
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:RegisterObject()", "_preventEventTrigger", _preventEventTrigger, "boolean", "nil")
-
-    -- Check if the object exists and is loaded
-    local loaded, exists = server.getObjectSimulating(object_id)
-
-    if not exists then
-        self:_RemoveObjectSavedata(object_id) -- prevent memory leak
-        return
-    end
-
-    -- Create object
-    local object = Noir.Classes.ObjectClass:New(object_id)
-    object.Loaded = loaded
-
-    self.Objects[object_id] = object
-
-    -- Fire event
-    if not _preventEventTrigger then -- this is here for objects that are being registered from g_savedata
-        self.OnRegister:Fire(object)
-    end
-
-    -- Save to g_savedata
-    self:_SaveObjectSavedata(object)
-
-    -- Remove on object despawn
-    object.OnDespawn:Once(function()
-        self:RemoveObject(object_id)
-    end)
-
-    -- Return
-    return object
-end
-
---[[
     Returns the object with the given ID.
 ]]
 ---@param object_id integer
@@ -273,33 +298,7 @@ function Noir.Services.ObjectService:GetObject(object_id)
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:GetObject()", "object_id", object_id, "number")
 
     -- Get object
-    return self.Objects[object_id] or self:RegisterObject(object_id)
-end
-
---[[
-    Removes the object with the given ID.
-]]
----@param object_id integer
-function Noir.Services.ObjectService:RemoveObject(object_id)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:RemoveObject()", "object_id", object_id, "number")
-
-    -- Get object
-    local object = self:GetObject(object_id)
-
-    if not object then
-        Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in :RemoveObject().", false)
-        return
-    end
-
-    -- Fire event
-    self.OnUnregister:Fire(object)
-
-    -- Remove object
-    self.Objects[object_id] = nil
-
-    -- Remove from g_savedata
-    self:_RemoveObjectSavedata(object_id)
+    return self.Objects[object_id] or self:_RegisterObject(object_id)
 end
 
 --[[
