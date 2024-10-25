@@ -129,7 +129,6 @@ end
 ]]
 function Noir.Classes.ObjectClass:Despawn()
     server.despawnObject(self.ID, true)
-    self.OnDespawn:Fire()
 end
 
 --[[
