@@ -36,7 +36,7 @@
 ]]
 ---@class NoirLoggingLib: NoirLibrary
 Noir.Libraries.Logging = Noir.Libraries:Create(
-    "LoggingLibrary",
+    "Logging",
     "A library containing methods related to logging.",
     nil,
     {"Cuh4"}
@@ -57,9 +57,9 @@ Noir.Libraries.Logging.OnLog = Noir.Libraries.Events:Create()
 
 --[[
     Represents the logging layout.<br>
-    Requires two '%s' in the layout. First %s is the log type, the second %s is the log title. The message is then added after the layout.
+    Requires two '%s' in the layout. First %s is the addon name, second %s is the log type, and the third %s is the log title. The message is then added after the layout.
 ]]
-Noir.Libraries.Logging.Layout = "[Noir] [%s] [%s]: "
+Noir.Libraries.Logging.Layout = "[Noir] [%s] [%s] [%s]: "
 
 --[[
     Set the logging mode.
@@ -122,7 +122,7 @@ function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
     local validatedMessage = type(message) == "table" and Noir.Libraries.Table:ToString(message) or (... and tostring(message):format(...) or tostring(message))
 
     -- Format text
-    local formattedMessage = (self.Layout:format(validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..self.Layout:format(validatedLogType, validatedTitle))
+    local formattedMessage = (self.Layout:format(Noir.AddonName, validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..self.Layout:format(Noir.AddonName, validatedLogType, validatedTitle))
 
     -- Return
     return formattedMessage
