@@ -35,9 +35,9 @@
     A library that allows you to create dataclasses, similar to Python.
 
     local InventoryItem = Noir.Libraries.Dataclasses:New("InventoryItem", {
-        Noir.Libraries.Dataclasses:Field("Name", "String"),
-        Noir.Libraries.Dataclasses:Field("Weight", "Number"),
-        Noir.Libraries.Dataclasses:Field("Stackable", "Boolean")
+        Noir.Libraries.Dataclasses:Field("Name", "string"),
+        Noir.Libraries.Dataclasses:Field("Weight", "number"),
+        Noir.Libraries.Dataclasses:Field("Stackable", "boolean")
     })
 
     local item = InventoryItem:New("Sword", 5, true)
@@ -45,7 +45,7 @@
 ]]
 ---@class NoirDataclassesLib: NoirLibrary
 Noir.Libraries.Dataclasses = Noir.Libraries:Create(
-    "DataclassesLibrary",
+    "Dataclasses",
     "A library that allows you to create dataclasses, similar to Python.",
     nil,
     {"Cuh4"}
@@ -55,9 +55,9 @@ Noir.Libraries.Dataclasses = Noir.Libraries:Create(
     Create a new dataclass.
 
     local InventoryItem = Noir.Libraries.Dataclasses:New("InventoryItem", {
-        Noir.Libraries.Dataclasses:Field("Name", "String"),
-        Noir.Libraries.Dataclasses:Field("Weight", "Number"),
-        Noir.Libraries.Dataclasses:Field("Stackable", "Boolean")
+        Noir.Libraries.Dataclasses:Field("Name", "string"),
+        Noir.Libraries.Dataclasses:Field("Weight", "number"),
+        Noir.Libraries.Dataclasses:Field("Stackable", "boolean")
     })
 
     local item = InventoryItem:New("Sword", 5, true)

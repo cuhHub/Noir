@@ -36,7 +36,7 @@
 ]]
 ---@class NoirTableLib: NoirLibrary
 Noir.Libraries.Table = Noir.Libraries:Create(
-    "TableLibrary",
+    "Table",
     "A library containing helper methods relating to tables.",
     nil,
     {"Cuh4"}

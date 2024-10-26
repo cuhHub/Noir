@@ -37,7 +37,7 @@
 ]]
 ---@class NoirJSONLib: NoirLibrary
 Noir.Libraries.JSON = Noir.Libraries:Create(
-    "JSONLibrary",
+    "JSON",
     "A library containing helper methods to serialize Lua objects into JSON and back.",
     nil,
     {"Cuh4"}

@@ -36,7 +36,7 @@
 ]]
 ---@class NoirStringLib: NoirLibrary
 Noir.Libraries.String = Noir.Libraries:Create(
-    "StringLibrary",
+    "String",
     "A library containing helper methods relating to strings.",
     nil,
     {"Cuh4"}

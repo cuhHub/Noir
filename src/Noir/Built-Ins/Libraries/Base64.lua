@@ -37,7 +37,7 @@
 ]]
 ---@class NoirBase64Lib: NoirLibrary
 Noir.Libraries.Base64 = Noir.Libraries:Create(
-    "Base64Library",
+    "Base64",
     "A library containing helper methods to serialize strings into Base64 and back.",
     "",
     {"Cuh4"}
