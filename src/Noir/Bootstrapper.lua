@@ -174,3 +174,25 @@ function Noir.Bootstrapper:SetIsDedicatedServer()
     local host = server.getPlayers()[1]
     Noir.IsDedicatedServer = host and (host.steam_id == 0 and host.object_id == nil)
 end
+
+--[[
+    Sets the `Noir.AddonName` to the name of your addon.<br>
+    Do not use this in your code. This is used internally.
+]]
+function Noir.Bootstrapper:SetAddonName()
+    local index, success = server.getAddonIndex()
+
+    if not success then
+        Noir.Libraries.Logging:Error("Bootstrapper", "Failed to get addon index.", false)
+        return
+    end
+
+    local data = server.getAddonData(index)
+
+    if not data then
+        Noir.Libraries.Logging:Error("Bootstrapper", "Failed to get addon data.", false)
+        return
+    end
+
+    Noir.AddonName = data.name
+end

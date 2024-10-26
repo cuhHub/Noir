@@ -60,6 +60,11 @@ end
 Noir.Started = Noir.Libraries.Events:Create()
 
 --[[
+    The name of this addon.
+]]
+Noir.AddonName = ""
+
+--[[
     This represents whether or not the framework has started.
 ]]
 Noir.HasStarted = false
@@ -118,8 +123,9 @@ function Noir:Start()
             self.IsStarting = false
             self.HasStarted = true
 
-            -- Set Noir.IsDedicatedServer
+            -- Set Noir.x
             self.Bootstrapper:SetIsDedicatedServer()
+            self.Bootstrapper:SetAddonName()
 
             -- Initialize services
             self.Bootstrapper:InitializeServices()
