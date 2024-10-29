@@ -44,7 +44,7 @@
 ---@field AverageTPS number The average TPS of the server, this accounts for sped up time which happens when all players sleep
 ---@field RawTPS number The raw TPS of the server, this doesn't account for sped up time which happens when all players sleep
 ---@field DesiredTPS number The desired TPS. This service will slow the game enough to achieve this. 0 = disabled
----@field _AverageTPSPrecision integer Tick rate for calculating the average TPS. Higher = more accurate, but slower. Use :SetPrecision() to modify
+---@field _AverageTPSPrecision integer Tick rate for calculating the average TPS. Higher = more accurate, but will mean more iterations per tick. Use :SetPrecision() to modify
 ---@field _AverageTPSAccumulation table<integer, integer> TPS over time. Gets cleared after it is filled enough
 ---@field _Last number The last time the TPS was calculated
 ---@field _OnTickConnection NoirConnection Represents the connection to the onTick game callback
@@ -83,13 +83,13 @@ function Noir.Services.TPSService:ServiceStart()
         self.RawTPS = self:_CalculateTPS(self._Last, now, 1)
         self._Last = server.getTimeMillisec()
 
-        -- Calculate Average TPS
+        -- Calculate average TPS
         if #self._AverageTPSAccumulation >= self._AverageTPSPrecision then
-            self.AverageTPS = Noir.Libraries.Number:Average(self._AverageTPSAccumulation)
-            self._AverageTPSAccumulation = {}
-        else
-            table.insert(self._AverageTPSAccumulation, self.TPS)
+            table.remove(self._AverageTPSAccumulation, 1)
         end
+
+        table.insert(self._AverageTPSAccumulation, self.TPS)
+        self.AverageTPS = Noir.Libraries.Number:Average(self._AverageTPSAccumulation)
     end)
 end
 
