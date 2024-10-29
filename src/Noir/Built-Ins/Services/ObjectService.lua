@@ -149,14 +149,8 @@ function Noir.Services.ObjectService:_OnObjectUnload(object)
     object.OnUnload:Fire()
     self.OnUnload:Fire(object)
 
-    -- Remove from g_savedata if the object was removed and unloaded, otherwise save
-    Noir.Services.TaskService:AddTickTask(function()
-        if not object:Exists() then
-            self:_RemoveObject(object.ID)
-        else
-            self:_SaveObjectSavedata(object)
-        end
-    end, 1) -- untested, but this delay might be needed in case the object is unloaded first, then removed
+    -- Remove from savedata (this should be done when the object is despawned, but it is impossible afaik to find out if this object despawned via this callback)
+    self:_RemoveObjectSavedata(object.ID)
 end
 
 
