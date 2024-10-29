@@ -94,7 +94,7 @@ function Noir.Libraries.Logging:Log(logType, title, message, ...)
         debug.log(formattedText)
     elseif self.LoggingMode == "Chat" then
         debug.log(formattedText)
-        server.announce("Noir", formattedText)
+        server.announce("Noir", formattedText) -- this goes against the rules of noir libraries as they should not interact with the game, but i suppose this is a special case. whups!
     else
         self:Error("Logging", "'%s' is not a valid logging mode.", true, tostring(Noir.Libraries.LoggingMode))
     end
