@@ -210,7 +210,7 @@ function Noir.Services.ObjectService:_RemoveObject(object_id)
     end
 
     -- Fire event
-    object.OnDespawn:Fire()
+    object.OnUnregister:Fire()
     self.OnUnregister:Fire(object)
 
     -- Remove object
