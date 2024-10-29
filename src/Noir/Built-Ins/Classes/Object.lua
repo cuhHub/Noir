@@ -43,7 +43,7 @@
 ---@field Loaded boolean Whether or not this object is loaded
 ---@field OnLoad NoirEvent Fired when this object is loaded
 ---@field OnUnload NoirEvent Fired when this object is unloaded
----@field OnDespawn NoirEvent Fired when this object is despawned
+---@field OnUnregister NoirEvent Fired when this object is unregistered from the ObjectService (mostly on despawn)
 Noir.Classes.ObjectClass = Noir.Class("NoirObject")
 
 --[[
@@ -58,7 +58,7 @@ function Noir.Classes.ObjectClass:Init(ID)
 
     self.OnLoad = Noir.Libraries.Events:Create()
     self.OnUnload = Noir.Libraries.Events:Create()
-    self.OnDespawn = Noir.Libraries.Events:Create()
+    self.OnUnregister = Noir.Libraries.Events:Create()
 end
 
 --[[
@@ -129,6 +129,7 @@ end
 ]]
 function Noir.Classes.ObjectClass:Despawn()
     server.despawnObject(self.ID, true)
+    Noir.Services.ObjectService:_RemoveObject(self.ID)
 end
 
 --[[
