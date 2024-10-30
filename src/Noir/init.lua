@@ -73,6 +73,7 @@ require("Noir.Built-Ins.Libraries.Base64")
 require("Noir.Built-Ins.Libraries.Matrix")
 require("Noir.Built-Ins.Libraries.Dataclasses")
 require("Noir.Built-Ins.Libraries.HTTP")
+require("Noir.Built-Ins.Libraries.Deprecation")
 
 require("Noir.Services")
 
