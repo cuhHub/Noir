@@ -134,26 +134,19 @@ function Noir.Class(name, ...)
         Use this in the :Init() method of a class that inherits from a parent class.<br>
         Any args provided will be passed to the :Init()
     ]]
-    function class:InitializeParent(...)
+    ---@param parent NoirClass 
+    function class:InitFrom(parent, ...)
         -- Check if this was called from an object
         if not self._IsObject then
-            Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' is a class and not an object.", true)
+            Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitFrom() when 'self' is a class and not an object.", true)
             return
         end
 
-        -- Check if there is a parent
-        if #self._Parents == 0 then
-            Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' has no parents.", true)
-            return
-        end
+        -- Create an object from the parent class
+        local object = parent:New(...)
 
-        for _, parent in ipairs(self._Parents) do
-            -- Create an object from the parent class
-            local object = parent:New(...)
-
-            -- Copy and bring new attributes and methods down from the new parent object to this object
-            self._Descend(object, self, self._ClassMethods)
-        end
+        -- Copy and bring new attributes and methods down from the new parent object to this object
+        self._Descend(object, self, self._ClassMethods)
     end
 
     --[[
