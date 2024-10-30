@@ -124,7 +124,7 @@ end
 ---@param object NoirObject
 function Noir.Services.ObjectService:_OnObjectLoad(object)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectLoad()", "object", object, Noir.Classes.ObjectClass)
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectLoad()", "object", object, Noir.Classes.Object)
 
     -- Fire event, set loaded
     object.Loaded = true
@@ -142,7 +142,7 @@ end
 ---@param object NoirObject
 function Noir.Services.ObjectService:_OnObjectUnload(object)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectUnload()", "object", object, Noir.Classes.ObjectClass)
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectUnload()", "object", object, Noir.Classes.Object)
 
     -- Fire events, set loaded
     object.Loaded = false
@@ -175,7 +175,7 @@ function Noir.Services.ObjectService:_RegisterObject(object_id, _preventEventTri
     end
 
     -- Create object
-    local object = Noir.Classes.ObjectClass:New(object_id)
+    local object = Noir.Classes.Object:New(object_id)
     object.Loaded = loaded
 
     self.Objects[object_id] = object
@@ -249,7 +249,7 @@ end
 ---@param object NoirObject
 function Noir.Services.ObjectService:_SaveObjectSavedata(object)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_SaveObjectSavedata()", "object", object, Noir.Classes.ObjectClass)
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_SaveObjectSavedata()", "object", object, Noir.Classes.Object)
 
     -- Save to g_savedata
     local saved = self:_GetSavedObjects()

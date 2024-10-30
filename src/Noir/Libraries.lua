@@ -64,7 +64,7 @@ function Noir.Libraries:Create(name, shortDescription, longDescription, authors)
     Noir.TypeChecking:Assert("Noir.Libraries:Create()", "authors", authors, "table", "nil")
 
     -- Create library
-    local library = Noir.Classes.LibraryClass:New(name, shortDescription or "N/A", longDescription or "N/A", authors or {})
+    local library = Noir.Classes.Library:New(name, shortDescription or "N/A", longDescription or "N/A", authors or {})
 
     -- Return library
     return library

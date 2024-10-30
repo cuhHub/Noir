@@ -135,7 +135,7 @@ function Noir.Services.CommandService:CreateCommand(name, aliases, requiredPermi
     Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "callback", callback, "function")
 
     -- Create command
-    local command = Noir.Classes.CommandClass:New(name, aliases, requiredPermissions or {}, requiresAuth or false, requiresAdmin or false, capsSensitive or false, description or "")
+    local command = Noir.Classes.Command:New(name, aliases, requiredPermissions or {}, requiresAuth or false, requiresAdmin or false, capsSensitive or false, description or "")
 
     -- Connect to event
     command.OnUse:Connect(callback)

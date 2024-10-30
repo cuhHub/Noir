@@ -45,7 +45,7 @@
 ---@field PrimaryBody NoirBody|nil This will be nil if there are no bodies (occurs when the vehicle is despawned)
 ---@field Spawned boolean Whether or not this vehicle is spawned. This is set to false when the vehicle is despawned
 ---@field OnDespawn NoirEvent Fired when this vehicle is despawned
-Noir.Classes.VehicleClass = Noir.Class("NoirVehicle")
+Noir.Classes.Vehicle = Noir.Class("Vehicle")
 
 --[[
     Initializes vehicle class objects.
@@ -54,11 +54,11 @@ Noir.Classes.VehicleClass = Noir.Class("NoirVehicle")
 ---@param owner NoirPlayer|nil
 ---@param spawnPosition SWMatrix
 ---@param cost number
-function Noir.Classes.VehicleClass:Init(ID, owner, spawnPosition, cost)
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "owner", owner, Noir.Classes.PlayerClass, "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "spawnPosition", spawnPosition, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Init()", "cost", cost, "number")
+function Noir.Classes.Vehicle:Init(ID, owner, spawnPosition, cost)
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:Init()", "owner", owner, Noir.Classes.Player, "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:Init()", "spawnPosition", spawnPosition, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:Init()", "cost", cost, "number")
 
     self.ID = math.floor(ID)
     self.Owner = owner
@@ -76,7 +76,7 @@ end
     Used internally.
 ]]
 ---@return NoirSerializedVehicle
-function Noir.Classes.VehicleClass:_Serialize()
+function Noir.Classes.Vehicle:_Serialize()
     local bodies = {}
 
     for _, body in pairs(self.Bodies) do
@@ -98,10 +98,10 @@ end
 ---@param serializedVehicle NoirSerializedVehicle
 ---@param addBodies boolean|nil
 ---@return NoirVehicle
-function Noir.Classes.VehicleClass:_Deserialize(serializedVehicle, addBodies)
+function Noir.Classes.Vehicle:_Deserialize(serializedVehicle, addBodies)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:_Deserialize()", "serializedVehicle", serializedVehicle, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:_Deserialize()", "addBodies", addBodies, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:_Deserialize()", "serializedVehicle", serializedVehicle, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:_Deserialize()", "addBodies", addBodies, "boolean", "nil")
 
     -- Deserialize
     local vehicle = self:New(
@@ -134,7 +134,7 @@ end
     Calculate the primary body.<br>
     Used internally.
 ]]
-function Noir.Classes.VehicleClass:_CalculatePrimaryBody()
+function Noir.Classes.Vehicle:_CalculatePrimaryBody()
     local previousBody, previousID
 
     for _, body in pairs(self.Bodies) do
@@ -158,9 +158,9 @@ end
     Used internally.
 ]]
 ---@param body NoirBody
-function Noir.Classes.VehicleClass:_AddBody(body)
+function Noir.Classes.Vehicle:_AddBody(body)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:_AddBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:_AddBody()", "body", body, Noir.Classes.Body)
 
     -- Add body
     self.Bodies[body.ID] = body
@@ -175,9 +175,9 @@ end
     Used internally.
 ]]
 ---@param body NoirBody
-function Noir.Classes.VehicleClass:_RemoveBody(body)
+function Noir.Classes.Vehicle:_RemoveBody(body)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:_RemoveBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:_RemoveBody()", "body", body, Noir.Classes.Body)
 
     -- Remove body
     self.Bodies[body.ID] = nil
@@ -195,11 +195,11 @@ end
 ---@param voxelY integer|nil
 ---@param voxelZ integer|nil
 ---@return SWMatrix
-function Noir.Classes.VehicleClass:GetPosition(voxelX, voxelY, voxelZ)
+function Noir.Classes.Vehicle:GetPosition(voxelX, voxelY, voxelZ)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:GetPosition()", "voxelX", voxelX, "number", "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:GetPosition()", "voxelY", voxelY, "number", "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:GetPosition()", "voxelZ", voxelZ, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:GetPosition()", "voxelX", voxelX, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:GetPosition()", "voxelY", voxelY, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:GetPosition()", "voxelZ", voxelZ, "number", "nil")
 
     -- Get and return position
     return self.PrimaryBody and self.PrimaryBody:GetPosition(voxelX, voxelY, voxelZ) or matrix.translation(0, 0, 0)
@@ -210,8 +210,8 @@ end
 ]]
 ---@param ID integer
 ---@return NoirBody|nil
-function Noir.Classes.VehicleClass:GetBody(ID)
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:GetBody()", "ID", ID, "number")
+function Noir.Classes.Vehicle:GetBody(ID)
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:GetBody()", "ID", ID, "number")
     return self.Bodies[ID]
 end
 
@@ -219,8 +219,8 @@ end
     Teleport the vehicle to a new position.
 ]]
 ---@param position SWMatrix
-function Noir.Classes.VehicleClass:Teleport(position)
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Teleport()", "position", position, "table")
+function Noir.Classes.Vehicle:Teleport(position)
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:Teleport()", "position", position, "table")
     server.setGroupPos(self.ID, position)
 end
 
@@ -229,15 +229,15 @@ end
     Note that rotation is ignored.
 ]]
 ---@param position SWMatrix
-function Noir.Classes.VehicleClass:Move(position)
-    Noir.TypeChecking:Assert("Noir.Classes.VehicleClass:Move()", "position", position, "table")
+function Noir.Classes.Vehicle:Move(position)
+    Noir.TypeChecking:Assert("Noir.Classes.Vehicle:Move()", "position", position, "table")
     server.moveGroup(self.ID, position)
 end
 
 --[[
     Despawn the vehicle.
 ]]
-function Noir.Classes.VehicleClass:Despawn()
+function Noir.Classes.Vehicle:Despawn()
     server.despawnVehicleGroup(self.ID, true)
 end
 

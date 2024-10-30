@@ -91,7 +91,7 @@ function Noir.Services:CreateService(name, isBuiltIn, shortDescription, longDesc
     end
 
     -- Create service
-    local service = Noir.Classes.ServiceClass:New(name, isBuiltIn or false, shortDescription or "N/A", longDescription or "N/A", authors or {})
+    local service = Noir.Classes.Service:New(name, isBuiltIn or false, shortDescription or "N/A", longDescription or "N/A", authors or {})
 
     -- Register service internally
     self.CreatedServices[name] = service
@@ -157,7 +157,7 @@ end
 ---@return string
 function Noir.Services:FormatService(service)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services:FormatService()", "service", service, Noir.Classes.ServiceClass)
+    Noir.TypeChecking:Assert("Noir.Services:FormatService()", "service", service, Noir.Classes.Service)
 
     -- Format service
     return ("'%s'%s%s"):format(service.Name, #service.Authors >= 1 and " by "..table.concat(service.Authors, ", ") or "", service.IsBuiltIn and " (Built-In)" or "")

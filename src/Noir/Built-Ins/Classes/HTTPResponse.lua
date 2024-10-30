@@ -37,14 +37,14 @@
 ---@class NoirHTTPResponse: NoirClass
 ---@field New fun(self: NoirHTTPResponse, response: string): NoirHTTPResponse
 ---@field Text string The raw response.
-Noir.Classes.HTTPResponseClass = Noir.Class("NoirHTTPResponse")
+Noir.Classes.HTTPResponse = Noir.Class("HTTPResponse")
 
 --[[
     Initializes HTTP response class objects.
 ]]
 ---@param response string
-function Noir.Classes.HTTPResponseClass:Init(response)
-    Noir.TypeChecking:Assert("Noir.Classes.HTTPResponseClass:Init()", "response", response, "string")
+function Noir.Classes.HTTPResponse:Init(response)
+    Noir.TypeChecking:Assert("Noir.Classes.HTTPResponse:Init()", "response", response, "string")
     self.Text = response
 end
 
@@ -52,7 +52,7 @@ end
     Attempts to JSON decode the response. This will error if the response cannot be JSON decoded.
 ]]
 ---@return any
-function Noir.Classes.HTTPResponseClass:JSON()
+function Noir.Classes.HTTPResponse:JSON()
     return (Noir.Libraries.JSON:Decode(self.Text))
 end
 
@@ -60,6 +60,6 @@ end
     Returns whether or not the response is ok.
 ]]
 ---@return boolean
-function Noir.Classes.HTTPResponseClass:IsOk()
+function Noir.Classes.HTTPResponse:IsOk()
     return Noir.Libraries.HTTP:IsResponseOk(self.Text)
 end

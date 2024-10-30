@@ -73,7 +73,7 @@ Noir.Libraries.Events = Noir.Libraries:Create(
 ]]
 ---@return NoirEvent
 function Noir.Libraries.Events:Create()
-    local event = Noir.Classes.EventClass:New()
+    local event = Noir.Classes.Event:New()
     return event
 end
 

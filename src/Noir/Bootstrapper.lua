@@ -44,12 +44,12 @@ Noir.Bootstrapper = {}
 ---@param service NoirService
 function Noir.Bootstrapper:WrapServiceMethodsForService(service)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Bootstrapper:WrapServiceMethodsForService()", "service", service, Noir.Classes.ServiceClass)
+    Noir.TypeChecking:Assert("Noir.Bootstrapper:WrapServiceMethodsForService()", "service", service, Noir.Classes.Service)
 
     -- Prevent wrapping non-custom methods (aka methods not provided by the user)
     local blacklistedMethods = {}
 
-    for name, _ in pairs(Noir.Classes.ServiceClass) do
+    for name, _ in pairs(Noir.Classes.Service) do
         blacklistedMethods[name] = true
     end
 

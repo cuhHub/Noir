@@ -39,16 +39,16 @@
 ---@field URL string The URL of the request (eg: "/hello")
 ---@field Port integer The port of the request
 ---@field OnResponse NoirEvent Arguments: response (NoirHTTPResponse) | Fired when this request receives a response
-Noir.Classes.HTTPRequestClass = Noir.Class("NoirHTTPRequest")
+Noir.Classes.HTTPRequest = Noir.Class("HTTPRequest")
 
 --[[
     Initializes HTTP request class objects.
 ]]
 ---@param URL string
 ---@param port integer
-function Noir.Classes.HTTPRequestClass:Init(URL, port)
-    Noir.TypeChecking:Assert("Noir.Classes.HTTPRequestClass:Init()", "URL", URL, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.HTTPRequestClass:Init()", "port", port, "number")
+function Noir.Classes.HTTPRequest:Init(URL, port)
+    Noir.TypeChecking:Assert("Noir.Classes.HTTPRequest:Init()", "URL", URL, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.HTTPRequest:Init()", "port", port, "number")
 
     self.URL = URL
     self.Port = port

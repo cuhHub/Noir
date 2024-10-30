@@ -41,14 +41,14 @@
 ---@field ParentEvent NoirEvent The event that this connection is connected to
 ---@field Connected boolean Whether or not this connection is connected
 ---@field Index integer The index of this connection in `ParentEvent.ConnectionsOrder`
-Noir.Classes.ConnectionClass = Noir.Class("NoirConnection")
+Noir.Classes.Connection = Noir.Class("Connection")
 
 --[[
     Initializes new connection class objects.
 ]]
 ---@param callback function
-function Noir.Classes.ConnectionClass:Init(callback)
-    Noir.TypeChecking:Assert("Noir.Classes.ConnectionClass:Init()", "callback", callback, "function")
+function Noir.Classes.Connection:Init(callback)
+    Noir.TypeChecking:Assert("Noir.Classes.Connection:Init()", "callback", callback, "function")
 
     self.Callback = callback
     self.ParentEvent = nil
@@ -62,7 +62,7 @@ end
 ]]
 ---@param ... any
 ---@return any
-function Noir.Classes.ConnectionClass:Fire(...)
+function Noir.Classes.Connection:Fire(...)
     if not self.Connected then
         Noir.Libraries.Logging:Error("NoirConnection", "Attempted to fire an event connection when it is not connected.", true)
         return
@@ -74,7 +74,7 @@ end
 --[[
     Disconnects the callback from the event.
 ]]
-function Noir.Classes.ConnectionClass:Disconnect()
+function Noir.Classes.Connection:Disconnect()
     if not self.Connected then
         Noir.Libraries.Logging:Error("NoirConnection", "Attempted to disconnect an event connection when it is not connected.", true)
         return

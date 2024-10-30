@@ -42,7 +42,7 @@
 ---@field Title string If this message wasn't sent by an addon, this will be the author's name
 ---@field SentAt number Represents when the message was sent
 ---@field Recipient NoirPlayer|nil Who received the message, nil = everyone
-Noir.Classes.MessageClass = Noir.Class("NoirMessage")
+Noir.Classes.Message = Noir.Class("Message")
 
 --[[
     Initializes message class objects.
@@ -53,13 +53,13 @@ Noir.Classes.MessageClass = Noir.Class("NoirMessage")
 ---@param title string
 ---@param sentAt number|nil
 ---@param recipient NoirPlayer|nil
-function Noir.Classes.MessageClass:Init(author, isAddon, content, title, sentAt, recipient)
-    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "author", author, Noir.Classes.PlayerClass, "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "isAddon", isAddon, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "content", content, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "title", title, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "sentAt", sentAt, "number", "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:Init()", "recipient", recipient, Noir.Classes.PlayerClass, "nil")
+function Noir.Classes.Message:Init(author, isAddon, content, title, sentAt, recipient)
+    Noir.TypeChecking:Assert("Noir.Classes.Message:Init()", "author", author, Noir.Classes.Player, "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Message:Init()", "isAddon", isAddon, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.Message:Init()", "content", content, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Message:Init()", "title", title, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Message:Init()", "sentAt", sentAt, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Message:Init()", "recipient", recipient, Noir.Classes.Player, "nil")
 
     self.Author = author
     self.IsAddon = isAddon
@@ -74,7 +74,7 @@ end
     Used internally.
 ]]
 ---@return NoirSerializedMessage
-function Noir.Classes.MessageClass:_Serialize()
+function Noir.Classes.Message:_Serialize()
     return {
         Author = self.Author and self.Author.ID,
         IsAddon = self.IsAddon,
@@ -90,9 +90,9 @@ end
     Used internally.
 ]]
 ---@param serializedMessage NoirSerializedMessage
-function Noir.Classes.MessageClass:_Deserialize(serializedMessage)
+function Noir.Classes.Message:_Deserialize(serializedMessage)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.MessageClass:_Deserialize()", "serializedMessage", serializedMessage, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.Message:_Deserialize()", "serializedMessage", serializedMessage, "table")
 
     -- Create the message
     local message = self:New(

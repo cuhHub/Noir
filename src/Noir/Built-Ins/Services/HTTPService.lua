@@ -79,7 +79,7 @@ function Noir.Services.HTTPService:ServiceStart()
         end
 
         -- Trigger response
-        request.OnResponse:Fire(Noir.Classes.HTTPResponseClass:New(response))
+        request.OnResponse:Fire(Noir.Classes.HTTPResponse:New(response))
 
         -- Remove request
         table.remove(self.ActiveRequests, index)
@@ -149,7 +149,7 @@ function Noir.Services.HTTPService:GET(URL, port, callback)
     end
 
     -- Create request object
-    local request = Noir.Classes.HTTPRequestClass:New(URL, port)
+    local request = Noir.Classes.HTTPRequest:New(URL, port)
 
     if callback then
         request.OnResponse:Once(callback)

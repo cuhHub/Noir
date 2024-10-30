@@ -43,12 +43,12 @@
 ---@field ConnectionsToAdd table<integer, NoirConnection> Array of connections to add after the firing of the event
 ---@field IsFiring boolean Weather or not this event is currently calling connection callbacks
 ---@field HasFiredOnce boolean Whether or not this event has fired atleast once
-Noir.Classes.EventClass = Noir.Class("NoirEvent")
+Noir.Classes.Event = Noir.Class("Event")
 
 --[[
     Initializes event class objects.
 ]]
-function Noir.Classes.EventClass:Init()
+function Noir.Classes.Event:Init()
     self.CurrentID = 0
     self.Connections = {}
     self.ConnectionsOrder = {}
@@ -64,7 +64,7 @@ end
     local event = Noir.Libraries.Events:Create()
     event:Fire()
 ]]
-function Noir.Classes.EventClass:Fire(...)
+function Noir.Classes.Event:Fire(...)
     -- Fire the event connections
     self.IsFiring = true
 
@@ -109,15 +109,15 @@ end
 ]]
 ---@param callback function
 ---@return NoirConnection
-function Noir.Classes.EventClass:Connect(callback)
+function Noir.Classes.Event:Connect(callback)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.EventClass:Connect()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Classes.Event:Connect()", "callback", callback, "function")
 
     -- Increment ID
     self.CurrentID = self.CurrentID + 1
 
     -- Create connection object
-    local connection = Noir.Classes.ConnectionClass:New(callback)
+    local connection = Noir.Classes.Connection:New(callback)
     self.Connections[self.CurrentID] = connection
 
     -- Set up the connection for later
@@ -142,9 +142,9 @@ end
     Used internally.
 ]]
 ---@param connection NoirConnection
-function Noir.Classes.EventClass:_ConnectFinalize(connection)
+function Noir.Classes.Event:_ConnectFinalize(connection)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.EventClass:_ConnectFinalize()", "connection", connection, Noir.Classes.ConnectionClass)
+    Noir.TypeChecking:Assert("Noir.Classes.Event:_ConnectFinalize()", "connection", connection, Noir.Classes.Connection)
 
     -- Insert into ConnectionsOrder
     table.insert(self.ConnectionsOrder, connection.ID)
@@ -160,9 +160,9 @@ end
 ]]
 ---@param callback function
 ---@return NoirConnection
-function Noir.Classes.EventClass:Once(callback)
+function Noir.Classes.Event:Once(callback)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.EventClass:Once()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Classes.Event:Once()", "callback", callback, "function")
 
     -- Connect to event
     local connection
@@ -181,9 +181,9 @@ end
     The disconnection may be delayed if done while handling the event.  
 ]]
 ---@param connection NoirConnection
-function Noir.Classes.EventClass:Disconnect(connection)
+function Noir.Classes.Event:Disconnect(connection)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.EventClass:Disconnect()", "connection", connection, Noir.Classes.ConnectionClass)
+    Noir.TypeChecking:Assert("Noir.Classes.Event:Disconnect()", "connection", connection, Noir.Classes.Connection)
 
     -- If we are currently iterating over the events, disconnect it later, otherwise do it now
     if self.IsFiring then
@@ -198,9 +198,9 @@ end
     Disconnects the provided connection from the event immediately.  
 ]]
 ---@param connection NoirConnection
-function Noir.Classes.EventClass:_DisconnectImmediate(connection)
+function Noir.Classes.Event:_DisconnectImmediate(connection)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.EventClass:_DisconnectImmediate()", "connection", connection, Noir.Classes.ConnectionClass)
+    Noir.TypeChecking:Assert("Noir.Classes.Event:_DisconnectImmediate()", "connection", connection, Noir.Classes.Connection)
 
     -- Remove the connection
     self.Connections[connection.ID] = nil

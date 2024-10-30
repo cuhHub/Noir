@@ -43,7 +43,7 @@
 ---@field CurrentTick integer Represents the current tick the iteration is at
 ---@field Completed boolean Whether or not the iteration is completed
 ---@field _PreviousIndex any The last index used in iteration
-Noir.Classes.TickIterationProcessClass = Noir.Class("NoirTickIterationProcess")
+Noir.Classes.TickIterationProcess = Noir.Class("TickIterationProcess")
 
 --[[
     Initializes tick iteration process class objects.
@@ -51,10 +51,10 @@ Noir.Classes.TickIterationProcessClass = Noir.Class("NoirTickIterationProcess")
 ---@param ID integer
 ---@param tbl table
 ---@param chunkSize integer
-function Noir.Classes.TickIterationProcessClass:Init(ID, tbl, chunkSize)
-    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcessClass:Init()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcessClass:Init()", "tbl", tbl, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcessClass:Init()", "chunkSize", chunkSize, "number")
+function Noir.Classes.TickIterationProcess:Init(ID, tbl, chunkSize)
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcess:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcess:Init()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.TickIterationProcess:Init()", "chunkSize", chunkSize, "number")
 
     self.ID = ID
     self.IterationEvent = Noir.Libraries.Events:Create()
@@ -69,7 +69,7 @@ end
     Iterate through the table in chunks of x over how ever many necessary ticks.
 ]]
 ---@return boolean completed
-function Noir.Classes.TickIterationProcessClass:Iterate()
+function Noir.Classes.TickIterationProcess:Iterate()
     -- Increment the current tick
     self.CurrentTick = self.CurrentTick + 1
 

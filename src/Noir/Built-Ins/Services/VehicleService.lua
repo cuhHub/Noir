@@ -194,7 +194,7 @@ end
 function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition, cost, fireEvent)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "player", player, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "player", player, Noir.Classes.Player, "nil")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "spawnPosition", spawnPosition, "table")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "cost", cost, "number")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "fireEvent", fireEvent, "boolean")
@@ -228,7 +228,7 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
     end
 
     -- Create vehicle
-    local vehicle = Noir.Classes.VehicleClass:New(ID, player, spawnPosition, cost)
+    local vehicle = Noir.Classes.Vehicle:New(ID, player, spawnPosition, cost)
     self.Vehicles[vehicle.ID] = vehicle
 
     -- Add bodies
@@ -255,7 +255,7 @@ end
 ---@param vehicle NoirVehicle
 function Noir.Services.VehicleService:_SaveVehicle(vehicle)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SaveVehicle()", "vehicle", vehicle, Noir.Classes.VehicleClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SaveVehicle()", "vehicle", vehicle, Noir.Classes.Vehicle)
 
     -- Save
     self._SavedVehicles[vehicle.ID] = vehicle:_Serialize()
@@ -269,7 +269,7 @@ end
 ---@param vehicle NoirVehicle
 function Noir.Services.VehicleService:_UnsaveVehicle(vehicle)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnsaveVehicle()", "vehicle", vehicle, Noir.Classes.VehicleClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnsaveVehicle()", "vehicle", vehicle, Noir.Classes.Vehicle)
 
     -- Unsave
     self._SavedVehicles[vehicle.ID] = nil
@@ -284,7 +284,7 @@ end
 ---@param fireEvent boolean
 function Noir.Services.VehicleService:_UnregisterVehicle(vehicle, fireEvent)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterVehicle()", "vehicle", vehicle, Noir.Classes.VehicleClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterVehicle()", "vehicle", vehicle, Noir.Classes.Vehicle)
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterVehicle()", "fireEvent", fireEvent, "boolean")
 
     -- Check if exists
@@ -325,7 +325,7 @@ end
 function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, cost, fireEvent)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "player", player, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "player", player, Noir.Classes.Player, "nil")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "spawnPosition", spawnPosition, "table")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "cost", cost, "number")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "fireEvent", fireEvent, "boolean")
@@ -336,7 +336,7 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, c
     end
 
     -- Create body
-    local body = Noir.Classes.BodyClass:New(ID, player, spawnPosition, cost, false)
+    local body = Noir.Classes.Body:New(ID, player, spawnPosition, cost, false)
 
     -- Check if the body even exists anymore
     if not body:Exists() then
@@ -369,7 +369,7 @@ end
 ---@param body NoirBody
 function Noir.Services.VehicleService:_SaveBody(body)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SaveBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SaveBody()", "body", body, Noir.Classes.Body)
 
     -- Save
     self._SavedBodies[body.ID] = body:_Serialize()
@@ -383,7 +383,7 @@ end
 ---@param body NoirBody
 function Noir.Services.VehicleService:_UnsaveBody(body)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnsaveBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnsaveBody()", "body", body, Noir.Classes.Body)
 
     -- Unsave
     self._SavedBodies[body.ID] = nil
@@ -398,7 +398,7 @@ end
 ---@param fireEvent boolean
 function Noir.Services.VehicleService:_LoadBody(body, fireEvent)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_LoadBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_LoadBody()", "body", body, Noir.Classes.Body)
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_LoadBody()", "fireEvent", fireEvent, "boolean")
 
     -- Check if exists
@@ -428,7 +428,7 @@ end
 ---@param fireEvent boolean
 function Noir.Services.VehicleService:_UnloadBody(body, fireEvent)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnloadBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnloadBody()", "body", body, Noir.Classes.Body)
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnloadBody()", "fireEvent", fireEvent, "boolean")
 
     -- Check if exists
@@ -461,7 +461,7 @@ end
 ---@param damage number
 function Noir.Services.VehicleService:_DamageBody(body, x, y, z, damage)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "body", body, Noir.Classes.Body)
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "x", x, "number")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "y", y, "number")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "z", z, "number")
@@ -481,7 +481,7 @@ end
 ---@param fireEvent boolean
 function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVehicle, fireEvent)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "body", body, Noir.Classes.Body)
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "autoDespawnParentVehicle", autoDespawnParentVehicle, "boolean")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "fireEvent", fireEvent, "boolean")
 
@@ -642,7 +642,7 @@ end
 ---@return table<integer, NoirBody>
 function Noir.Services.VehicleService:GetBodiesFromPlayer(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetBodiesFromPlayer()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetBodiesFromPlayer()", "player", player, Noir.Classes.Player)
 
     -- Get bodies
     local bodies = {}
@@ -670,7 +670,7 @@ end
 ---@return table<integer, NoirVehicle>
 function Noir.Services.VehicleService:GetVehiclesFromPlayer(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetVehiclesFromPlayer()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetVehiclesFromPlayer()", "player", player, Noir.Classes.Player)
 
     -- Get vehicles
     local vehicles = {}
