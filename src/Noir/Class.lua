@@ -49,9 +49,9 @@
     object:MyName() -- "Cuh4"
 ]]
 ---@param name string
----@param parent NoirClass|nil
+---@param ... NoirClass
 ---@return NoirClass
-function Noir.Class(name, parent)
+function Noir.Class(name, ...)
     --[[
         A class that objects can be created from.
 
@@ -66,13 +66,13 @@ function Noir.Class(name, parent)
     ]]
     ---@class NoirClass
     ---@field ClassName string The name of this class/object
-    ---@field _Parent NoirClass|nil The parent class that this class inherits from
-    ---@field _IsObject boolean Represents whether or not this is a class (objects are created from a class via class:New()) or a class object (an object created from a class due to class:New() call)
+    ---@field _Parents table<integer, NoirClass> The parent classes that this class inherits from
+    ---@field _IsObject boolean Represents whether or not this is a class or a class object (an object created from a class due to class:New() call)
     ---@field _ClassMethods table<integer, string> A list of methods that are only available on classes and not objects created from classes. Used for :_Descend() exceptions internally
     ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
     local class = {} ---@diagnostic disable-line
     class.ClassName = name
-    class._Parent = parent
+    class._Parents = {...}
     class._IsObject = false
     class._ClassMethods = {"New", "Init", "_Descend"}
 
@@ -85,8 +85,8 @@ function Noir.Class(name, parent)
         object._IsObject = true
 
         -- Bring down methods from parent
-        if self._Parent then
-            self._Parent:_Descend(object, self._ClassMethods)
+        for _, parent in ipairs(self._Parents) do
+            parent:_Descend(object, self._ClassMethods)
         end
 
         -- Call init of object. This init function will provide the needed attributes to the object
@@ -142,16 +142,18 @@ function Noir.Class(name, parent)
         end
 
         -- Check if there is a parent
-        if not self._Parent then
-            Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' has no parent.", true)
+        if #self._Parents == 0 then
+            Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' has no parents.", true)
             return
         end
 
-        -- Create an object from the parent class
-        local object = self._Parent:New(...)
+        for _, parent in ipairs(self._Parents) do
+            -- Create an object from the parent class
+            local object = parent:New(...)
 
-        -- Copy and bring new attributes and methods down from the new parent object to this object
-        self._Descend(object, self, self._ClassMethods)
+            -- Copy and bring new attributes and methods down from the new parent object to this object
+            self._Descend(object, self, self._ClassMethods)
+        end
     end
 
     --[[
