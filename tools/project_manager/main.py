@@ -106,6 +106,13 @@ def errorWrapper(func: "function") -> "function":
 
 # ---- // Classes
 class Path(_Path):
+    """
+    Wrapper class for pathlib.Path.
+
+    Args:
+        _Path (Path): The pathlib.Path class.
+    """    
+    
     def expand(self):
         """
         Expands the path.
