@@ -32,7 +32,7 @@
 -------------------------------
 
 --[[
-    Represents a tracker assigned to a function via the DebuggerService.
+    Represents a tracker assigned to a function via `Noir.Debugging`.
 ]]
 ---@class NoirTracker: NoirClass
 ---@field New fun(self: NoirTracker, name: string, func: function): NoirTracker
