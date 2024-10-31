@@ -113,7 +113,7 @@ Noir.Debugging._TrackingExceptions = {
 ---@param message string
 ---@param ... any
 function Noir.Debugging:RaiseError(source, message, ...)
-    Noir.Libraries.Logging:Error("Error", "%s: %s", source, message, ...)
+    Noir.Libraries.Logging:Error("Error", source..": "..message, ...)
     _ENV["Noir: An error was raised. See logs for details."]()
 end
 
