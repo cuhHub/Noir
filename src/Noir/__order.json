@@ -13,6 +13,7 @@
         "Services.lua",
         "Built-Ins/Services",
 
+        "Debugging.lua",
         "Callbacks.lua",
         "Bootstrapper.lua",
         "Noir.lua"
