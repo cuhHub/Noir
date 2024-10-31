@@ -75,9 +75,7 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
     -- Otherwise, raise an error
     Noir.Debugging:RaiseError(
         origin,
-        "%s: Expected %s for parameter '%s', but got '%s'.",
-        true,
-        origin,
+        "Expected %s for parameter '%s', but got '%s'.",
         self:_FormatTypes(types),
         parameterName,
         self._DummyClass:IsClass(value) and value.ClassName.." (Class)" or valueType
