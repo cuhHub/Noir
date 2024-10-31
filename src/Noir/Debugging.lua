@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Services - Debugger Service
+-- [Noir] Debugging
 --------------------------------------------------------
 
 --[[
@@ -32,16 +32,16 @@
 -------------------------------
 
 --[[
-    A useful service for debugging your code. This allows you to raise errors in the event something goes wrong,<br>
+    A module of Noir for debugging your code. This allows you to raise errors in the event something goes wrong<br>
     as well as track functions to see how well they are performing and sort these functions in order of performance.<br>
     This can be useful for figuring out what functions are performing the worst which can help you optimize your addon.<br>
     This is not recommended to use in production as this service may slow your addon. Please use it for debugging purposes only.
 
     -- Enabling debug
-    Noir.Services.DebuggerService.Enabled = true
+    Noir.Debugging.Enabled = true
 
     -- Raising an error
-    Noir.Services.DebuggerService:RaiseError(":Something()", "Something went wrong!")
+    Noir.Debugging:RaiseError(":Something()", "Something went wrong!")
 
     -- Tracking the performance of a function
     function myFunction()
@@ -54,7 +54,7 @@
         return value
     end
 
-    local tracker = Noir.Services.DebuggerService:TrackFunction("myFunction", myFunction)
+    local tracker = Noir.Debugging:TrackFunction("myFunction", myFunction)
     myFunction = tracker:Mount()
 
     tracker:GetAverageExecutionTime() -- 0.01 ms
@@ -62,7 +62,7 @@
     print(tracker.FunctionName) -- "myFunction"
 
     -- Tracking the performance of all methods in a service
-    local trackers = Noir.Services.DebuggerService:TrackService(Noir.Services.VehicleService) -- Does the above but for all methods in VehicleService
+    local trackers = Noir.Debugging:TrackService(Noir.Services.VehicleService) -- Does the above but for all methods in VehicleService
 
     -- Tracking the performance of all functions in a table
     local myTbl = {
@@ -75,37 +75,35 @@
         end
     }
 
-    local trackers = Noir.Services.DebuggerService:TrackAll("myTbl", myTbl)
+    local trackers = Noir.Debugging:TrackAll("myTbl", myTbl)
     -- To track all funcctions in your addon that are non-local, you can use the above method on `_ENV`. :TrackAll() will ignore 
 
     -- Getting least performant functions
-    Noir..Services.DebuggerService:GetLeastPerformantTracked() -- A table of trackers. Index 1 being the least performant
+    Noir.Debugging:GetLeastPerformantTracked() -- A table of trackers. Index 1 being the least performant
 
     -- Showing least performant functions
-    Noir.Services.DebuggerService:ShowLeastPerformantTracked() -- Will send logs via logging library. You could call this every tick or in a command, etc
+    Noir.Debugging:ShowLeastPerformantTracked() -- Will send logs via logging library. You could call this every tick or in a command, etc
 ]]
----@class NoirDebuggerService: NoirService
----@field Enabled boolean Whether or not the DebuggerService is enabled. Recommended to have this off if your addon is in production (eg: in a server, published to workshop, etc)
----@field Trackers table<integer, NoirTracker> The trackers created via this service
----@field _TrackingExceptions table<table|function, boolean> A table containing tables/functions that should not be tracked
-Noir.Services.DebuggerService = Noir.Services:CreateService(
-    "DebuggerService",
-    true,
-    "A service for debugging your addon.",
-    "A service for debugging your addon by tracking functions, services, etc, to give you insight into what is performing the best and what is performing the worst.",
-    {"Cuh4"}
-)
+Noir.Debugging = {}
 
-function Noir.Services.DebuggerService:ServiceInit()
-    self.Enabled = false
-    self.Trackers = {}
+--[[
+    Enables/disables debugging. False by default, and it is recommended to keep it this way in production.
+]]
+Noir.Debugging.Enabled = false
 
-    self._TrackingExceptions = {
-        [self] = true,
-        -- [Noir.Libraries.Logging] = true,
-        -- [Noir.TypeChecking] = true
-    }
-end
+--[[
+    A table containing all created trackers for functions.
+]]
+Noir.Debugging.Trackers = {}
+
+--[[
+    A table containing all functions and tables that should not be tracked.
+]]
+Noir.Debugging._TrackingExceptions = {
+    [Noir.Debugging] = true,
+    -- [Noir.Libraries.Logging] = true,
+    -- [Noir.TypeChecking] = true
+}
 
 --[[
     Raises an error.<br>
@@ -114,7 +112,7 @@ end
 ---@param source string
 ---@param message string
 ---@param ... any
-function Noir.Services.DebuggerService:RaiseError(source, message, ...)
+function Noir.Debugging:RaiseError(source, message, ...)
     _ENV["Noir: An error was raised. See logs for details."]()
     Noir.Libraries.Logging:Error("Error", "%s: %s", source, message, ...)
 end
@@ -123,15 +121,15 @@ end
     Returns all tracked functions with the option to copy.
 ]]
 ---@param copy boolean|nil
-function Noir.Services.DebuggerService:GetTrackedFunctions(copy)
-    Noir.TypeChecking:Assert("Noir.Services.DebuggerService:GetTrackedFunctions()", "copy", copy, "boolean", "nil")
+function Noir.Debugging:GetTrackedFunctions(copy)
+    Noir.TypeChecking:Assert("Noir.Debugging:GetTrackedFunctions()", "copy", copy, "boolean", "nil")
     return copy and Noir.Libraries.Table:Copy(self.Trackers) or self.Trackers
 end
 
 --[[
     Returns the tracked functions with the worst performance.
 ]]
-function Noir.Services.DebuggerService:GetLeastPerformantTracked()
+function Noir.Debugging:GetLeastPerformantTracked()
     local trackers = self:GetTrackedFunctions(true)
 
     table.sort(trackers, function(a, b)
@@ -144,20 +142,20 @@ end
 --[[
     Shows the tracked functions with the worst performance.
 ]]
-function Noir.Services.DebuggerService:ShowLeastPerformantTracked()
+function Noir.Debugging:ShowLeastPerformantTracked()
     local trackers = self:GetLeastPerformantTracked()
 
-    Noir.Libraries.Logging:Success("DebuggerService", "--- *Least* performant functions:")
+    Noir.Libraries.Logging:Success("Debugging", "--- *Least* performant functions:")
 
     for index, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Info("DebuggerService", "#%d: %s", index, tracker:ToFormattedString())
+        Noir.Libraries.Logging:Info("Debugging", "#%d: %s", index, tracker:ToFormattedString())
     end
 end
 
 --[[
     Returns the tracked functions with the best performance.
 ]]
-function Noir.Services.DebuggerService:GetMostPerformantTracked()
+function Noir.Debugging:GetMostPerformantTracked()
     local trackers = self:GetTrackedFunctions(true)
 
     table.sort(trackers, function(a, b)
@@ -170,13 +168,13 @@ end
 --[[
     Shows the tracked functions with the best performance.
 ]]
-function Noir.Services.DebuggerService:ShowMostPerformantTracked()
+function Noir.Debugging:ShowMostPerformantTracked()
     local trackers = self:GetMostPerformantTracked()
 
-    Noir.Libraries.Logging:Success("DebuggerService", "--- *Most* performant functions:")
+    Noir.Libraries.Logging:Success("Debugging", "--- *Most* performant functions:")
 
     for index, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Info("DebuggerService", "#%d: %s", index, tracker:ToFormattedString())
+        Noir.Libraries.Logging:Info("Debugging", "#%d: %s", index, tracker:ToFormattedString())
     end
 end
 
@@ -184,7 +182,7 @@ end
     Track a function. This returns a tracker which will track the performance of the function among other things.<br>
     Returns `nil` if the provided function isn't allowed to be tracked or if debugging isn't enabled.
     
-    local tracker = Noir.Services.DebuggerService:TrackFunction("myFunction", myFunction)
+    local tracker = Noir.Debugging:TrackFunction("myFunction", myFunction)
     myFunction = tracker:Mount()
 
     tracker:GetAverageExecutionTime() -- 0.01 ms
@@ -194,10 +192,10 @@ end
 ---@param name string
 ---@param func function
 ---@return NoirTracker|nil
-function Noir.Services.DebuggerService:TrackFunction(name, func)
+function Noir.Debugging:TrackFunction(name, func)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.DebuggerService:TrackFunction()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Services.DebuggerService:TrackFunction()", "func", func, "function")
+    Noir.TypeChecking:Assert("Noir.Debugging:TrackFunction()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Debugging:TrackFunction()", "func", func, "function")
 
     -- Checks
     if not self.Enabled then
@@ -223,10 +221,10 @@ end
 ---@param name string
 ---@param tbl table<integer, function>
 ---@return table<integer, NoirTracker>
-function Noir.Services.DebuggerService:TrackAll(name, tbl)
+function Noir.Debugging:TrackAll(name, tbl)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.DebuggerService:TrackAll()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Services.DebuggerService:TrackAll()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Debugging:TrackAll()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Debugging:TrackAll()", "tbl", tbl, "table")
 
     -- Checks
     if not self.Enabled then
@@ -267,9 +265,9 @@ end
 ]]
 ---@param service NoirService
 ---@return table<integer, NoirTracker>
-function Noir.Services.DebuggerService:TrackService(service)
+function Noir.Debugging:TrackService(service)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.DebuggerService:TrackService()", "service", service, Noir.Classes.Service)
+    Noir.TypeChecking:Assert("Noir.Debugging:TrackService()", "service", service, Noir.Classes.Service)
 
     -- Track
     return self:TrackAll(service.Name, service)
