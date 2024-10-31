@@ -113,8 +113,8 @@ Noir.Debugging._TrackingExceptions = {
 ---@param message string
 ---@param ... any
 function Noir.Debugging:RaiseError(source, message, ...)
-    _ENV["Noir: An error was raised. See logs for details."]()
     Noir.Libraries.Logging:Error("Error", "%s: %s", source, message, ...)
+    _ENV["Noir: An error was raised. See logs for details."]()
 end
 
 --[[
@@ -133,7 +133,7 @@ function Noir.Debugging:GetLeastPerformantTracked()
     local trackers = self:GetTrackedFunctions(true)
 
     table.sort(trackers, function(a, b)
-        return a:GetAverageExecutionTime() < b:GetAverageExecutionTime()
+        return a:GetAverageExecutionTime() > b:GetAverageExecutionTime()
     end)
 
     return trackers
@@ -159,7 +159,7 @@ function Noir.Debugging:GetMostPerformantTracked()
     local trackers = self:GetTrackedFunctions(true)
 
     table.sort(trackers, function(a, b)
-        return a:GetAverageExecutionTime() > b:GetAverageExecutionTime()
+        return a:GetAverageExecutionTime() < b:GetAverageExecutionTime()
     end)
 
     return trackers
