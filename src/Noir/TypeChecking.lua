@@ -73,8 +73,8 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
     end
 
     -- Otherwise, raise an error
-    Noir.Libraries.Logging:Error(
-        "Invalid Type",
+    Noir.Debugging:RaiseError(
+        origin,
         "%s: Expected %s for parameter '%s', but got '%s'.",
         true,
         origin,

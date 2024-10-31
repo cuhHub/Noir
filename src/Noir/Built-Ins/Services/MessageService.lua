@@ -72,7 +72,7 @@ function Noir.Services.MessageService:ServiceStart()
         local author = Noir.Services.PlayerService:GetPlayer(peerID)
 
         if not author then
-            Noir.Libraries.Logging:Error("MessageService", "`onChatMessage` gave an unrecognized peer ID.", false)
+            Noir.Debugging:RaiseError("MessageService", "Failed to get author of message via 'onChatMessage' callback.")
             return
         end
 

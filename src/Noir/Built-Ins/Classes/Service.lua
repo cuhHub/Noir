@@ -85,13 +85,7 @@ end
 function Noir.Classes.Service:_Initialize()
     -- Checks
     if self.Initialized then
-        Noir.Libraries.Logging:Error("Service", "%s: Attempted to initialize this service when it has already initialized.", true, self.Name)
-        return
-    end
-
-    if self.Started then
-        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has already started.", true, self.Name)
-        return
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_Initialize()", "%s: Attempted to initialize this service when it has already initialized.", self.Name)
     end
 
     -- Set initialized
@@ -112,12 +106,12 @@ end
 function Noir.Classes.Service:_Start()
     -- Checks
     if self.Started then
-        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has already started.", true, self.Name)
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_Start()", "%s: Attempted to start this service when it has already started.", self.Name)
         return
     end
 
     if not self.Initialized then
-        Noir.Libraries.Logging:Error("Service", "%s: Attempted to start this service when it has not initialized yet.", true, self.Name)
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_Start()", "%s: Attempted to start this service when it has not initialized yet.", self.Name)
         return
     end
 
@@ -136,30 +130,23 @@ end
     Checks if g_savedata is intact.<br>
     Used internally.
 ]]
----@return boolean
 function Noir.Classes.Service:_CheckSaveData()
     -- Checks
     if not g_savedata then
-        Noir.Libraries.Logging:Error("Service", "_CheckSaveData(): g_savedata is nil.", false)
-        return false
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_CheckSaveData()", "g_savedata doesn't exist.")
     end
 
     if not g_savedata.Noir then
-        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir is nil.", false)
-        return false
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_CheckSaveData()", "g_savedata.Noir doesn't exist.")
     end
 
     if not g_savedata.Noir.Services then
-        Noir.Libraries.Logging:Error("Service", "._CheckSaveData(): g_savedata.Noir.Services is nil.", false)
-        return false
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_CheckSaveData()", "g_savedata.Noir.Services doesn't exist.")
     end
 
     if not g_savedata.Noir.Services[self.Name] then
         g_savedata.Noir.Services[self.Name] = {}
     end
-
-    -- All good!
-    return true
 end
 
 --[[
@@ -264,9 +251,7 @@ end
 ---@return table
 function Noir.Classes.Service:GetSaveData()
     -- Check g_savedata
-    if not self:_CheckSaveData() then
-        return {}
-    end
+    self:_CheckSaveData()
 
     -- Return
     return g_savedata.Noir.Services[self.Name]

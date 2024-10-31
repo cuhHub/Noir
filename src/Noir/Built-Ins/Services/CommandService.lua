@@ -64,8 +64,7 @@ function Noir.Services.CommandService:ServiceStart()
         -- Get the player
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)
 
-        if not player then
-            Noir.Libraries.Logging:Error("CommandService", "A player ran a command, but they aren't recognized as a player in the PlayerService", false)
+        if not player then -- can occur because of `server.command` calls
             return
         end
 

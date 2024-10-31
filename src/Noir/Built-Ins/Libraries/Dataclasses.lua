@@ -82,7 +82,7 @@ function Noir.Libraries.Dataclasses:New(name, fields)
 
         -- Check number of arguments
         if #args ~= #fields then
-            Noir.Libraries.Logging:Error(("%s (Dataclass)"):format(name), "Invalid number of arguments. Expected %s, got %s.", true, #fields, #args)
+            Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "Invalid number of arguments. Expected %s, got %s.", #fields, #args)
             return
         end
 
@@ -92,7 +92,7 @@ function Noir.Libraries.Dataclasses:New(name, fields)
             local field = fields[index]
 
             if not field then
-                Noir.Libraries.Logging:Error(("%s (Dataclass)"):format(name), "An argument provided doesn't have a corresponding field.", true)
+                Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "An argument provided doesn't have a corresponding field.")
                 return
             end
 
@@ -101,7 +101,7 @@ function Noir.Libraries.Dataclasses:New(name, fields)
 
             -- Ensure we're not overwriting anyway
             if self[field.Name] then
-                Noir.Libraries.Logging:Error(("%s (Dataclass)"):format(name), "'%s' overwrites an existing field (possibly a built-in field to a class like 'ClassName'). To fix this, rename the field to something else.", true, field.Name)
+                Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "'%s' overwrites an existing field (possibly a built-in field to a class like 'ClassName'). To fix this, rename the field to something else.", field.Name)
                 return
             end
 

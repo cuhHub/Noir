@@ -179,7 +179,7 @@ function Noir.Libraries.Base64:_DecodeFinal(str)
     end
 
     if not Noir.Libraries.Number:IsInteger(c) then
-        Noir.Libraries.Logging:Error("Base64 - :_DecodeFinal()", "'c' is not an integer.", true)
+        Noir.Debugging:RaiseError("Noir.Libraries.Base64:_DecodeFinal()", "'c' is not an integer.")
         return ""
     end
 

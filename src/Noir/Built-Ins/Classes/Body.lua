@@ -101,7 +101,7 @@ end
 ]]
 ---@param serializedBody NoirSerializedBody
 ---@param setParentVehicle boolean|nil
----@return NoirBody|nil
+---@return NoirBody
 function Noir.Classes.Body:_Deserialize(serializedBody, setParentVehicle)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Classes.Body:_Deserialize()", "serializedBody", serializedBody, "table")
@@ -121,8 +121,7 @@ function Noir.Classes.Body:_Deserialize(serializedBody, setParentVehicle)
         local parentVehicle = Noir.Services.VehicleService:GetVehicle(serializedBody.ParentVehicle)
 
         if not parentVehicle then
-            Noir.Libraries.Logging:Error("Body", "Could not find parent vehicle for a deserialized body.", false)
-            return
+            Noir.Debugging:RaiseError("Noir.Classes.Body:_Deserialize()", "Could not find parent vehicle for a deserialized body.")
         end
 
         body.ParentVehicle = parentVehicle

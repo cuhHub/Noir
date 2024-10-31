@@ -70,7 +70,7 @@ function Noir.Services.GameSettingsService:GetSetting(name)
     local setting = settings[name]
 
     if setting == nil then
-        Noir.Libraries.Logging:Error("GameSettingsService", "GetSetting(): %s is not a valid game setting.", false, name)
+        Noir.Debugging:RaiseError("GameSettingsService:GetSetting()", "'%s' is not a valid game setting.", name)
         return
     end
 
@@ -90,7 +90,7 @@ function Noir.Services.GameSettingsService:SetSetting(name, value)
 
     -- Set the setting
     if self:GetSettings()[name] == nil then
-        Noir.Libraries.Logging:Error("GameSettingsService", "SetSetting(): %s is not a valid game setting.", false, name)
+        Noir.Debugging:RaiseError("GameSettingsService:SetSetting()", "'%s' is not a valid game setting.", name)
         return
     end
 

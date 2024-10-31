@@ -92,14 +92,13 @@ end
 --[[
     Returns the data of this object.
 ]]
----@return SWObjectData|nil
+---@return SWObjectData
 function Noir.Classes.Object:GetData()
     -- Get the data
     local data = server.getObjectData(self.ID)
 
     if not data then
-        Noir.Libraries.Logging:Error("Object", ":GetData() failed for object %d. Data is nil", false, self.ID)
-        return
+        Noir.Debugging:RaiseError("Noir.Classes.Object:GetData()", ":GetData() failed for object %d. Data is nil", self.ID)
     end
 
     -- Return the data
@@ -129,7 +128,7 @@ end
 ]]
 function Noir.Classes.Object:Despawn()
     server.despawnObject(self.ID, true)
-    Noir.Services.ObjectService:_RemoveObject(self.ID)
+    Noir.Services.ObjectService:_RemoveObject(self)
 end
 
 --[[
@@ -181,8 +180,7 @@ function Noir.Classes.Object:GetHealth()
     local data = self:GetData()
 
     if not data then
-        Noir.Libraries.Logging:Error("Object", ":GetHealth() failed as data is nil. Returning 100 as default.", false)
-        return 100
+        Noir.Debugging:RaiseError("Noir.Classes.Object:GetHealth()", ":GetData() returned nil.")
     end
 
     -- Return
@@ -264,7 +262,6 @@ function Noir.Classes.Object:GetVehicle()
     local vehicle_id, success = server.getCharacterVehicle(self.ID)
 
     if not success then
-        Noir.Libraries.Logging:Error("Object", "server.getCharacterVehicle(...) was unsuccessful.", false)
         return
     end
 
@@ -285,7 +282,7 @@ function Noir.Classes.Object:GetItem(slot)
     local item, success = server.getCharacterItem(self.ID, slot)
 
     if not success then
-        Noir.Libraries.Logging:Error("Object", "server.getCharacterItem(...) was unsuccessful.", false)
+        Noir.Debugging:RaiseError("Noir.Classes.Object:GetItem()", "server.getCharacterItem(...) was unsuccessful.")
         return
     end
 
@@ -322,7 +319,7 @@ function Noir.Classes.Object:IsDowned()
     local data = self:GetData()
 
     if not data then
-        Noir.Libraries.Logging:Error("Object", ":IsDowned() failed due to data being nil.", false)
+        Noir.Debugging:RaiseError("Noir.Classes.Object:IsDowned()", ":GetData() returned nil.")
         return false
     end
 
@@ -352,7 +349,7 @@ function Noir.Classes.Object:Seat(body, name, voxelX, voxelY, voxelZ)
     elseif voxelX and voxelY and voxelZ then
         server.setSeated(self.ID, body.ID, voxelX, voxelY, voxelZ)
     else
-        Noir.Libraries.Logging:Error("Object", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().", true)
+        Noir.Debugging:RaiseError("Noir.Classes.Object:Seat()", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().")
     end
 end
 
@@ -409,7 +406,7 @@ function Noir.Classes.Object:GetFireData()
     local isLit, success = server.getFireData(self.ID)
 
     if not success then
-        Noir.Libraries.Logging:Error("NoirObject", "server.getFireData(...) was unsuccessful. Returning false.", false)
+        Noir.Debugging:RaiseError("Noir.Classes.Object:GetFireData()", "server.getFireData() was unsuccessful.")
         return false
     end
 

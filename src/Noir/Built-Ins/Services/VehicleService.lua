@@ -120,7 +120,7 @@ function Noir.Services.VehicleService:ServiceStart()
         local body = self:GetBody(vehicle_id)
 
         if not body then
-            Noir.Libraries.Logging:Error("VehicleService", "A body was despawned that isn't recognized. ID: %s", false, vehicle_id)
+            Noir.Debugging:RaiseError("VehicleService", "A body was despawned that isn't recognized. ID: %s", vehicle_id)
             return
         end
 
@@ -208,7 +208,7 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
     local bodyIDs, success = server.getVehicleGroup(ID)
 
     if not success then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to get bodies for a vehicle.", false)
+        Noir.Debugging:RaiseError("VehicleService:_RegisterVehicle()", "Failed to get bodies for a vehicle.")
         return
     end
 
@@ -289,7 +289,7 @@ function Noir.Services.VehicleService:_UnregisterVehicle(vehicle, fireEvent)
 
     -- Check if exists
     if not self:GetVehicle(vehicle.ID) then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to unregister a vehicle because it doesn't exist.", false)
+        Noir.Debugging:RaiseError("VehicleService:_UnregisterVehicle()", "Failed to unregister a vehicle because it doesn't exist.")
         return
     end
 
@@ -332,6 +332,7 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, c
 
     -- Check if already registered
     if self:GetBody(ID) then
+        Noir.Debugging:RaiseError("VehicleService:_RegisterBody()", "Failed to register a body because it already exists.")
         return
     end
 
@@ -403,7 +404,7 @@ function Noir.Services.VehicleService:_LoadBody(body, fireEvent)
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to load a body because it doesn't exist.", false)
+        Noir.Debugging:RaiseError("VehicleService:_LoadBody()", "Failed to load a body because it doesn't exist.")
         return
     end
 
@@ -433,7 +434,7 @@ function Noir.Services.VehicleService:_UnloadBody(body, fireEvent)
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to unload a body because it doesn't exist.", false)
+        Noir.Debugging:RaiseError("VehicleService:_UnloadBody()", "Failed to unload a body because it doesn't exist.")
         return
     end
 
@@ -487,7 +488,7 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to unregister a body because it doesn't exist.", false)
+        Noir.Debugging:RaiseError("VehicleService:_UnregisterBody()", "Failed to unregister a body because it doesn't exist.")
         return
     end
 
@@ -541,7 +542,7 @@ function Noir.Services.VehicleService:SpawnVehicle(componentID, position, addonI
 
     -- Check if successful
     if not success then
-        Noir.Libraries.Logging:Error("VehicleService", ":SpawnVehicle() - Failed to spawn a vehicle. `server.spawnAddonVehicle` returned unsuccessful.", false)
+        Noir.Debugging:RaiseError("VehicleService:SpawnVehicle()", "Failed to spawn a vehicle. `server.spawnAddonVehicle` returned unsuccessful.")
         return
     end
 
@@ -558,7 +559,7 @@ function Noir.Services.VehicleService:SpawnVehicle(componentID, position, addonI
 
     -- Check if primaryBody exists
     if not primaryBody then
-        Noir.Libraries.Logging:Error("VehicleService", ":SpawnVehicle() - Failed to spawn a vehicle. `primaryBody` is nil.", false)
+        Noir.Debugging:RaiseError("VehicleService:SpawnVehicle()", "Failed to spawn a vehicle. `primaryBody` is nil.")
         return
     end
 
@@ -566,17 +567,14 @@ function Noir.Services.VehicleService:SpawnVehicle(componentID, position, addonI
     local primaryBodyData = primaryBody:GetData()
 
     if not primaryBodyData then
-        Noir.Libraries.Logging:Error("VehicleService", ":SpawnVehicle() - Failed to spawn a vehicle. `primaryBodyData` is nil.", false)
+        Noir.Debugging:RaiseError("VehicleService:SpawnVehicle()", "Failed to spawn a vehicle. `primaryBodyData` is nil.")
         return
     end
 
     local groupID = primaryBodyData.group_id
 
-    -- Create vehicle
-    local vehicle = self:_RegisterVehicle(groupID, nil, position, 0, true)
-
     -- Return vehicle
-    return vehicle
+    return self:_RegisterVehicle(groupID, nil, position, 0, true)
 end
 
 --[[

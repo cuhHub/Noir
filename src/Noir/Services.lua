@@ -86,8 +86,7 @@ function Noir.Services:CreateService(name, isBuiltIn, shortDescription, longDesc
 
     -- Check if service already exists
     if self.CreatedServices[name] then
-        Noir.Libraries.Logging:Error("Service Creation", "Attempted to create a service that already exists. The already existing service has been returned instead.", false)
-        return self.CreatedServices[name]
+        Noir.Debugging:RaiseError(":CreateService()", "Attempted to create a service with the same name as an already-existing service.", false)
     end
 
     -- Create service
@@ -118,14 +117,12 @@ function Noir.Services:GetService(name)
 
     -- Check if service exists
     if not service then
-        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that doesn't exist ('%s').", true, name)
-        return
+        Noir.Debugging:RaiseError(":GetService()", "Attempted to retrieve a service that doesn't exist ('%s').", name)
     end
 
     -- Check if service has been initialized
     if not service.Initialized then
-        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that hasn't initialized yet ('%s').", false, service.Name)
-        return
+        Noir.Debugging:RaiseError(":GetService()", "Attempted to retrieve a service that hasn't initialized yet ('%s').", service.Name)
     end
 
     return service
@@ -141,8 +138,7 @@ function Noir.Services:RemoveService(name)
 
     -- Check if service exists
     if not self.CreatedServices[name] then
-        Noir.Libraries.Logging:Error("Service Removal", "Attempted to remove a service that doesn't exist ('%s').", true, name)
-        return
+        Noir.Debugging:RaiseError(":RemoveService()", "Attempted to remove a service that doesn't exist ('%s').", name)
     end
 
     -- Remove service

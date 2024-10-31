@@ -144,7 +144,7 @@ function Noir.Services.HTTPService:GET(URL, port, callback)
 
     -- Check if port is valid
     if not self:IsPortValid(port) then
-        Noir.Libraries.Logging:Error("HTTPService", "Port is out of range, expected a port between %d and %d.", true, self._PortRangeMin, self._PortRangeMax)
+        Noir.Debugging:RaiseError("HTTPService", "Port is out of range, expected a port between %d and %d.", self._PortRangeMin, self._PortRangeMax)
         return
     end
 

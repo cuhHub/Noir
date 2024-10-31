@@ -238,12 +238,17 @@ function Noir.Debugging:TrackAll(name, tbl)
     -- Track
     local trackers = {}
 
-    for index, method in pairs(tbl) do
-        if type(method) ~= "function" then
+    for index, value in pairs(tbl) do
+        if type(value) == "table" then
+            trackers = Noir.Libraries.Table:Merge(trackers, self:TrackAll(("%s.%s"):format(name, index), value))
             goto continue
         end
 
-        local tracker = self:TrackFunction(("%s:%s"):format(name, index), method)
+        if type(value) ~= "function" then
+            goto continue
+        end
+
+        local tracker = self:TrackFunction(("%s:%s"):format(name, index), value)
 
         if not tracker then
             goto continue

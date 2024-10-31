@@ -85,7 +85,7 @@ function Noir.Services.ObjectService:ServiceStart()
         local object = self:GetObject(object_id) -- creates an object if it doesn't already exist
 
         if not object then
-            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnObjectLoadConnection callback.", false)
+            Noir.Debugging:RaiseError("ObjectService", "Failed to get object in _OnObjectLoadConnection callback.")
             return
         end
 
@@ -98,7 +98,7 @@ function Noir.Services.ObjectService:ServiceStart()
         local object = self:GetObject(object_id)
 
         if not object then
-            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnObjectUnloadConnection callback.", false)
+            Noir.Debugging:RaiseError("ObjectService", "Failed to get object in _OnObjectUnloadConnection callback.")
             return
         end
 
@@ -196,28 +196,20 @@ end
     Removes the object with the given ID.<br>
     Used internally. Do not use in your code.
 ]]
----@param object_id integer
-function Noir.Services.ObjectService:_RemoveObject(object_id)
+---@param object NoirObject
+function Noir.Services.ObjectService:_RemoveObject(object)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_RemoveObject()", "object_id", object_id, "number")
-
-    -- Get object
-    local object = self:GetObject(object_id)
-
-    if not object then
-        Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in :_RemoveObject().", false)
-        return
-    end
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_RemoveObject()", "object", object, Noir.Classes.Object)
 
     -- Fire event
     object.OnUnregister:Fire()
     self.OnUnregister:Fire(object)
 
     -- Remove object
-    self.Objects[object_id] = nil
+    self.Objects[object.ID] = nil
 
     -- Remove from g_savedata
-    self:_RemoveObjectSavedata(object_id)
+    self:_RemoveObjectSavedata(object.ID)
 end
 
 --[[
@@ -310,7 +302,7 @@ function Noir.Services.ObjectService:SpawnObject(objectType, position)
     local object_id, success = server.spawnObject(position, objectType)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnObject() failed due to server.spawnObject() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnObject()", "server.spawnObject() was unsuccessful. is `objectType` valid?")
         return
     end
 
@@ -318,7 +310,7 @@ function Noir.Services.ObjectService:SpawnObject(objectType, position)
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnObject().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnObject()", ":GetObject() returned nil.")
         return
     end
 
@@ -341,7 +333,7 @@ function Noir.Services.ObjectService:SpawnCharacter(outfitType, position)
     local object_id, success = server.spawnCharacter(position, outfitType)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnCharacter() failed due to server.spawnCharacter() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnCharacter()", "server.spawnCharacter() was unsuccessful. Is `outfitType` valid?")
         return
     end
 
@@ -349,7 +341,7 @@ function Noir.Services.ObjectService:SpawnCharacter(outfitType, position)
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnCharacter().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnCharacter()", ":GetObject() returned nil.")
         return
     end
 
@@ -374,7 +366,7 @@ function Noir.Services.ObjectService:SpawnCreature(creatureType, position, sizeM
     local object_id, success = server.spawnCreature(position, creatureType, sizeMultiplier or 1)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnCreature() failed due to server.spawnCreature() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnCreature()", "server.spawnCreature() was unsuccessful. is `creatureType` valid?")
         return
     end
 
@@ -382,7 +374,7 @@ function Noir.Services.ObjectService:SpawnCreature(creatureType, position, sizeM
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnCreature().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnCreature()", ":GetObject() returned nil.")
         return
     end
 
@@ -407,7 +399,7 @@ function Noir.Services.ObjectService:SpawnAnimal(animalType, position, sizeMulti
     local object_id, success = server.spawnAnimal(position, animalType, sizeMultiplier or 1)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnAnimal() failed due to server.spawnAnimal() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnAnimal()", "server.spawnAnimal() was unsuccessful. Is `animalType` valid?")
         return
     end
 
@@ -415,7 +407,7 @@ function Noir.Services.ObjectService:SpawnAnimal(animalType, position, sizeMulti
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnAnimal().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnAnimal()", ":GetObject() returned nil.")
         return
     end
 
@@ -442,7 +434,7 @@ function Noir.Services.ObjectService:SpawnEquipment(equipmentType, position, int
     local object_id, success = server.spawnEquipment(position, equipmentType, int, float)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnEquipment() failed due to server.spawnEquipment() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnEquipment()", "server.spawnEquipment() was unsuccessful. Is `equipmentType` valid?")
         return
     end
 
@@ -450,7 +442,7 @@ function Noir.Services.ObjectService:SpawnEquipment(equipmentType, position, int
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnEquipment().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnEquipment()", ":GetObject() returned nil.")
         return
     end
 
@@ -466,24 +458,24 @@ end
 ---@param magnitude number -1 explodes instantly. Nearer to 0 means the explosion takes longer to happen. Must be below 0 for explosions to work.
 ---@param isLit boolean Lights the fire. If the magnitude is >1, this will need to be true for the fire to first warm up before exploding.
 ---@param isExplosive boolean
----@param parentVehicleID integer|nil
+---@param parentBody NoirBody|nil
 ---@param explosionMagnitude number The size of the explosion (0-5)
 ---@return NoirObject|nil
-function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit, isExplosive, parentVehicleID, explosionMagnitude)
+function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit, isExplosive, parentBody, explosionMagnitude)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "position", position, "table")
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "size", size, "number")
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "magnitude", magnitude, "number")
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "isLit", isLit, "boolean")
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "isExplosive", isExplosive, "boolean")
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "parentVehicleID", parentVehicleID, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "parentBody", parentBody, Noir.Classes.Body, "nil")
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "explosionMagnitude", explosionMagnitude, "number")
 
     -- Spawn the fire
-    local object_id, success = server.spawnFire(position, size, magnitude, isLit, isExplosive, parentVehicleID or 0, explosionMagnitude)
+    local object_id, success = server.spawnFire(position, size, magnitude, isLit, isExplosive, parentBody and parentBody.ID, explosionMagnitude)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnFire() failed due to server.spawnFire() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnFire()", "server.spawnFire() was unsuccessful. Ensure the provided parameters are correct.")
         return
     end
 
@@ -491,7 +483,7 @@ function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit,
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnFire().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnFire()", ":GetObject() returned nil.")
         return
     end
 

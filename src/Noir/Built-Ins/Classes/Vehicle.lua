@@ -116,7 +116,6 @@ function Noir.Classes.Vehicle:_Deserialize(serializedVehicle, addBodies)
             local body = Noir.Services.VehicleService:GetBody(bodyID)
 
             if not body then
-                Noir.Libraries.Logging:Error("NoirVehicle", "Couldn't find a body for a deserialized vehicle.", false)
                 goto continue
             end
 

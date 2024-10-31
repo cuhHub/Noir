@@ -219,16 +219,14 @@ function Noir.Classes.Player:GetCharacter()
     local character = server.getPlayerCharacterID(self.ID)
 
     if not character then
-        Noir.Libraries.Logging:Error("Player", ":GetCharacter() failed for player %s (%d, %s)", false, self.Name, self.ID, self.Steam)
-        return
+        Noir.Debugging:RaiseError("Noir.Classes.Player:GetCharacter()", "server.getPlayerCharacterID() returned nil")
     end
 
     -- Get or create object for character
     local object = Noir.Services.ObjectService:GetObject(character)
 
     if not object then
-        Noir.Libraries.Logging:Error("Player", ":GetCharacter() failed for player %s (%d, %s) due to object being nil", false, self.Name, self.ID, self.Steam)
-        return
+        Noir.Debugging:RaiseError("Noir.Classes.Player:GetCharacter()", ":GetObject() of ObjectService returned nil")
     end
 
     -- Return

@@ -105,7 +105,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just left, but their data couldn't be found.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just left, but their data couldn't be found.")
             return
         end
 
@@ -113,7 +113,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local success = self:_RemovePlayerData(player)
 
         if not success then
-            Noir.Libraries.Logging:Error("PlayerService", "onPlayerLeave player data removal failed.", false)
+            Noir.Debugging:RaiseError("PlayerService", "onPlayerLeave player data removal failed.")
             return
         end
 
@@ -126,7 +126,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just died, but they don't have data.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just died, but they don't have data.")
             return
         end
 
@@ -139,7 +139,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just respawned, but they don't have data.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just respawned, but they don't have data.")
             return
         end
 
@@ -152,7 +152,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just sat in a body, but they don't have data.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just sat in a body, but they don't have data.")
             return
         end
 
@@ -160,7 +160,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local body = Noir.Services.VehicleService:GetBody(vehicle_id)
 
         if not body then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just sat in a body, but that body doesn't exist.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just sat in a body, but that body doesn't exist.")
             return
         end
 
@@ -173,7 +173,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just got up from a body seat, but they don't have data.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just got up from a body seat, but they don't have data.")
             return
         end
 
@@ -181,7 +181,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local body = Noir.Services.VehicleService:GetBody(vehicle_id)
 
         if not body then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just got up from a body seat, but that body doesn't exist.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just got up from a body seat, but that body doesn't exist.")
             return
         end
 
@@ -202,7 +202,6 @@ function Noir.Services.PlayerService:_LoadPlayers()
 
         -- Check if already loaded
         if self:GetPlayer(player.id) then
-            Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): %s already has data. Ignoring.", player.name)
             goto continue
         end
 
@@ -210,7 +209,7 @@ function Noir.Services.PlayerService:_LoadPlayers()
         local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
 
         if not createdPlayer then
-            Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
+            Noir.Debugging:RaiseError("PlayerService:_LoadPlayers()", "Player data creation failed.")
             goto continue
         end
 
@@ -259,7 +258,7 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
 
     -- Check if player already exists
     if self:GetPlayer(peer_id) then
-        Noir.Libraries.Logging:Error("PlayerService", "Attempted to give player data to an existing player. This player has been ignored.", false)
+        Noir.Debugging:RaiseError("PlayerService:_GivePlayerData()", "Attempted to give data to a player that already exists.")
         return
     end
 
@@ -295,7 +294,7 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
 
     -- Check if player exists in this service
     if not self:GetPlayer(player.ID) then
-        Noir.Libraries.Logging:Error("PlayerService", "Attempted to remove player data from a non-existent player.", false)
+        Noir.Debugging:RaiseError("PlayerService:_RemovePlayerData()", "Attempted to remove a player from the service that isn't in the service.")
         return false
     end
 
