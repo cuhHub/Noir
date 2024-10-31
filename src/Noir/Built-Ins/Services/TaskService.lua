@@ -165,7 +165,7 @@ end
 ---@param isRepeating boolean
 ---@param taskType NoirTaskType
 ---@param startedAt number
----@return NoirTask|nil
+---@return NoirTask
 function Noir.Services.TaskService:_AddTask(callback, duration, arguments, isRepeating, taskType, startedAt)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.TaskService:_AddTask()", "callback", callback, "function")
@@ -178,7 +178,6 @@ function Noir.Services.TaskService:_AddTask(callback, duration, arguments, isRep
     -- Check task type
     if not self:_IsValidTaskType(taskType) then
         Noir.Debugging:RaiseError("TaskService:_AddTask()", "Invalid task type of '%s'. Please ensure when creating a task, you use the correct type.", taskType)
-        return
     end
 
     -- Increment ID
@@ -228,7 +227,7 @@ end
 ---@param duration number In seconds
 ---@param arguments table|nil
 ---@param isRepeating boolean|nil
----@return NoirTask|nil
+---@return NoirTask
 function Noir.Services.TaskService:AddTimeTask(callback, duration, arguments, isRepeating)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTimeTask()", "callback", callback, "function")
@@ -249,7 +248,7 @@ end
 ---@param duration number In seconds
 ---@param arguments table|nil
 ---@param isRepeating boolean|nil
----@return NoirTask|nil
+---@return NoirTask
 function Noir.Services.TaskService:AddTask(callback, duration, arguments, isRepeating)
     -- Deprecation
     Noir.Libraries.Deprecation:Deprecated("Noir.Services.TaskService:AddTask()", ":AddTimeTask()", "Due to the addition of task types, this method has been deprecated.")
@@ -284,7 +283,7 @@ end
 ---@param duration integer In ticks
 ---@param arguments table|nil
 ---@param isRepeating boolean|nil
----@return NoirTask|nil
+---@return NoirTask
 function Noir.Services.TaskService:AddTickTask(callback, duration, arguments, isRepeating)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTickTask()", "callback", callback, "function")
