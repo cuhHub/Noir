@@ -129,24 +129,16 @@ function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
 end
 
 --[[
-    Sends an error log.<br>
-    Passing true to the third argument will intentionally cause an addon error to be thrown.
+    Sends an error log.
 
-    Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", true, "something.")
+    Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message any
----@param triggerError boolean
 ---@param ... any
-function Noir.Libraries.Logging:Error(title, message, triggerError, ...)
+function Noir.Libraries.Logging:Error(title, message, ...)
     Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "title", title, "string")
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "triggerError", triggerError, "boolean")
-
     self:Log("Error", title, message, ...)
-
-    if triggerError then
-        _ENV["Noir: An error was triggered. See logs for details."]()
-    end
 end
 
 --[[
