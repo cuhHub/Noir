@@ -60,6 +60,7 @@ require("Noir.Built-Ins.Classes.Vehicle")
 require("Noir.Built-Ins.Classes.Message")
 require("Noir.Built-Ins.Classes.TickIterationProcess")
 require("Noir.Built-Ins.Classes.AITargetData")
+require("Noir.Built-Ins.Classes.Tracker")
 
 require("Noir.Libraries")
 
@@ -87,6 +88,7 @@ require("Noir.Built-Ins.Services.NotificationService")
 require("Noir.Built-Ins.Services.HTTPService")
 require("Noir.Built-Ins.Services.VehicleService")
 require("Noir.Built-Ins.Services.MessageService")
+require("Noir.Built-Ins.Services.DebuggerService")
 
 require("Noir.Callbacks")
 require("Noir.Bootstrapper")
