@@ -47,8 +47,8 @@
 ---@field OnJoin NoirEvent Arguments: player (NoirPlayer) | Fired when a player joins the server
 ---@field OnLeave NoirEvent Arguments: player (NoirPlayer) | Fired when a player leaves the server
 ---@field OnDie NoirEvent Arguments: player (NoirPlayer) | Fired when a player dies
----@field OnSit NoirEvent Arguments: player (NoirPlayer), body (NoirBody), seatName (string) | Fired when a player sits in a seat
----@field OnUnsit NoirEvent Arguments: player (NoirPlayer), body (NoirBody), seatName (string) | Fired when a player unsits in a seat
+---@field OnSit NoirEvent Arguments: player (NoirPlayer), body (NoirBody|nil), seatName (string) | Fired when a player sits in a seat (body can be nil if the player sat on a map object, etc)
+---@field OnUnsit NoirEvent Arguments: player (NoirPlayer), body (NoirBody|nil), seatName (string) | Fired when a player unsits in a seat (body can be nil if the player sat on a map object, etc)
 ---@field OnRespawn NoirEvent Arguments: player (NoirPlayer) | Fired when a player respawns
 ---@field Players table<integer, NoirPlayer> The players in the server
 ---@field _JoinCallback NoirConnection A connection to the onPlayerDie event
@@ -157,12 +157,7 @@ function Noir.Services.PlayerService:ServiceStart()
         end
 
         -- Get body
-        local body = Noir.Services.VehicleService:GetBody(vehicle_id)
-
-        if not body then
-            Noir.Debugging:RaiseError("PlayerService", "A player just sat in a body, but that body doesn't exist.")
-            return
-        end
+        local body = Noir.Services.VehicleService:GetBody(vehicle_id) -- can be nil if the player sat on a bed on the map
 
         -- Call sit event
         self.OnSit:Fire(player, body, seat_name)
@@ -178,12 +173,7 @@ function Noir.Services.PlayerService:ServiceStart()
         end
 
         -- Get body
-        local body = Noir.Services.VehicleService:GetBody(vehicle_id)
-
-        if not body then
-            Noir.Debugging:RaiseError("PlayerService", "A player just got up from a body seat, but that body doesn't exist.")
-            return
-        end
+        local body = Noir.Services.VehicleService:GetBody(vehicle_id) -- can be nil if the player sat on a bed on the map
 
         -- Call unsit event
         self.OnUnsit:Fire(player, body, seat_name)
