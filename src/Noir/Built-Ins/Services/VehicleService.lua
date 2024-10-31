@@ -328,7 +328,6 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, fireEvent)
 
     -- Check if already registered
     if self:GetBody(ID) then
-        Noir.Debugging:RaiseError("VehicleService:_RegisterBody()", "Failed to register a body because it already exists.")
         return
     end
 
@@ -546,7 +545,7 @@ function Noir.Services.VehicleService:SpawnVehicle(componentID, position, addonI
     local primaryBody
 
     for _, vehicleID in pairs(vehicleIDs) do
-        local body = self:_RegisterBody(vehicleID, nil, position, 0, true)
+        local body = self:_RegisterBody(vehicleID, nil, true)
 
         if primaryVehicleID == vehicleID then
             primaryBody = body
