@@ -36,11 +36,9 @@
     In Stormworks, this is actually a vehicle apart of a vehicle group.
 ]]
 ---@class NoirBody: NoirClass
----@field New fun(self: NoirBody, ID: integer, owner: NoirPlayer|nil, spawnPosition: SWMatrix, cost: number, loaded: boolean): NoirBody
+---@field New fun(self: NoirBody, ID: integer, owner: NoirPlayer|nil, loaded: boolean): NoirBody
 ---@field ID integer The ID of this body
 ---@field Owner NoirPlayer|nil The owner of this body, or nil if spawned by an addon OR if the player who owns the body left before Noir starts again (eg: after save load or addon reload)
----@field SpawnPosition SWMatrix The position this body was spawned at
----@field Cost number The cost of this body
 ---@field ParentVehicle NoirVehicle|nil The vehicle this body belongs to. This can be nil if the body or vehicle is despawned
 ---@field Loaded boolean Whether or not this body is loaded
 ---@field Spawned boolean Whether or not this body is spawned. This is set to false when the body is despawned
@@ -55,20 +53,14 @@ Noir.Classes.Body = Noir.Class("Body")
 ]]
 ---@param ID any
 ---@param owner NoirPlayer|nil
----@param spawnPosition SWMatrix
----@param cost number
 ---@param loaded boolean
-function Noir.Classes.Body:Init(ID, owner, spawnPosition, cost, loaded)
+function Noir.Classes.Body:Init(ID, owner, loaded)
     Noir.TypeChecking:Assert("Noir.Classes.Body:Init()", "ID", ID, "number")
     Noir.TypeChecking:Assert("Noir.Classes.Body:Init()", "owner", owner, Noir.Classes.Player, "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.Body:Init()", "spawnPosition", spawnPosition, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.Body:Init()", "cost", cost, "number")
     Noir.TypeChecking:Assert("Noir.Classes.Body:Init()", "loaded", loaded, "boolean")
 
     self.ID = math.floor(ID)
     self.Owner = owner
-    self.SpawnPosition = spawnPosition
-    self.Cost = cost
     self.ParentVehicle = nil
     self.Loaded = loaded
     self.Spawned = true
@@ -88,8 +80,6 @@ function Noir.Classes.Body:_Serialize()
     return {
         ID = self.ID,
         Owner = self.Owner and self.Owner.ID,
-        SpawnPosition = self.SpawnPosition,
-        Cost = self.Cost,
         ParentVehicle = self.ParentVehicle and self.ParentVehicle.ID,
         Loaded = self.Loaded
     }
@@ -111,8 +101,6 @@ function Noir.Classes.Body:_Deserialize(serializedBody, setParentVehicle)
     local body = self:New(
         serializedBody.ID,
         serializedBody.Owner and Noir.Services.PlayerService:GetPlayer(serializedBody.Owner),
-        serializedBody.SpawnPosition,
-        serializedBody.Cost,
         serializedBody.Loaded
     )
 
@@ -865,7 +853,5 @@ end
 ---@class NoirSerializedBody
 ---@field ID integer
 ---@field Owner integer
----@field SpawnPosition SWMatrix
----@field Cost number
 ---@field ParentVehicle integer
 ---@field Loaded boolean

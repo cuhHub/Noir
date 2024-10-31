@@ -112,7 +112,7 @@ function Noir.Services.VehicleService:ServiceStart()
     -- Listen for bodies spawning
     self._OnBodySpawnConnection = Noir.Callbacks:Connect("onVehicleSpawn", function(vehicle_id, peer_id, x, y, z, group_cost, group_id)
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)
-        self:_RegisterBody(vehicle_id, player, matrix.translation(x, y, z), group_cost, true)
+        self:_RegisterBody(vehicle_id, player, true)
     end)
 
     -- Listen for bodies despawning
@@ -177,7 +177,7 @@ end
 ]]
 function Noir.Services.VehicleService:_LoadSavedBodies()
     for _, body in pairs(self._SavedBodies) do
-        self:_RegisterBody(body.ID, body.Owner and Noir.Services.PlayerService:GetPlayer(body.Owner), body.SpawnPosition, body.Cost, false)
+        self:_RegisterBody(body.ID, body.Owner and Noir.Services.PlayerService:GetPlayer(body.Owner), false)
     end
 end
 
@@ -216,7 +216,7 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
     local bodies = {} ---@type table<integer, NoirBody>
 
     for _, bodyID in pairs(bodyIDs) do
-        local body = self:GetBody(bodyID) or self:_RegisterBody(bodyID, player, spawnPosition, cost, fireEvent)
+        local body = self:GetBody(bodyID) or self:_RegisterBody(bodyID, player, fireEvent)
 
         if not body then
             goto continue
@@ -318,16 +318,12 @@ end
 ]]
 ---@param ID integer
 ---@param player NoirPlayer|nil
----@param spawnPosition SWMatrix
----@param cost number
 ---@param fireEvent boolean
 ---@return NoirBody|nil
-function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, cost, fireEvent)
+function Noir.Services.VehicleService:_RegisterBody(ID, player, fireEvent)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "ID", ID, "number")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "player", player, Noir.Classes.Player, "nil")
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "spawnPosition", spawnPosition, "table")
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "cost", cost, "number")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "fireEvent", fireEvent, "boolean")
 
     -- Check if already registered
@@ -337,7 +333,7 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, c
     end
 
     -- Create body
-    local body = Noir.Classes.Body:New(ID, player, spawnPosition, cost, false)
+    local body = Noir.Classes.Body:New(ID, player, false)
 
     -- Check if the body even exists anymore
     if not body:Exists() then
