@@ -472,7 +472,7 @@ function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit,
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "explosionMagnitude", explosionMagnitude, "number")
 
     -- Spawn the fire
-    local object_id, success = server.spawnFire(position, size, magnitude, isLit, isExplosive, parentBody and parentBody.ID, explosionMagnitude)
+    local object_id, success = server.spawnFire(position, size, magnitude, isLit, isExplosive, parentBody and parentBody.ID or 0, explosionMagnitude)
 
     if not success then
         Noir.Debugging:RaiseError("ObjectService:SpawnFire()", "server.spawnFire() was unsuccessful. Ensure the provided parameters are correct.")
