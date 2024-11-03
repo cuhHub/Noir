@@ -86,7 +86,7 @@ function Noir.Services:CreateService(name, isBuiltIn, shortDescription, longDesc
 
     -- Check if service already exists
     if self.CreatedServices[name] then
-        Noir.Debugging:RaiseError(":CreateService()", "Attempted to create a service with the same name as an already-existing service.", false)
+        Noir.Debugging:RaiseError(":CreateService()", "Attempted to create a service with the same name as an already-existing service. Name: %s", name)
     end
 
     -- Create service
