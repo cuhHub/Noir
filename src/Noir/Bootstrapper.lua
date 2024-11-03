@@ -116,7 +116,7 @@ function Noir.Bootstrapper:InitializeServices()
     ---@param serviceA NoirService
     ---@param serviceB NoirService
     table.sort(servicesToInit, function(serviceA, serviceB)
-        return serviceA.InitPriority < serviceB.InitPriority
+        return (serviceA.IsBuiltIn and not serviceB.IsBuiltIn) or serviceA.InitPriority < serviceB.InitPriority
     end)
 
     -- Initialize services
@@ -154,7 +154,7 @@ function Noir.Bootstrapper:StartServices()
     ---@param serviceA NoirService
     ---@param serviceB NoirService
     table.sort(servicesToStart, function(serviceA, serviceB)
-        return serviceA.StartPriority < serviceB.StartPriority
+        return (serviceA.IsBuiltIn and not serviceB.IsBuiltIn) or serviceA.StartPriority < serviceB.StartPriority
     end)
 
     -- Start services
