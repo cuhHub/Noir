@@ -52,8 +52,8 @@
 ]]
 ---@class NoirObjectService: NoirService
 ---@field Objects table<integer, NoirObject> A table containing all objects
----@field OnRegister NoirEvent Fired when an object is registered (first arg: NoirObject)
----@field OnUnregister NoirEvent Fired when an object is unregistered (first arg: NoirObject)
+---@field OnRegister NoirEvent Fired when an object is registered. This is NOT when an object spawns, only when this serviec finds an object (first arg: NoirObject)
+---@field OnUnregister NoirEvent Fired when an object is unregistered, usually on despawn by this addon (first arg: NoirObject)
 ---@field OnLoad NoirEvent Fired when an object is loaded (first arg: NoirObject)
 ---@field OnUnload NoirEvent Fired when an object is unloaded (first arg: NoirObject)
 ---@field _OnObjectLoadConnection NoirConnection A connection to the onObjectLoad game callback
@@ -81,28 +81,12 @@ end
 function Noir.Services.ObjectService:ServiceStart()
     -- Listen for object loading/unloading
     self._OnObjectLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
-        -- Get object
         local object = self:GetObject(object_id) -- creates an object if it doesn't already exist
-
-        if not object then
-            Noir.Debugging:RaiseError("ObjectService", "Failed to get object in _OnObjectLoadConnection callback.")
-            return
-        end
-
-        -- Call method
         self:_OnObjectLoad(object)
     end)
 
     self._OnObjectUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
-        -- Get object
         local object = self:GetObject(object_id)
-
-        if not object then
-            Noir.Debugging:RaiseError("ObjectService", "Failed to get object in _OnObjectUnloadConnection callback.")
-            return
-        end
-
-        -- Call method
         self:_OnObjectUnload(object)
     end)
 end
@@ -160,7 +144,7 @@ end
 ]]
 ---@param object_id integer
 ---@param _preventEventTrigger boolean|nil
----@return NoirObject|nil
+---@return NoirObject
 function Noir.Services.ObjectService:_RegisterObject(object_id, _preventEventTrigger)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:_RegisterObject()", "object_id", object_id, "number")
@@ -169,14 +153,9 @@ function Noir.Services.ObjectService:_RegisterObject(object_id, _preventEventTri
     -- Check if the object exists and is loaded
     local loaded, exists = server.getObjectSimulating(object_id)
 
-    if not exists then
-        self:_RemoveObjectSavedata(object_id) -- prevent memory leak
-        return
-    end
-
     -- Create object
     local object = Noir.Classes.Object:New(object_id)
-    object.Loaded = loaded
+    object.Loaded = loaded and exists
 
     self.Objects[object_id] = object
 
@@ -278,7 +257,7 @@ end
     Returns the object with the given ID.
 ]]
 ---@param object_id integer
----@return NoirObject|nil
+---@return NoirObject
 function Noir.Services.ObjectService:GetObject(object_id)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:GetObject()", "object_id", object_id, "number")
