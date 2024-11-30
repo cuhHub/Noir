@@ -44,4 +44,4 @@ function Person:Init(name)
 end
 
 local bob = Person:New("Bob")
-print(bob.Name, bob.IsSyncing, bob.HasAnims)
+print(bob.Name, bob.IsSyncing, bob.HasAnims) -- expecting: Bob, true, true
