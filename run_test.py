@@ -33,6 +33,7 @@ from pathlib import Path
 from tools.combine import Combiner
 
 # ---- // Variables
+TEST_DIR = Path("tests")
 NOIR_PATH = Path("src/Noir")
 LUA_PATH = Path("lua")
 LUA_EXECUTABLE = LUA_PATH / "lua53.exe"
@@ -76,9 +77,29 @@ def run_test(path: Path):
     temp_file.unlink()
     return True
 
+def success(message: str):
+    """
+    Prints a success message.
+    
+    Args:
+        message (str): The message to print.
+    """    
+    
+    print("[bold green](Success)[/bold green] " + message)
+    
+def error(message: str):
+    """
+    Prints an error message.
+    
+    Args:
+        message (str): The message to print.
+    """    
+    
+    print("[bold red](Error)[/bold red] " + message)
+
 # ---- // Main
 @click.command()
-@click.option("--test", "-t", type = str, required = True, help = "The path to the Noir test .lua file.")
+@click.option("--test", "-t", type = str, required = True, help = "The name of the Noir test .lua file.")
 def run(test: str):
     print(Panel(
         title = "⚙️ | Noir Test Tool",
@@ -87,22 +108,23 @@ def run(test: str):
         width = 60
     ))
     
-    path = Path(test)
+    path = TEST_DIR / Path(test)
+    relative = path.relative_to(".")
     
     if not path.exists():
-        print("[bold red](Error)[/bold red] Test not found.")
+        error(f"Test does not exist ([bold]{relative}[/bold]).")
         exit(0)
         
     if path.suffix != ".lua":
-        print("[bold red](Error)[/bold red] Test must be a .lua file.")
+        error("Test must be a [bold].lua[/bold] file.")
         exit(0)
     
-    success = run_test(path)
+    test_success = run_test(path)
     
-    if success:
-        print(f"[bold green](Done)[/bold green] [bold]{path.relative_to(".")}[/bold] ran successfully.")
+    if test_success:
+        success(f"[bold]{relative}[/bold] ran successfully.")
     else:
-        print(f"[bold red](Error)[/bold red] [bold]{path.relative_to('.')}[/bold] encountered an error.")
+        error(f"[bold]{relative}[/bold] failed to run.")
     
 if __name__ == "__main__":
     run()
