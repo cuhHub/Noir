@@ -35,7 +35,7 @@
     Create a class that objects can be created from.<br>
     Note that classes can inherit from other classes.
 
-    local MyClass = Noir.Class:Create("MyClass")
+    local MyClass = Noir.Class("MyClass")
 
     function MyClass:Init(name) -- This is called when MyClass:New() is called
         self.name = name
@@ -55,7 +55,7 @@ function Noir.Class(name, ...)
     --[[
         A class that objects can be created from.
 
-        local MyClass = Noir.Class:Create("MyClass")
+        local MyClass = Noir.Class("MyClass")
 
         function MyClass:Init(name) -- This is called when MyClass:New() is called
             self.something = true
