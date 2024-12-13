@@ -46,7 +46,8 @@ Noir.Version = "{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
 ---@return string minor The MINOR part of the version
 ---@return string patch The PATCH part of the version
 function Noir:GetVersion()
-    return table.unpack(Noir.Libraries.String:Split(self.Version, "."))
+    local major, minor, patch = table.unpack(Noir.Libraries.String:Split(self.Version, "."))
+    return major, minor, patch
 end
 
 --[[
