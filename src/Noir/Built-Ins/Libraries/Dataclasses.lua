@@ -97,7 +97,7 @@ function Noir.Libraries.Dataclasses:New(name, fields)
             end
 
             -- Type check
-            Noir.TypeChecking:Assert("Dataclass:Init()", field.Name, arg, field.Type)
+            Noir.TypeChecking:Assert("Dataclass:Init()", field.Name, arg, table.unpack(field.Types))
 
             -- Ensure we're not overwriting anyway
             if self[field.Name] then
@@ -118,15 +118,15 @@ end
     Returns a dataclass field to be used with Noir.Libraries.Dataclasses:New().
 ]]
 ---@param name string
----@param type NoirTypeCheckingType
+---@param ... NoirTypeCheckingType
 ---@return NoirDataclassField
-function Noir.Libraries.Dataclasses:Field(name, type)
+function Noir.Libraries.Dataclasses:Field(name, ...)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Libraries.Dataclasses:Field()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Libraries.Dataclasses:Field()", "type", type, "string")
+    Noir.TypeChecking:AssertMany("Noir.Libraries.Dataclasses:Field()", "...", {...}, "string")
 
     -- Construct and return field
-    return {Name = name, Type = type}
+    return {Name = name, Types = {...}}
 end
 
 -------------------------------
@@ -138,4 +138,4 @@ end
 ]]
 ---@class NoirDataclassField
 ---@field Name string
----@field Type NoirTypeCheckingType
+---@field Types table<integer, NoirTypeCheckingType>
