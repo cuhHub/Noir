@@ -94,7 +94,6 @@ function Noir.TypeChecking:AssertMany(origin, parameterName, values, ...)
     self:Assert("Noir.TypeChecking:AssertMany()", "origin", origin, "string")
     self:Assert("Noir.TypeChecking:AssertMany()", "parameterName", parameterName, "string")
     self:Assert("Noir.TypeChecking:AssertMany()", "values", values, "table")
-    self:AssertMany("Noir.TypeChecking:AssertMany()", "...", {...}, "string", "class")
 
     -- Perform type checking for provided values
     for _, value in pairs(values) do
