@@ -44,11 +44,6 @@ Noir.Libraries.JSON = Noir.Libraries:Create(
 )
 
 --[[
-    Represents a null value.
-]]
-Noir.Libraries.JSON.Null = {}
-
---[[
     Returns the type of the provided object.<br>
     Used internally. Do not use in your code.
 ]]
@@ -338,7 +333,7 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
     elseif first == endDelim then
         return nil, pos + 1
     else
-        local literals = {["true"] = true, ["false"] = false, ["null"] = self.Null}
+        local literals = {["true"] = true, ["false"] = false} -- null is nil, so no need to add
 
         for litStr, litVal in pairs(literals) do
             local litEnd = pos + #litStr - 1
