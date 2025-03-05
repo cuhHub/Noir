@@ -104,8 +104,7 @@ function Noir.Services.PlayerService:ServiceStart()
         -- Get player
         local player = self:GetPlayer(peer_id)
 
-        if not player then
-            Noir.Debugging:RaiseError("PlayerService", "A player just left, but their data couldn't be found.")
+        if not player then -- likely unnamed client
             return
         end
 
