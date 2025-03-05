@@ -220,7 +220,7 @@ function Noir.Services.MessageService:SendMessage(player, title, content, ...)
 
     -- Send message
     local formattedContent = ... and content:format(...) or content
-    server.announce(title, formattedContent, player and player.ID)
+    server.announce(title, formattedContent, player and player.ID or -1)
 
     -- Register message
     local message = self:_RegisterMessage(
