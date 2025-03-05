@@ -121,14 +121,43 @@ end
     Returns all tracked functions with the option to copy.
 ]]
 ---@param copy boolean|nil
+---@return table<integer, NoirTracker>
 function Noir.Debugging:GetTrackedFunctions(copy)
     Noir.TypeChecking:Assert("Noir.Debugging:GetTrackedFunctions()", "copy", copy, "boolean", "nil")
     return copy and Noir.Libraries.Table:Copy(self.Trackers) or self.Trackers
 end
 
 --[[
+    Returns the most recently called tracked functions.
+]]
+---@return table<integer, NoirTracker>
+function Noir.Debugging:GetLastCalledTracked()
+    local trackers = self:GetTrackedFunctions(true)
+
+    table.sort(trackers, function(a, b)
+        return a:GetLastExecutionTime() > b:GetLastExecutionTime()
+    end)
+
+    return trackers
+end
+
+--[[
+    Shows the most recently called tracked functions.
+]]
+function Noir.Debugging:ShowLastCalledTracked()
+    local trackers = self:GetLastCalledTracked()
+
+    Noir.Libraries.Logging:Success("Debugging", "--- *Last* called functions:")
+
+    for index, tracker in ipairs(trackers) do
+        Noir.Libraries.Logging:Info("Debugging", "#%d: %s", index, tracker:ToFormattedString())
+    end
+end
+
+--[[
     Returns the tracked functions with the worst performance.
 ]]
+---@return table<integer, NoirTracker>
 function Noir.Debugging:GetLeastPerformantTracked()
     local trackers = self:GetTrackedFunctions(true)
 
@@ -155,6 +184,7 @@ end
 --[[
     Returns the tracked functions with the best performance.
 ]]
+---@return table<integer, NoirTracker>
 function Noir.Debugging:GetMostPerformantTracked()
     local trackers = self:GetTrackedFunctions(true)
 
