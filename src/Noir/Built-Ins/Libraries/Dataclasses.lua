@@ -77,36 +77,28 @@ function Noir.Libraries.Dataclasses:New(name, fields)
     local dataclass = Noir.Class(name)
 
     function dataclass:Init(...)
-        -- Pack into table
         local args = {...} ---@type table<integer, any>
 
-        -- Check number of arguments
-        if #args ~= #fields then
-            Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "Invalid number of arguments. Expected %s, got %s.", #fields, #args)
-            return
-        end
+        for index, field in pairs(fields) do
+            local argument = args[index]
 
-        -- Iterate through arguments and create fields in this dataclass
-        for index, arg in pairs(args) do
-            -- Get field
-            local field = fields[index]
-
-            if not field then
-                Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "An argument provided doesn't have a corresponding field.")
+            -- If nil and nil isn't allowed, raise error
+            if argument == nil and not Noir.Libraries.Table:Find(field.Types, "nil") then
+                Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "Missing argument #%d. Expected %s, got nil.", index, table.concat(field.Types, " | "))
                 return
             end
 
-            -- Type check
-            Noir.TypeChecking:Assert("Dataclass:Init()", field.Name, arg, table.unpack(field.Types))
+            -- Perform type check
+            Noir.TypeChecking:Assert(("%s:Init()"):format(name), field.Name, argument, table.unpack(field.Types))
 
-            -- Ensure we're not overwriting anyway
+            -- Ensure we're not overwriting
             if self[field.Name] then
                 Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "'%s' overwrites an existing field (possibly a built-in field to a class like 'ClassName'). To fix this, rename the field to something else.", field.Name)
                 return
             end
 
             -- Insert field
-            self[field.Name] = arg
+            self[field.Name] = argument
         end
     end
 
