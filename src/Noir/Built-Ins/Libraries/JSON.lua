@@ -262,6 +262,13 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
 end
 
 --[[
+    Represents a null value.<br>
+    You do not need to reference this. Null values will just be nil in a decoded JSON object.<br>
+    Used internally. Do not use this in your code.
+]]
+Noir.Libraries.JSON._Null = {}
+
+--[[
     Decodes a JSON string into a Lua object.
 
     local obj = "{1, 2, 3}"
@@ -333,12 +340,20 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
     elseif first == endDelim then
         return nil, pos + 1
     else
-        local literals = {["true"] = true, ["false"] = false} -- null is nil, so no need to add
+        local literals = {
+            ["true"] = true,
+            ["false"] = false,
+            ["null"] = self._Null
+        }
 
         for litStr, litVal in pairs(literals) do
             local litEnd = pos + #litStr - 1
 
             if str:sub(pos, litEnd) == litStr then
+                if litVal == self._Null then
+                    return nil, litEnd + 1
+                end
+
                 return litVal, litEnd + 1
             end
         end
