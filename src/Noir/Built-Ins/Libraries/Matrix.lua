@@ -125,3 +125,17 @@ function Noir.Libraries.Matrix:ToString(pos)
     local x, y, z = matrix.position(pos)
     return ("%.1f, %.1f, %.1f"):format(x, y, z)
 end
+
+--[[
+    Returns the magnitude of a matrix's XYZ vector.
+]]
+---@param pos SWMatrix
+---@return number
+function Noir.Libraries.Matrix:Magnitude(pos)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Matrix:Magnitude()", "pos", pos, "table")
+
+    -- Return
+    local x, y, z = matrix.position(pos)
+    return math.sqrt((x * x) + (y * y) + (z * z))
+end
