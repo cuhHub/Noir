@@ -1,0 +1,6 @@
+{
+    "order" : [
+        "Widget.lua",
+        "MapLabelWidget.lua"
+    ]
+}
