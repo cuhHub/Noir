@@ -131,7 +131,7 @@ end
 -------------------------------
 
 --[[
-    Represents a serialized version of a widget.
+    Represents a serialized version of a map label widget.
 ]]
 ---@class NoirSerializedMapLabelWidget: NoirSerializedWidget
 ---@field Text string The text of this label
