@@ -96,28 +96,29 @@ end
     Used internally. Do not use in your code.
 ]]
 function Noir.Services.UIService:_LoadWidgets()
-    print("loading widgets!")
     local savedWidgets = self:_GetSavedWidgets()
 
     for _, savedWidget in pairs(savedWidgets) do
-        print("  got widget: %s", savedWidget.ID)
         if savedWidget.Player ~= -1 and not Noir.Services.PlayerService:GetPlayer(savedWidget.Player) then -- player must've left. no need to store ui
-            print("  widget player left")
             goto continue
         end
 
         if savedWidget.WidgetType == "MapObject" then
+            local widget = Noir.Classes.MapObjectWidget:Deserialize(savedWidget--[[@as NoirSerializedMapObjectWidget]])
 
+            if not widget then
+                goto continue
+            end
+
+            self:_AddWidget(widget)
         elseif savedWidget.WidgetType == "ScreenPopup" then
 
         elseif savedWidget.WidgetType == "PhysicalPopup" then
 
         elseif savedWidget.WidgetType == "MapLabel" then
-            print("  widget is map label")
             local widget = Noir.Classes.MapLabelWidget:Deserialize(savedWidget--[[@as NoirSerializedMapLabelWidget]])
 
             if not widget then
-                print("  desrialization returned nil")
                 goto continue
             end
 
@@ -206,6 +207,55 @@ function Noir.Services.UIService:CreateMapLabel(text, labelType, position, visib
         text,
         labelType,
         position,
+        player
+    )
+
+    widget:Update()
+
+    self:_AddWidget(widget)
+    return widget
+end
+
+--[[
+    Creates a map object widget.
+]]
+---@param title string
+---@param text string
+---@param objectType SWMarkerTypeEnum
+---@param position SWMatrix
+---@param radius number
+---@param visible boolean
+---@param colorR number|nil
+---@param colorG number|nil
+---@param colorB number|nil
+---@param colorA number|nil
+---@param player NoirPlayer|nil
+---@return NoirMapObjectWidget
+function Noir.Services.UIService:CreateMapObject(title, text, objectType, position, radius, visible, colorR, colorG, colorB, colorA, player)
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "title", title, "string")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "text", text, "string")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "objectType", objectType, "number")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "radius", radius, "number")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "visible", visible, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "colorR", colorR, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "colorG", colorG, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "colorB", colorB, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "colorA", colorA, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapObject()", "player", player, Noir.Classes.Player, "nil")
+
+    local widget = Noir.Classes.MapObjectWidget:New(
+        server.getMapID(),
+        visible,
+        title,
+        text,
+        objectType,
+        position,
+        radius,
+        colorR or 255,
+        colorG or 255,
+        colorB or 255,
+        colorA or 255,
         player
     )
 
