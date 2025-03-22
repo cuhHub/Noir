@@ -39,7 +39,7 @@ Noir.TypeChecking = {}
 
 --[[
     Raises an error if the value is not any of the provided types.<br>
-    This has basic support for classes. It will check if the provided value is a Noir class if needed, but it will not check if it's the right class.
+    This supports checking if a value is a specific class or not too.
 ]]
 ---@param origin string The location of the thing (method, function, etc) that called this so the user can find out where something went wrong
 ---@param parameterName string The name of the parameter that is being type checked
