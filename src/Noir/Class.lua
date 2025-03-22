@@ -138,7 +138,7 @@ function Noir.Class(name, ...)
     function class:InitFrom(parent, ...)
         -- Check if this was called from an object
         if not self._IsObject then
-            Noir.Debugging:RaiseError("Class", "Attempted to call :InitFrom() when 'self' is a class and not an object.", true)
+            Noir.Debugging:RaiseError("Class", "Attempted to call :InitFrom() when 'self' is a class and not an object.")
         end
 
         -- Create an object from the parent class
@@ -152,10 +152,30 @@ function Noir.Class(name, ...)
         Returns if a class/object is the same type as another.<br>
         If `other` is not a class, it will return false.
     ]]
-    ---@param other NoirClass|any
+    ---@param other any
     ---@return boolean
     function class:IsSameType(other)
-        return self:IsClass(other) and self.ClassName == other.ClassName
+        if not self:IsClass(other) then
+            return false
+        end
+
+        if self.ClassName == other.ClassName then
+            return true
+        end
+
+        for _, parent in pairs(other._Parents) do
+            if self.ClassName == parent.ClassName then
+                return true
+            end
+        end
+
+        for _, parent in pairs(self._Parents) do
+            if other.ClassName == parent.ClassName then
+                return true
+            end
+        end
+
+        return false
     end
 
     --[[
