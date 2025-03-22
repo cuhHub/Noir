@@ -95,15 +95,6 @@ function Noir.Classes.Widget:Deserialize(serializedWidget)
 end
 
 --[[
-    Returns the peer ID for this widget.<br>
-    Used internally.
-]]
----@return integer
-function Noir.Classes.Widget:GetPeerID()
-    return self.Player and self.Player.ID or -1
-end
-
---[[
     Updates this widget.
 ]]
 function Noir.Classes.Widget:Update()
