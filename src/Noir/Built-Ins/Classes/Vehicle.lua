@@ -248,8 +248,8 @@ end
     Represents a serialized version of the NoirVehicle class.
 ]]
 ---@class NoirSerializedVehicle
----@field ID integer
----@field Owner integer
----@field SpawnPosition SWMatrix
----@field Cost number
----@field Bodies table<integer, integer>
+---@field ID integer The ID of this vehicle
+---@field Owner integer The peer ID of the owner of this vehicle, or -1 if addon vehicle
+---@field SpawnPosition SWMatrix The position this vehicle was spawned at
+---@field Cost number The cost of this vehicle
+---@field Bodies table<integer, integer> A table containing the IDs of this vehicle's bodies
