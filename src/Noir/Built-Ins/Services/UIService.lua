@@ -112,7 +112,13 @@ function Noir.Services.UIService:_LoadWidgets()
 
             self:_AddWidget(widget)
         elseif savedWidget.WidgetType == "ScreenPopup" then
+            local widget = Noir.Classes.ScreenPopupWidget:Deserialize(savedWidget--[[@as NoirSerializedScreenPopupWidget]])
 
+            if not widget then
+                goto continue
+            end
+
+            self:_AddWidget(widget)
         elseif savedWidget.WidgetType == "PhysicalPopup" then
 
         elseif savedWidget.WidgetType == "MapLabel" then
@@ -186,7 +192,8 @@ function Noir.Services.UIService:_RemoveWidget(widget)
 end
 
 --[[
-    Creates a map label widget.
+    Creates a map label widget.<br>
+    This is a label that is shown on the map (duh), similar to what you see at shipwrecks, key locations (e.g: "Harrison Airbase").
 ]]
 ---@param text string
 ---@param labelType SWLabelTypeEnum
@@ -217,7 +224,43 @@ function Noir.Services.UIService:CreateMapLabel(text, labelType, position, visib
 end
 
 --[[
-    Creates a map object widget.
+    Creates a screen popup widget.<br>
+    This is a rounded-rectangle with text shown on your screen, exactly the same as the tutorial popups
+    you get when you start a singleplayer game.
+]]
+---@param text string
+---@param X number -1 (left) to 1 (right)
+---@param Y number -1 (top) to 1 (bottom)
+---@param visible boolean
+---@param player NoirPlayer|nil
+---@return NoirScreenPopupWidget
+function Noir.Services.UIService:CreateScreenPopup(text, X, Y, visible, player)
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateScreenPopup()", "text", text, "string")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateScreenPopup()", "X", X, "number")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateScreenPopup()", "X", Y, "number")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateScreenPopup()", "visible", visible, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateScreenPopup()", "player", player, Noir.Classes.Player, "nil")
+
+    local widget = Noir.Classes.ScreenPopupWidget:New(
+        server.getMapID(),
+        visible,
+        text,
+        X,
+        Y,
+        player
+    )
+
+    widget:Update()
+
+    self:_AddWidget(widget)
+    return widget
+end
+
+--[[
+    Creates a map object widget.<br>
+    Similar to a map label, this is shown on the map. However, this comes with an interactive circular icon
+    that when hovered over, shows a title and a subtitle.<br>
+    This is what Stormworks missions use to show mission locations.
 ]]
 ---@param title string
 ---@param text string

@@ -2,6 +2,7 @@
     "order" : [
         "Widget.lua",
         "MapLabelWidget.lua",
-        "MapObjectWidget.lua"
+        "MapObjectWidget.lua",
+        "ScreenPopupWidget.lua"
     ]
 }
