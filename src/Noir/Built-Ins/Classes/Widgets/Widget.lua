@@ -107,6 +107,10 @@ function Noir.Classes.Widget:Update()
             self:_Update(player)
         end
     end
+
+    if self:Exists() then
+        Noir.Services.UIService:_SaveWidget(self)
+    end
 end
 
 --[[
@@ -176,4 +180,4 @@ end
 ---| "MapLabel" # A map label widget
 ---| "MapLine" # A map line widget
 ---| "ScreenPopup" # A screen popup widget
----| "Popup" # A popup widget in 3D space]
+---| "Popup" # A popup widget in 3D space
