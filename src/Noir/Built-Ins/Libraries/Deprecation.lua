@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@
 ]]
 ---@class NoirDeprecationLib: NoirLibrary
 Noir.Libraries.Deprecation = Noir.Libraries:Create(
-    "DeprecationLibrary",
+    "Deprecation",
     "A library that allows you to mark functions as deprecated.",
     "A library that allows you to mark functions as deprecated. No function wrapping is used.",
     {"Cuh4"}
@@ -70,13 +70,13 @@ function Noir.Libraries.Deprecation:Deprecated(name, replacement, note)
     local _replacement = ""
 
     if replacement then
-        use = (" Please use '%s' instead.")
+        _replacement = (" Please use '%s' instead."):format(replacement)
     end
 
     local _note = ""
 
     if note then
-        note = "\n"..note
+        _note = "\n"..note
     end
 
     -- Send message

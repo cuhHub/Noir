@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@
 ---@field CapsSensitive boolean Whether or not this command is case-sensitive
 ---@field Description string The description of this command
 ---@field OnUse NoirEvent Arguments: player (NoirPlayer), message (string), args (table<integer, string>), hasPermission (boolean) | Fired when this command is used
-Noir.Classes.CommandClass = Noir.Class("NoirCommand")
+Noir.Classes.Command = Noir.Class("Command")
 
 --[[
     Initializes command class objects.
@@ -56,14 +56,14 @@ Noir.Classes.CommandClass = Noir.Class("NoirCommand")
 ---@param requiresAdmin boolean
 ---@param capsSensitive boolean
 ---@param description string
-function Noir.Classes.CommandClass:Init(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description)
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "aliases", aliases, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "requiredPermissions", requiredPermissions, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "requiresAuth", requiresAuth, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "requiresAdmin", requiresAdmin, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "capsSensitive", capsSensitive, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:Init()", "description", description, "string")
+function Noir.Classes.Command:Init(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description)
+    Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "aliases", aliases, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "requiredPermissions", requiredPermissions, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "requiresAuth", requiresAuth, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "requiresAdmin", requiresAdmin, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "capsSensitive", capsSensitive, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "description", description, "string")
 
     self.Name = name
     self.Aliases = aliases
@@ -83,11 +83,11 @@ end
 ---@param player NoirPlayer
 ---@param message string
 ---@param args table
-function Noir.Classes.CommandClass:_Use(player, message, args)
+function Noir.Classes.Command:_Use(player, message, args)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Use()", "player", player, Noir.Classes.PlayerClass)
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Use()", "message", message, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Use()", "args", args, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.Command:_Use()", "player", player, Noir.Classes.Player)
+    Noir.TypeChecking:Assert("Noir.Classes.Command:_Use()", "message", message, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Command:_Use()", "args", args, "table")
 
     -- Fire event
     self.OnUse:Fire(player, message, args, self:CanUse(player))
@@ -99,9 +99,9 @@ end
 ]]
 ---@param query string
 ---@return boolean
-function Noir.Classes.CommandClass:_Matches(query)
+function Noir.Classes.Command:_Matches(query)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:_Matches()", "query", query, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Command:_Matches()", "query", query, "string")
 
     -- Check if the string matches this command's name/aliases
     if not self.CapsSensitive then
@@ -136,9 +136,9 @@ end
 ]]
 ---@param player NoirPlayer
 ---@return boolean
-function Noir.Classes.CommandClass:CanUse(player)
+function Noir.Classes.Command:CanUse(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.CommandClass:CanUse()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Classes.Command:CanUse()", "player", player, Noir.Classes.Player)
 
     -- Check if the player can use this command via auth
     if self.RequiresAuth and not player.Auth then

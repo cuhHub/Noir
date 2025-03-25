@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@
 ]]
 ---@class NoirStringLib: NoirLibrary
 Noir.Libraries.String = Noir.Libraries:Create(
-    "StringLibrary",
+    "String",
     "A library containing helper methods relating to strings.",
     nil,
     {"Cuh4"}

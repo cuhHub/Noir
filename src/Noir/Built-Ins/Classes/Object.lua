@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -43,22 +43,22 @@
 ---@field Loaded boolean Whether or not this object is loaded
 ---@field OnLoad NoirEvent Fired when this object is loaded
 ---@field OnUnload NoirEvent Fired when this object is unloaded
----@field OnDespawn NoirEvent Fired when this object is despawned
-Noir.Classes.ObjectClass = Noir.Class("NoirObject")
+---@field OnUnregister NoirEvent Fired when this object is unregistered from the ObjectService (mostly on despawn)
+Noir.Classes.Object = Noir.Class("Object")
 
 --[[
     Initializes object class objects.
 ]]
 ---@param ID integer
-function Noir.Classes.ObjectClass:Init(ID)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Init()", "ID", ID, "number")
+function Noir.Classes.Object:Init(ID)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:Init()", "ID", ID, "number")
 
     self.ID = math.floor(ID)
     self.Loaded = false
 
     self.OnLoad = Noir.Libraries.Events:Create()
     self.OnUnload = Noir.Libraries.Events:Create()
-    self.OnDespawn = Noir.Libraries.Events:Create()
+    self.OnUnregister = Noir.Libraries.Events:Create()
 end
 
 --[[
@@ -66,7 +66,7 @@ end
     Used internally. Do not use in your code.
 ]]
 ---@return NoirSerializedObject
-function Noir.Classes.ObjectClass:_Serialize()
+function Noir.Classes.Object:_Serialize()
     return {
         ID = self.ID
     }
@@ -78,9 +78,9 @@ end
 ]]
 ---@param serializedObject NoirSerializedObject
 ---@return NoirObject
-function Noir.Classes.ObjectClass:_Deserialize(serializedObject)
+function Noir.Classes.Object:_Deserialize(serializedObject)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:_Deserialize()", "serializedObject", serializedObject, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:_Deserialize()", "serializedObject", serializedObject, "table")
 
     -- Create object from serialized object
     local object = self:New(serializedObject.ID)
@@ -92,14 +92,13 @@ end
 --[[
     Returns the data of this object.
 ]]
----@return SWObjectData|nil
-function Noir.Classes.ObjectClass:GetData()
+---@return SWObjectData
+function Noir.Classes.Object:GetData()
     -- Get the data
     local data = server.getObjectData(self.ID)
 
     if not data then
-        Noir.Libraries.Logging:Error("NoirObject", ":GetData() failed for object %d. Data is nil", false, self.ID)
-        return
+        Noir.Debugging:RaiseError("Noir.Classes.Object:GetData()", ":GetData() failed for object %d. Data is nil", self.ID)
     end
 
     -- Return the data
@@ -110,7 +109,7 @@ end
     Returns whether or not this object is simulating.
 ]]
 ---@return boolean
-function Noir.Classes.ObjectClass:IsSimulating()
+function Noir.Classes.Object:IsSimulating()
     local simulating, success = server.getObjectSimulating(self.ID)
     return simulating and success
 end
@@ -119,7 +118,7 @@ end
     Returns whether or not this object exists.
 ]]
 ---@return boolean
-function Noir.Classes.ObjectClass:Exists()
+function Noir.Classes.Object:Exists()
     local _, exists = server.getObjectSimulating(self.ID)
     return exists
 end
@@ -127,16 +126,16 @@ end
 --[[
     Despawn this object.
 ]]
-function Noir.Classes.ObjectClass:Despawn()
+function Noir.Classes.Object:Despawn()
     server.despawnObject(self.ID, true)
-    self.OnDespawn:Fire()
+    Noir.Services.ObjectService:_RemoveObject(self)
 end
 
 --[[
     Get this object's position.
 ]]
 ---@return SWMatrix
-function Noir.Classes.ObjectClass:GetPosition()
+function Noir.Classes.Object:GetPosition()
     return (server.getObjectPos(self.ID))
 end
 
@@ -144,15 +143,15 @@ end
     Teleport this object.
 ]]
 ---@param position SWMatrix
-function Noir.Classes.ObjectClass:Teleport(position)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Teleport()", "position", position, "table")
+function Noir.Classes.Object:Teleport(position)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:Teleport()", "position", position, "table")
     server.setObjectPos(self.ID, position)
 end
 
 --[[
     Revive this character (if character).
 ]]
-function Noir.Classes.ObjectClass:Revive()
+function Noir.Classes.Object:Revive()
     server.reviveCharacter(self.ID)
 end
 
@@ -162,11 +161,11 @@ end
 ---@param hp number
 ---@param interactable boolean
 ---@param AI boolean
-function Noir.Classes.ObjectClass:SetData(hp, interactable, AI)
+function Noir.Classes.Object:SetData(hp, interactable, AI)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetData()", "hp", hp, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetData()", "interactable", interactable, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetData()", "AI", AI, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetData()", "hp", hp, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetData()", "interactable", interactable, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetData()", "AI", AI, "boolean")
 
     -- Set data
     server.setCharacterData(self.ID, hp, interactable, AI)
@@ -176,13 +175,12 @@ end
     Returns this character's health (if character).
 ]]
 ---@return number
-function Noir.Classes.ObjectClass:GetHealth()
+function Noir.Classes.Object:GetHealth()
     -- Get character data
     local data = self:GetData()
 
     if not data then
-        Noir.Libraries.Logging:Error("NoirObject", ":GetHealth() failed as data is nil. Returning 100 as default.", false)
-        return 100
+        Noir.Debugging:RaiseError("Noir.Classes.Object:GetHealth()", ":GetData() returned nil.")
     end
 
     -- Return
@@ -193,8 +191,8 @@ end
     Set this character's/creature's tooltip (if character or creature).
 ]]
 ---@param tooltip string
-function Noir.Classes.ObjectClass:SetTooltip(tooltip)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetTooltip()", "tooltip", tooltip, "string")
+function Noir.Classes.Object:SetTooltip(tooltip)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetTooltip()", "tooltip", tooltip, "string")
     server.setCharacterTooltip(self.ID, tooltip)
 end
 
@@ -202,8 +200,8 @@ end
     Set this character's AI state (if character).
 ]]
 ---@param state integer **Ship Pilot**: 0 = none, 1 = path to destination<br>**Heli Pilot**: 0 = None, 1 = path to destination, 2 = path to destination (accurate), 3 = gun run<br>**Plane Pilot**: 0 = none, 1 = path to destination, 2 = gun run<br>**Gunner**: 0 = none, 1 = fire at target<br>**Designator**: 0 = none, 1 = aim at target
-function Noir.Classes.ObjectClass:SetAIState(state)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIState()", "state", state, "number")
+function Noir.Classes.Object:SetAIState(state)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetAIState()", "state", state, "number")
     server.setAIState(self.ID, state)
 end
 
@@ -211,22 +209,22 @@ end
     Returns this character's AI target (if character).
 ]]
 ---@return NoirAITarget|nil
-function Noir.Classes.ObjectClass:GetAITarget()
+function Noir.Classes.Object:GetAITarget()
     local data = server.getAITarget(self.ID)
 
     if not data then
         return
     end
 
-    return Noir.Classes.AITargetClass:New(data)
+    return Noir.Classes.AITarget:New(data)
 end
 
 --[[
     Set this character's AI character target (if character).
 ]]
 ---@param target NoirObject
-function Noir.Classes.ObjectClass:SetAICharacterTarget(target)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAICharacterTarget()", "target", target, Noir.Classes.ObjectClass)
+function Noir.Classes.Object:SetAICharacterTarget(target)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetAICharacterTarget()", "target", target, Noir.Classes.Object)
     server.setAITargetCharacter(self.ID, target.ID)
 end
 
@@ -234,8 +232,8 @@ end
     Set this character's AI body target (if character).
 ]]
 ---@param body NoirBody
-function Noir.Classes.ObjectClass:SetAIBodyTarget(body)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIBodyTarget()", "body", body, Noir.Classes.BodyClass)
+function Noir.Classes.Object:SetAIBodyTarget(body)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetAIBodyTarget()", "body", body, Noir.Classes.Body)
     server.setAITargetVehicle(self.ID, body.ID)
 end
 
@@ -243,15 +241,15 @@ end
     Set this character's AI position target (if character).
 ]]
 ---@param position SWMatrix
-function Noir.Classes.ObjectClass:SetAIPositionTarget(position)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetAIPositionTarget()", "position", position, "table")
+function Noir.Classes.Object:SetAIPositionTarget(position)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetAIPositionTarget()", "position", position, "table")
     server.setAITarget(self.ID, position)
 end
 
 --[[
     Kills this character (if character).
 ]]
-function Noir.Classes.ObjectClass:Kill()
+function Noir.Classes.Object:Kill()
     server.killCharacter(self.ID)
 end
 
@@ -259,12 +257,11 @@ end
     Returns the vehicle this character is sat in (if character).
 ]]
 ---@return NoirBody|nil
-function Noir.Classes.ObjectClass:GetVehicle()
+function Noir.Classes.Object:GetVehicle()
     -- Get the vehicle ID
     local vehicle_id, success = server.getCharacterVehicle(self.ID)
 
     if not success then
-        Noir.Libraries.Logging:Error("NoirObject", "server.getCharacterVehicle(...) was unsuccessful.", false)
         return
     end
 
@@ -277,15 +274,15 @@ end
 ]]
 ---@param slot SWSlotNumberEnum
 ---@return integer|nil
-function Noir.Classes.ObjectClass:GetItem(slot)
+function Noir.Classes.Object:GetItem(slot)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GetItem()", "slot", slot, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:GetItem()", "slot", slot, "number")
 
     -- Get the item
     local item, success = server.getCharacterItem(self.ID, slot)
 
     if not success then
-        Noir.Libraries.Logging:Error("NoirObject", "server.getCharacterItem(...) was unsuccessful.", false)
+        Noir.Debugging:RaiseError("Noir.Classes.Object:GetItem()", "server.getCharacterItem(...) was unsuccessful.")
         return
     end
 
@@ -301,13 +298,13 @@ end
 ---@param isActive boolean|nil
 ---@param int integer|nil
 ---@param float number|nil
-function Noir.Classes.ObjectClass:GiveItem(slot, equipmentID, isActive, int, float)
+function Noir.Classes.Object:GiveItem(slot, equipmentID, isActive, int, float)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GiveItem()", "slot", slot, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GiveItem()", "equipmentID", equipmentID, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GiveItem()", "isActive", isActive, "boolean", "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GiveItem()", "int", int, "number", "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:GiveItem()", "float", float, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:GiveItem()", "slot", slot, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:GiveItem()", "equipmentID", equipmentID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:GiveItem()", "isActive", isActive, "boolean", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:GiveItem()", "int", int, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:GiveItem()", "float", float, "number", "nil")
 
     -- Give the item
     server.setCharacterItem(self.ID, slot, equipmentID, isActive or false, int or 0, float or 0)
@@ -317,12 +314,12 @@ end
     Returns whether or not this character is downed (dead, incapaciated, or hp <= 0) (if character).
 ]]
 ---@return boolean
-function Noir.Classes.ObjectClass:IsDowned()
+function Noir.Classes.Object:IsDowned()
     -- Get data
     local data = self:GetData()
 
     if not data then
-        Noir.Libraries.Logging:Error("NoirObject", ":IsDowned() failed due to data being nil.", false)
+        Noir.Debugging:RaiseError("Noir.Classes.Object:IsDowned()", ":GetData() returned nil.")
         return false
     end
 
@@ -338,13 +335,13 @@ end
 ---@param voxelX integer|nil
 ---@param voxelY integer|nil
 ---@param voxelZ integer|nil
-function Noir.Classes.ObjectClass:Seat(body, name, voxelX, voxelY, voxelZ)
+function Noir.Classes.Object:Seat(body, name, voxelX, voxelY, voxelZ)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "body", body, Noir.Classes.BodyClass)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "name", name, "string", "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "voxelX", voxelX, "number", "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "voxelY", voxelY, "number", "nil")
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Seat()", "voxelZ", voxelZ, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:Seat()", "body", body, Noir.Classes.Body)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:Seat()", "name", name, "string", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:Seat()", "voxelX", voxelX, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:Seat()", "voxelY", voxelY, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:Seat()", "voxelZ", voxelZ, "number", "nil")
 
     -- Set seated
     if name then
@@ -352,7 +349,7 @@ function Noir.Classes.ObjectClass:Seat(body, name, voxelX, voxelY, voxelZ)
     elseif voxelX and voxelY and voxelZ then
         server.setSeated(self.ID, body.ID, voxelX, voxelY, voxelZ)
     else
-        Noir.Libraries.Logging:Error("NoirObject", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().", true)
+        Noir.Debugging:RaiseError("Noir.Classes.Object:Seat()", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().")
     end
 end
 
@@ -360,8 +357,8 @@ end
     Set the move target of this character (if creature).
 ]]
 ---@param position SWMatrix
-function Noir.Classes.ObjectClass:SetMoveTarget(position)
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetMoveTarget()", "position", position, "table")
+function Noir.Classes.Object:SetMoveTarget(position)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetMoveTarget()", "position", position, "table")
     server.setCreatureMoveTarget(self.ID, position)
 end
 
@@ -369,9 +366,9 @@ end
     Damage this character by a certain amount (if character).
 ]]
 ---@param amount number
-function Noir.Classes.ObjectClass:Damage(amount)
+function Noir.Classes.Object:Damage(amount)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Damage()", "amount", amount, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:Damage()", "amount", amount, "number")
 
     -- Get health
     local health = self:GetHealth()
@@ -384,9 +381,9 @@ end
     Heal this character by a certain amount (if character).
 ]]
 ---@param amount number
-function Noir.Classes.ObjectClass:Heal(amount)
+function Noir.Classes.Object:Heal(amount)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:Heal()", "amount", amount, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:Heal()", "amount", amount, "number")
 
     -- Get health
     local health = self:GetHealth()
@@ -404,12 +401,12 @@ end
     Get this fire's data (if fire).
 ]]
 ---@return boolean isLit
-function Noir.Classes.ObjectClass:GetFireData()
+function Noir.Classes.Object:GetFireData()
     -- Get fire data
     local isLit, success = server.getFireData(self.ID)
 
     if not success then
-        Noir.Libraries.Logging:Error("NoirObject", "server.getFireData(...) was unsuccessful. Returning false.", false)
+        Noir.Debugging:RaiseError("Noir.Classes.Object:GetFireData()", "server.getFireData() was unsuccessful.")
         return false
     end
 
@@ -422,10 +419,10 @@ end
 ]]
 ---@param isLit boolean
 ---@param isExplosive boolean
-function Noir.Classes.ObjectClass:SetFireData(isLit, isExplosive)
+function Noir.Classes.Object:SetFireData(isLit, isExplosive)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetFireData()", "isLit", isLit, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.ObjectClass:SetFireData()", "isExplosive", isExplosive, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetFireData()", "isLit", isLit, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetFireData()", "isExplosive", isExplosive, "boolean")
 
     -- Set fire data
     server.setFireData(self.ID, isLit, isExplosive)

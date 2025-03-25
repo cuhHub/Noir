@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -106,13 +106,23 @@ function Noir.Services.VehicleService:ServiceStart()
     -- Listen for vehicles spawning
     self._OnGroupSpawnConnection = Noir.Callbacks:Connect("onGroupSpawn", function(group_id, peer_id, x, y, z, group_cost)
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)
+
+        if self:GetVehicle(group_id) then
+            return
+        end
+
         self:_RegisterVehicle(group_id, player, matrix.translation(x, y, z), group_cost, true)
     end)
 
     -- Listen for bodies spawning
     self._OnBodySpawnConnection = Noir.Callbacks:Connect("onVehicleSpawn", function(vehicle_id, peer_id, x, y, z, group_cost, group_id)
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)
-        self:_RegisterBody(vehicle_id, player, matrix.translation(x, y, z), group_cost, true)
+
+        if self:GetBody(vehicle_id) then
+            return
+        end
+
+        self:_RegisterBody(vehicle_id, player, true)
     end)
 
     -- Listen for bodies despawning
@@ -120,7 +130,7 @@ function Noir.Services.VehicleService:ServiceStart()
         local body = self:GetBody(vehicle_id)
 
         if not body then
-            Noir.Libraries.Logging:Error("VehicleService", "A body was despawned that isn't recognized. ID: %s", false, vehicle_id)
+            Noir.Debugging:RaiseError("VehicleService", "A body was despawned that isn't recognized. ID: %s", vehicle_id)
             return
         end
 
@@ -177,7 +187,7 @@ end
 ]]
 function Noir.Services.VehicleService:_LoadSavedBodies()
     for _, body in pairs(self._SavedBodies) do
-        self:_RegisterBody(body.ID, body.Owner and Noir.Services.PlayerService:GetPlayer(body.Owner), body.SpawnPosition, body.Cost, false)
+        self:_RegisterBody(body.ID, body.Owner and Noir.Services.PlayerService:GetPlayer(body.Owner), false)
     end
 end
 
@@ -194,7 +204,7 @@ end
 function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition, cost, fireEvent)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "player", player, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "player", player, Noir.Classes.Player, "nil")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "spawnPosition", spawnPosition, "table")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "cost", cost, "number")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "fireEvent", fireEvent, "boolean")
@@ -208,7 +218,7 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
     local bodyIDs, success = server.getVehicleGroup(ID)
 
     if not success then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to get bodies for a vehicle.", false)
+        Noir.Debugging:RaiseError("VehicleService:_RegisterVehicle()", "Failed to get bodies for a vehicle.")
         return
     end
 
@@ -216,7 +226,7 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
     local bodies = {} ---@type table<integer, NoirBody>
 
     for _, bodyID in pairs(bodyIDs) do
-        local body = self:GetBody(bodyID) or self:_RegisterBody(bodyID, player, spawnPosition, cost, fireEvent)
+        local body = self:GetBody(bodyID) or self:_RegisterBody(bodyID, player, fireEvent)
 
         if not body then
             goto continue
@@ -228,7 +238,7 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
     end
 
     -- Create vehicle
-    local vehicle = Noir.Classes.VehicleClass:New(ID, player, spawnPosition, cost)
+    local vehicle = Noir.Classes.Vehicle:New(ID, player, spawnPosition, cost)
     self.Vehicles[vehicle.ID] = vehicle
 
     -- Add bodies
@@ -255,7 +265,7 @@ end
 ---@param vehicle NoirVehicle
 function Noir.Services.VehicleService:_SaveVehicle(vehicle)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SaveVehicle()", "vehicle", vehicle, Noir.Classes.VehicleClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SaveVehicle()", "vehicle", vehicle, Noir.Classes.Vehicle)
 
     -- Save
     self._SavedVehicles[vehicle.ID] = vehicle:_Serialize()
@@ -269,7 +279,7 @@ end
 ---@param vehicle NoirVehicle
 function Noir.Services.VehicleService:_UnsaveVehicle(vehicle)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnsaveVehicle()", "vehicle", vehicle, Noir.Classes.VehicleClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnsaveVehicle()", "vehicle", vehicle, Noir.Classes.Vehicle)
 
     -- Unsave
     self._SavedVehicles[vehicle.ID] = nil
@@ -284,12 +294,12 @@ end
 ---@param fireEvent boolean
 function Noir.Services.VehicleService:_UnregisterVehicle(vehicle, fireEvent)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterVehicle()", "vehicle", vehicle, Noir.Classes.VehicleClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterVehicle()", "vehicle", vehicle, Noir.Classes.Vehicle)
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterVehicle()", "fireEvent", fireEvent, "boolean")
 
     -- Check if exists
     if not self:GetVehicle(vehicle.ID) then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to unregister a vehicle because it doesn't exist.", false)
+        Noir.Debugging:RaiseError("VehicleService:_UnregisterVehicle()", "Failed to unregister a vehicle because it doesn't exist.")
         return
     end
 
@@ -318,16 +328,12 @@ end
 ]]
 ---@param ID integer
 ---@param player NoirPlayer|nil
----@param spawnPosition SWMatrix
----@param cost number
 ---@param fireEvent boolean
 ---@return NoirBody|nil
-function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, cost, fireEvent)
+function Noir.Services.VehicleService:_RegisterBody(ID, player, fireEvent)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "player", player, Noir.Classes.PlayerClass, "nil")
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "spawnPosition", spawnPosition, "table")
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "cost", cost, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "player", player, Noir.Classes.Player, "nil")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterBody()", "fireEvent", fireEvent, "boolean")
 
     -- Check if already registered
@@ -336,7 +342,7 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, c
     end
 
     -- Create body
-    local body = Noir.Classes.BodyClass:New(ID, player, spawnPosition, cost, false)
+    local body = Noir.Classes.Body:New(ID, player, false)
 
     -- Check if the body even exists anymore
     if not body:Exists() then
@@ -369,7 +375,7 @@ end
 ---@param body NoirBody
 function Noir.Services.VehicleService:_SaveBody(body)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SaveBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SaveBody()", "body", body, Noir.Classes.Body)
 
     -- Save
     self._SavedBodies[body.ID] = body:_Serialize()
@@ -383,7 +389,7 @@ end
 ---@param body NoirBody
 function Noir.Services.VehicleService:_UnsaveBody(body)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnsaveBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnsaveBody()", "body", body, Noir.Classes.Body)
 
     -- Unsave
     self._SavedBodies[body.ID] = nil
@@ -398,12 +404,12 @@ end
 ---@param fireEvent boolean
 function Noir.Services.VehicleService:_LoadBody(body, fireEvent)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_LoadBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_LoadBody()", "body", body, Noir.Classes.Body)
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_LoadBody()", "fireEvent", fireEvent, "boolean")
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to load a body because it doesn't exist.", false)
+        Noir.Debugging:RaiseError("VehicleService:_LoadBody()", "Failed to load a body because it doesn't exist.")
         return
     end
 
@@ -428,12 +434,12 @@ end
 ---@param fireEvent boolean
 function Noir.Services.VehicleService:_UnloadBody(body, fireEvent)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnloadBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnloadBody()", "body", body, Noir.Classes.Body)
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnloadBody()", "fireEvent", fireEvent, "boolean")
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to unload a body because it doesn't exist.", false)
+        Noir.Debugging:RaiseError("VehicleService:_UnloadBody()", "Failed to unload a body because it doesn't exist.")
         return
     end
 
@@ -461,7 +467,7 @@ end
 ---@param damage number
 function Noir.Services.VehicleService:_DamageBody(body, x, y, z, damage)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "body", body, Noir.Classes.Body)
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "x", x, "number")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "y", y, "number")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_DamageBody()", "z", z, "number")
@@ -481,13 +487,13 @@ end
 ---@param fireEvent boolean
 function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVehicle, fireEvent)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "body", body, Noir.Classes.BodyClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "body", body, Noir.Classes.Body)
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "autoDespawnParentVehicle", autoDespawnParentVehicle, "boolean")
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_UnregisterBody()", "fireEvent", fireEvent, "boolean")
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        Noir.Libraries.Logging:Error("VehicleService", "Failed to unregister a body because it doesn't exist.", false)
+        Noir.Debugging:RaiseError("VehicleService:_UnregisterBody()", "Failed to unregister a body because it doesn't exist.")
         return
     end
 
@@ -523,6 +529,105 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
 end
 
 --[[
+    Setup data for a spawned vehicle.
+]]
+---@param primaryVehicleID integer
+---@param vehicleIDs table<integer, integer>
+---@param position SWMatrix
+---@return NoirVehicle|nil
+function Noir.Services.VehicleService:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SetupVehicle()", "primaryVehicleID", primaryVehicleID, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SetupVehicle()", "vehicleIDs", vehicleIDs, "table")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SetupVehicle()", "position", position, "table")
+
+    -- Create bodies
+    local primaryBody
+
+    for _, vehicleID in pairs(vehicleIDs) do
+        local body = self:_RegisterBody(vehicleID, nil, true)
+
+        if primaryVehicleID == vehicleID then
+            primaryBody = body
+        end
+    end
+
+    -- Check if primaryBody exists
+    if not primaryBody then
+        Noir.Debugging:RaiseError("VehicleService:_SetupVehicle()", "Failed to spawn a vehicle. `primaryBody` is nil.")
+        return
+    end
+
+    -- Get group ID
+    local primaryBodyData = primaryBody:GetData()
+
+    if not primaryBodyData then
+        Noir.Debugging:RaiseError("VehicleService:_SetupVehicle()", "Failed to spawn a vehicle. `primaryBodyData` is nil.")
+        return
+    end
+
+    local groupID = primaryBodyData.group_id
+
+    -- Return vehicle
+    return self:_RegisterVehicle(groupID, nil, position, 0, true)
+end
+
+--[[
+    Spawn a vehicle from a mission component.<br>
+    Uses `server.spawnAddonComponent` under the hood.
+]]
+---@param componentID integer
+---@param locationID integer
+---@param position SWMatrix
+---@param addonIndex integer|nil Defaults to this addon's index
+---@return NoirVehicle|nil
+function Noir.Services.VehicleService:SpawnVehicleFromMissionComponent(componentID, locationID, position, addonIndex)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleFromMissionComponent()", "componentID", componentID, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleFromMissionComponent()", "locationID", locationID, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleFromMissionComponent()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleFromMissionComponent()", "addonIndex", addonIndex, "number", "nil")
+
+    -- Spawn vehicle
+    local data, success = server.spawnAddonComponent(position, addonIndex or (server.getAddonIndex()), locationID, componentID)
+
+    if not success then
+        Noir.Debugging:RaiseError("VehicleService:SpawnVehicleFromMissionComponent()", "Failed to spawn a vehicle. `server.spawnAddonComponent` returned unsuccessful.")
+        return
+    end
+
+    if data.type ~= 3 then
+        Noir.Debugging:RaiseError("VehicleService:SpawnVehicleFromMissionComponent()", "Failed to spawn a vehicle. Component is not a vehicle.")
+        return
+    end
+
+    return self:_SetupVehicle(data.id, data.vehicle_ids, position)
+end
+
+--[[
+    Spawn a vehicle by file name.<br>
+    Uses `server.spawnVehicle` under the hood.
+]]
+---@param fileName string
+---@param position SWMatrix
+---@return NoirVehicle|nil
+function Noir.Services.VehicleService:SpawnVehicleByFileName(fileName, position)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleByFileName()", "fileName", fileName, "string")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleByFileName()", "position", position, "table")
+
+    -- Spawn vehicle
+    local primaryVehicleID, success, vehicleIDs = server.spawnVehicle(position, fileName)
+
+    if not success then
+        Noir.Debugging:RaiseError("VehicleService:SpawnVehicleByFileName()", "Failed to spawn a vehicle. `server.spawnVehicle` returned unsuccessful.")
+        return
+    end
+
+    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
+end
+
+--[[
     Spawn a vehicle.<br>
     Uses `server.spawnAddonVehicle` under the hood.
 ]]
@@ -539,44 +644,12 @@ function Noir.Services.VehicleService:SpawnVehicle(componentID, position, addonI
     -- Spawn vehicle
     local primaryVehicleID, success, vehicleIDs = server.spawnAddonVehicle(position, addonIndex or (server.getAddonIndex()), componentID)
 
-    -- Check if successful
     if not success then
-        Noir.Libraries.Logging:Error("VehicleService", ":SpawnVehicle() - Failed to spawn a vehicle. `server.spawnAddonVehicle` returned unsuccessful.", false)
+        Noir.Debugging:RaiseError("VehicleService:SpawnVehicle()", "Failed to spawn a vehicle. `server.spawnAddonVehicle` returned unsuccessful.")
         return
     end
 
-    -- Create bodies
-    local primaryBody
-
-    for _, vehicleID in pairs(vehicleIDs) do
-        local body = self:_RegisterBody(vehicleID, nil, position, 0, true)
-
-        if primaryVehicleID == vehicleID then
-            primaryBody = body
-        end
-    end
-
-    -- Check if primaryBody exists
-    if not primaryBody then
-        Noir.Libraries.Logging:Error("VehicleService", ":SpawnVehicle() - Failed to spawn a vehicle. `primaryBody` is nil.", false)
-        return
-    end
-
-    -- Get group ID
-    local primaryBodyData = primaryBody:GetData()
-
-    if not primaryBodyData then
-        Noir.Libraries.Logging:Error("VehicleService", ":SpawnVehicle() - Failed to spawn a vehicle. `primaryBodyData` is nil.", false)
-        return
-    end
-
-    local groupID = primaryBodyData.group_id
-
-    -- Create vehicle
-    local vehicle = self:_RegisterVehicle(groupID, nil, position, 0, true)
-
-    -- Return vehicle
-    return vehicle
+    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
 end
 
 --[[
@@ -642,7 +715,7 @@ end
 ---@return table<integer, NoirBody>
 function Noir.Services.VehicleService:GetBodiesFromPlayer(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetBodiesFromPlayer()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetBodiesFromPlayer()", "player", player, Noir.Classes.Player)
 
     -- Get bodies
     local bodies = {}
@@ -670,7 +743,7 @@ end
 ---@return table<integer, NoirVehicle>
 function Noir.Services.VehicleService:GetVehiclesFromPlayer(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetVehiclesFromPlayer()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:GetVehiclesFromPlayer()", "player", player, Noir.Classes.Player)
 
     -- Get vehicles
     local vehicles = {}

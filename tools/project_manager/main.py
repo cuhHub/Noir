@@ -8,7 +8,7 @@ Repo: https://github.com/cuhHub/Noir
 
 ---
 
-Copyright (C) 2024 Cuh4
+Copyright (C) 2025 Cuh4
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -106,6 +106,13 @@ def errorWrapper(func: "function") -> "function":
 
 # ---- // Classes
 class Path(_Path):
+    """
+    Wrapper class for pathlib.Path.
+
+    Args:
+        _Path (Path): The pathlib.Path class.
+    """    
+    
     def expand(self):
         """
         Expands the path.

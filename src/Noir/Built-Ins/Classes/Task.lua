@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@
 ---@field IsRepeating boolean Whether or not this task is repeating
 ---@field Arguments table<integer, any> The arguments that will be passed to this task upon completion
 ---@field OnCompletion NoirEvent The event that will be fired when this task is completed
-Noir.Classes.TaskClass = Noir.Class("NoirTask")
+Noir.Classes.Task = Noir.Class("Task")
 
 --[[
     Initializes task class objects.
@@ -62,13 +62,13 @@ Noir.Classes.TaskClass = Noir.Class("NoirTask")
 ---@param isRepeating boolean
 ---@param arguments table<integer, any>
 ---@param startedAt number
-function Noir.Classes.TaskClass:Init(ID, taskType, duration, isRepeating, arguments, startedAt)
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "ID", ID, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "taskType", taskType, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "duration", duration, "number")
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "isRepeating", isRepeating, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "arguments", arguments, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:Init()", "startedAt", startedAt, "number", "nil")
+function Noir.Classes.Task:Init(ID, taskType, duration, isRepeating, arguments, startedAt)
+    Noir.TypeChecking:Assert("Noir.Classes.Task:Init()", "ID", ID, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Task:Init()", "taskType", taskType, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Task:Init()", "duration", duration, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Task:Init()", "isRepeating", isRepeating, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.Task:Init()", "arguments", arguments, "table")
+    Noir.TypeChecking:Assert("Noir.Classes.Task:Init()", "startedAt", startedAt, "number", "nil")
 
     self.ID = ID
     self.TaskType = taskType
@@ -90,8 +90,8 @@ end
     If not, the task will be triggered once, then removed from the TaskService.
 ]]
 ---@param isRepeating boolean
-function Noir.Classes.TaskClass:SetRepeating(isRepeating)
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetRepeating()", "isRepeating", isRepeating, "boolean")
+function Noir.Classes.Task:SetRepeating(isRepeating)
+    Noir.TypeChecking:Assert("Noir.Classes.Task:SetRepeating()", "isRepeating", isRepeating, "boolean")
     self.IsRepeating = isRepeating
 end
 
@@ -99,8 +99,8 @@ end
     Sets the duration of this task.
 ]]
 ---@param duration number
-function Noir.Classes.TaskClass:SetDuration(duration)
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetDuration()", "duration", duration, "number")
+function Noir.Classes.Task:SetDuration(duration)
+    Noir.TypeChecking:Assert("Noir.Classes.Task:SetDuration()", "duration", duration, "number")
 
     self.Duration = duration
     self.StopsAt = self.StartedAt + duration
@@ -110,15 +110,15 @@ end
     Sets the arguments that will be passed to this task upon finishing.
 ]]
 ---@param arguments table<integer, any>
-function Noir.Classes.TaskClass:SetArguments(arguments)
-    Noir.TypeChecking:Assert("Noir.Classes.TaskClass:SetArguments()", "arguments", arguments, "table")
+function Noir.Classes.Task:SetArguments(arguments)
+    Noir.TypeChecking:Assert("Noir.Classes.Task:SetArguments()", "arguments", arguments, "table")
     self.Arguments = arguments
 end
 
 --[[
     Remove this task from the task service.
 ]]
-function Noir.Classes.TaskClass:Remove()
+function Noir.Classes.Task:Remove()
     Noir.Services.TaskService:RemoveTask(self)
 end
 

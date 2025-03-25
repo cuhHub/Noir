@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@
 ]]
 ---@class NoirLoggingLib: NoirLibrary
 Noir.Libraries.Logging = Noir.Libraries:Create(
-    "LoggingLibrary",
+    "Logging",
     "A library containing methods related to logging.",
     nil,
     {"Cuh4"}
@@ -57,9 +57,9 @@ Noir.Libraries.Logging.OnLog = Noir.Libraries.Events:Create()
 
 --[[
     Represents the logging layout.<br>
-    Requires two '%s' in the layout. First %s is the log type, the second %s is the log title. The message is then added after the layout.
+    Requires two '%s' in the layout. First %s is the addon name, second %s is the log type, and the third %s is the log title. The message is then added after the layout.
 ]]
-Noir.Libraries.Logging.Layout = "[Noir] [%s] [%s]: "
+Noir.Libraries.Logging.Layout = "[Noir] [%s] [%s] [%s]: "
 
 --[[
     Set the logging mode.
@@ -94,7 +94,7 @@ function Noir.Libraries.Logging:Log(logType, title, message, ...)
         debug.log(formattedText)
     elseif self.LoggingMode == "Chat" then
         debug.log(formattedText)
-        server.announce("Noir", formattedText)
+        server.announce("Noir", formattedText) -- this goes against the rules of noir libraries as they should not interact with the game, but i suppose this is a special case. whups!
     else
         self:Error("Logging", "'%s' is not a valid logging mode.", true, tostring(Noir.Libraries.LoggingMode))
     end
@@ -122,31 +122,23 @@ function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
     local validatedMessage = type(message) == "table" and Noir.Libraries.Table:ToString(message) or (... and tostring(message):format(...) or tostring(message))
 
     -- Format text
-    local formattedMessage = (self.Layout:format(validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..self.Layout:format(validatedLogType, validatedTitle))
+    local formattedMessage = (self.Layout:format(Noir.AddonName, validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..self.Layout:format(Noir.AddonName, validatedLogType, validatedTitle))
 
     -- Return
     return formattedMessage
 end
 
 --[[
-    Sends an error log.<br>
-    Passing true to the third argument will intentionally cause an addon error to be thrown.
+    Sends an error log.
 
-    Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", true, "something.")
+    Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", "something.")
 ]]
 ---@param title string
 ---@param message any
----@param triggerError boolean
 ---@param ... any
-function Noir.Libraries.Logging:Error(title, message, triggerError, ...)
+function Noir.Libraries.Logging:Error(title, message, ...)
     Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "title", title, "string")
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "triggerError", triggerError, "boolean")
-
     self:Log("Error", title, message, ...)
-
-    if triggerError then
-        _ENV["Noir: An error was triggered. See logs for details."]()
-    end
 end
 
 --[[

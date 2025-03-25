@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@
 ]]
 ---@class NoirHTTPLib: NoirLibrary
 Noir.Libraries.HTTP = Noir.Libraries:Create(
-    "HTTPLibrary",
+    "HTTP",
     "A library containing helper methods relating to HTTP.",
     "A library containing helper methods relating to HTTP. Comes with methods for encoding/decoding URLs, etc.",
     {"Cuh4"}

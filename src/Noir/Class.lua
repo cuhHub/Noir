@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@
     Create a class that objects can be created from.<br>
     Note that classes can inherit from other classes.
 
-    local MyClass = Noir.Class:Create("MyClass")
+    local MyClass = Noir.Class("MyClass")
 
     function MyClass:Init(name) -- This is called when MyClass:New() is called
         self.name = name
@@ -49,13 +49,13 @@
     object:MyName() -- "Cuh4"
 ]]
 ---@param name string
----@param parent NoirClass|nil
+---@param ... NoirClass
 ---@return NoirClass
-function Noir.Class(name, parent)
+function Noir.Class(name, ...)
     --[[
         A class that objects can be created from.
 
-        local MyClass = Noir.Class:Create("MyClass")
+        local MyClass = Noir.Class("MyClass")
 
         function MyClass:Init(name) -- This is called when MyClass:New() is called
             self.something = true
@@ -66,15 +66,18 @@ function Noir.Class(name, parent)
     ]]
     ---@class NoirClass
     ---@field ClassName string The name of this class/object
-    ---@field _Parent NoirClass|nil The parent class that this class inherits from
-    ---@field _IsObject boolean Represents whether or not this is a class (objects are created from a class via class:New()) or a class object (an object created from a class due to class:New() call)
-    ---@field _ClassMethods table<integer, string> A list of methods that are only available on classes and not objects created from classes. Used for :_Descend() exceptions internally
+    ---@field _Parents table<integer, NoirClass> The parent classes that this class inherits from
+    ---@field _IsObject boolean Represents whether or not this is a class or a class object (an object created from a class due to class:New() call)
+    ---@field _ClassMethods table<string, boolean> A list of methods that are only available on classes and not objects created from classes. Used for :_Descend() exceptions internally
     ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
     local class = {} ---@diagnostic disable-line
     class.ClassName = name
-    class._Parent = parent
+    class._Parents = {...}
     class._IsObject = false
-    class._ClassMethods = {"New", "Init", "_Descend"}
+    class._ClassMethods = {
+        ["New"] = true,
+        ["Init"] = true
+    }
 
     function class:New(...)
         -- Create class object
@@ -85,15 +88,15 @@ function Noir.Class(name, parent)
         object._IsObject = true
 
         -- Bring down methods from parent
-        if self._Parent then
-            self._Parent:_Descend(object, self._ClassMethods)
+        for _, parent in ipairs(self._Parents) do
+            parent:_Descend(object, self._ClassMethods)
         end
 
         -- Call init of object. This init function will provide the needed attributes to the object
         if self.Init then
             self.Init(object, ...)
         else
-            Noir.Libraries.Logging:Error("Class", "'%s' is missing an :Init() method. This method is required for classes. See the documentation for info.", true, self.ClassName)
+            Noir.Debugging:RaiseError("Class", "'%s' is missing an :Init() method. This method is required for classes. See the documentation for info.", self.ClassName)
         end
 
         -- Return the object
@@ -106,7 +109,7 @@ function Noir.Class(name, parent)
     ]]
     ---@param from NoirClass
     ---@param object NoirClass|table
-    ---@param exceptions table<integer, string>
+    ---@param exceptions table<string, boolean>
     function class._Descend(from, object, exceptions)
         -- Type checking
         Noir.TypeChecking:Assert("Noir.Class()._Descend()", "from", from, "class")
@@ -134,21 +137,15 @@ function Noir.Class(name, parent)
         Use this in the :Init() method of a class that inherits from a parent class.<br>
         Any args provided will be passed to the :Init()
     ]]
-    function class:InitializeParent(...)
+    ---@param parent NoirClass 
+    function class:InitFrom(parent, ...)
         -- Check if this was called from an object
         if not self._IsObject then
-            Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' is a class and not an object.", true)
-            return
-        end
-
-        -- Check if there is a parent
-        if not self._Parent then
-            Noir.Libraries.Logging:Error(self.ClassName, "Attempted to call :InitializeParent() when 'self' has no parent.", true)
-            return
+            Noir.Debugging:RaiseError("Class", "Attempted to call :InitFrom() when 'self' is a class and not an object.")
         end
 
         -- Create an object from the parent class
-        local object = self._Parent:New(...)
+        local object = parent:New(...)
 
         -- Copy and bring new attributes and methods down from the new parent object to this object
         self._Descend(object, self, self._ClassMethods)
@@ -158,10 +155,30 @@ function Noir.Class(name, parent)
         Returns if a class/object is the same type as another.<br>
         If `other` is not a class, it will return false.
     ]]
-    ---@param other NoirClass|any
+    ---@param other any
     ---@return boolean
     function class:IsSameType(other)
-        return self:IsClass(other) and self.ClassName == other.ClassName
+        if not self:IsClass(other) then
+            return false
+        end
+
+        if self.ClassName == other.ClassName then
+            return true
+        end
+
+        for _, parent in pairs(other._Parents) do
+            if self.ClassName == parent.ClassName then
+                return true
+            end
+        end
+
+        for _, parent in pairs(self._Parents) do
+            if other.ClassName == parent.ClassName then
+                return true
+            end
+        end
+
+        return false
     end
 
     --[[

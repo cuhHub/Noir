@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ function Noir.Services.GameSettingsService:GetSetting(name)
     local setting = settings[name]
 
     if setting == nil then
-        Noir.Libraries.Logging:Error("GameSettingsService", "GetSetting(): %s is not a valid game setting.", false, name)
+        Noir.Debugging:RaiseError("GameSettingsService:GetSetting()", "'%s' is not a valid game setting.", name)
         return
     end
 
@@ -90,7 +90,7 @@ function Noir.Services.GameSettingsService:SetSetting(name, value)
 
     -- Set the setting
     if self:GetSettings()[name] == nil then
-        Noir.Libraries.Logging:Error("GameSettingsService", "SetSetting(): %s is not a valid game setting.", false, name)
+        Noir.Debugging:RaiseError("GameSettingsService:SetSetting()", "'%s' is not a valid game setting.", name)
         return
     end
 

@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -64,8 +64,7 @@ function Noir.Services.CommandService:ServiceStart()
         -- Get the player
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)
 
-        if not player then
-            Noir.Libraries.Logging:Error("CommandService", "A player ran a command, but they aren't recognized as a player in the PlayerService", false)
+        if not player then -- can occur because of `server.command` calls
             return
         end
 
@@ -135,7 +134,7 @@ function Noir.Services.CommandService:CreateCommand(name, aliases, requiredPermi
     Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "callback", callback, "function")
 
     -- Create command
-    local command = Noir.Classes.CommandClass:New(name, aliases, requiredPermissions or {}, requiresAuth or false, requiresAdmin or false, capsSensitive or false, description or "")
+    local command = Noir.Classes.Command:New(name, aliases, requiredPermissions or {}, requiresAuth or false, requiresAdmin or false, capsSensitive or false, description or "")
 
     -- Connect to event
     command.OnUse:Connect(callback)

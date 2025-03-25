@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@
 ]]
 ---@class NoirBase64Lib: NoirLibrary
 Noir.Libraries.Base64 = Noir.Libraries:Create(
-    "Base64Library",
+    "Base64",
     "A library containing helper methods to serialize strings into Base64 and back.",
     "",
     {"Cuh4"}
@@ -179,7 +179,7 @@ function Noir.Libraries.Base64:_DecodeFinal(str)
     end
 
     if not Noir.Libraries.Number:IsInteger(c) then
-        Noir.Libraries.Logging:Error("Base64 - :_DecodeFinal()", "'c' is not an integer.", true)
+        Noir.Debugging:RaiseError("Noir.Libraries.Base64:_DecodeFinal()", "'c' is not an integer.")
         return ""
     end
 

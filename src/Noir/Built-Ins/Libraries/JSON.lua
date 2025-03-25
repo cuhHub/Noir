@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -37,16 +37,11 @@
 ]]
 ---@class NoirJSONLib: NoirLibrary
 Noir.Libraries.JSON = Noir.Libraries:Create(
-    "JSONLibrary",
+    "JSON",
     "A library containing helper methods to serialize Lua objects into JSON and back.",
     nil,
     {"Cuh4"}
 )
-
---[[
-    Represents a null value.
-]]
-Noir.Libraries.JSON.Null = {}
 
 --[[
     Returns the type of the provided object.<br>
@@ -118,7 +113,6 @@ function Noir.Libraries.JSON:SkipDelim(str, pos, delim, errIfMissing)
 
     if str:sub(pos, pos) ~= delim then
         if errIfMissing then
-            -- Noir.Libraries.Logging:Error("JSON", "Expected %s at position %d", true, delim, pos)
             return 0, false
         end
 
@@ -149,7 +143,6 @@ function Noir.Libraries.JSON:ParseStringValue(str, pos, val)
     -- local earlyEndError = "End of input found while parsing string."
 
     if pos > #str then
-        -- Noir.Libraries.Logging:Error("JSON", earlyEndError, true)
         return "", 0
     end
 
@@ -167,7 +160,6 @@ function Noir.Libraries.JSON:ParseStringValue(str, pos, val)
     local nextc = str:sub(pos + 1, pos + 1)
 
     if not nextc then
-        -- Noir.Libraries.Logging:Error("JSON", earlyEndError, true)
         return "", 0
     end
 
@@ -192,7 +184,6 @@ function Noir.Libraries.JSON:ParseNumberValue(str, pos)
     local val = tonumber(numStr)
 
     if not val then
-        -- Noir.Libraries.Logging:Error("JSON", "Error parsing number at position %s.", true, pos)
         return 0, 0
     end
 
@@ -219,7 +210,6 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
 
     if kind == "array" then
         if asKey then
-            -- Noir.Libraries.Logging:Error("JSON", "Can't encode array as key.", true)
             return ""
         end
 
@@ -236,7 +226,6 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
         s[#s + 1] = "]"
     elseif kind == "table" then
         if asKey then
-            -- Noir.Libraries.Logging:Error("JSON", "Can't encode table as key.", true)
             return ""
         end
 
@@ -266,12 +255,18 @@ function Noir.Libraries.JSON:Encode(obj, asKey)
     elseif kind == "nil" then
         return "null"
     else
-        -- Noir.Libraries.Logging:Error("JSON", "Type of %s cannot be JSON encoded.", true, kind)
         return ""
     end
 
     return table.concat(s)
 end
+
+--[[
+    Represents a null value.<br>
+    You do not need to reference this. Null values will just be nil in a decoded JSON object.<br>
+    Used internally. Do not use this in your code.
+]]
+Noir.Libraries.JSON._Null = {}
 
 --[[
     Decodes a JSON string into a Lua object.
@@ -294,7 +289,6 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
     pos = pos or 1
 
     if pos > #str then
-        -- Noir.Libraries.Logging:Error("JSON", "Reached unexpected end of input.", true)
         return nil, 0
     end
 
@@ -313,7 +307,6 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
             end
 
             if not delimFound then
-                -- Noir.Libraries.Logging:Error("JSON", "Comma missing between object items.", true)
                 return nil, 0
             end
 
@@ -334,7 +327,6 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
             end
 
             if not delimFound then
-                -- Noir.Libraries.Logging:Error("JSON", "Comma missing between array items.", true)
                 return nil, 0
             end
 
@@ -348,18 +340,23 @@ function Noir.Libraries.JSON:Decode(str, pos, endDelim)
     elseif first == endDelim then
         return nil, pos + 1
     else
-        local literals = {["true"] = true, ["false"] = false, ["null"] = self.Null}
+        local literals = {
+            ["true"] = true,
+            ["false"] = false,
+            ["null"] = self._Null
+        }
 
         for litStr, litVal in pairs(literals) do
             local litEnd = pos + #litStr - 1
 
             if str:sub(pos, litEnd) == litStr then
+                if litVal == self._Null then
+                    return nil, litEnd + 1
+                end
+
                 return litVal, litEnd + 1
             end
         end
-
-        local posInfoStr = "position "..pos..": "..str:sub(pos, pos + 10)
-        -- Noir.Libraries.Logging:Error("JSON", "Invalid json syntax starting at %s", true, posInfoStr)
 
         return nil, 0
     end

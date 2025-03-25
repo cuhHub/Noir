@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@
 ]]
 ---@class NoirEventsLib: NoirLibrary
 Noir.Libraries.Events = Noir.Libraries:Create(
-    "EventsLibrary",
+    "Events",
     "A library that allows you to create events.",
     "A library that allows you to create events. Functions can then be connected or disconnected from these events. Events can be fired which calls all connected functions with the provided arguments.",
     {"Cuh4", "Avril112113"}
@@ -73,7 +73,7 @@ Noir.Libraries.Events = Noir.Libraries:Create(
 ]]
 ---@return NoirEvent
 function Noir.Libraries.Events:Create()
-    local event = Noir.Classes.EventClass:New()
+    local event = Noir.Classes.Event:New()
     return event
 end
 

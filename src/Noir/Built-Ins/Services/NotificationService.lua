@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ function Noir.Services.NotificationService:Notify(title, message, notificationTy
     Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "title", title, "string")
     Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "message", message, "string")
     Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "notificationType", notificationType, "number")
-    Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "player", player, Noir.Classes.PlayerClass, "table", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.NotificationService:Notify()", "player", player, Noir.Classes.Player, "table", "nil")
 
     -- Convert to table if needed
     local players
@@ -86,7 +86,7 @@ function Noir.Services.NotificationService:Notify(title, message, notificationTy
     if player == nil then
         players = Noir.Services.PlayerService:GetPlayers(true)
     else
-        players = (type(player) == "table" and not Noir.Classes.PlayerClass:IsClass(player)) and player or {player}
+        players = (type(player) == "table" and not Noir.Classes.Player:IsClass(player)) and player or {player}
     end
 
     -- Format message

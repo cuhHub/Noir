@@ -4,14 +4,12 @@ intellisense.lua
 # Dev
 TODO.md
 
-# Docs
-build-api-reference.py
-
 # Files relating to publishing/building
 publish.py
 release-description.md
 specs
 build
+_build
 
 # Cache
 __pycache__

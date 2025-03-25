@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@
 ---
 ---@field ServiceInit fun(self: NoirService) A method that is called when the service is initialized
 ---@field ServiceStart fun(self: NoirService) A method that is called when the service is started
-Noir.Classes.ServiceClass = Noir.Class("NoirService")
+Noir.Classes.Service = Noir.Class("Service")
 
 --[[
     Initializes service class objects.
@@ -58,12 +58,12 @@ Noir.Classes.ServiceClass = Noir.Class("NoirService")
 ---@param shortDescription string
 ---@param longDescription string
 ---@param authors table<integer, string>
-function Noir.Classes.ServiceClass:Init(name, isBuiltIn, shortDescription, longDescription, authors)
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "isBuiltIn", isBuiltIn, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "shortDescription", shortDescription, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "longDescription", longDescription, "string")
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Init()", "authors", authors, "table")
+function Noir.Classes.Service:Init(name, isBuiltIn, shortDescription, longDescription, authors)
+    Noir.TypeChecking:Assert("Noir.Classes.Service:Init()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Service:Init()", "isBuiltIn", isBuiltIn, "boolean")
+    Noir.TypeChecking:Assert("Noir.Classes.Service:Init()", "shortDescription", shortDescription, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Service:Init()", "longDescription", longDescription, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Service:Init()", "authors", authors, "table")
 
     self.Name = name
     self.IsBuiltIn = isBuiltIn
@@ -82,16 +82,10 @@ end
     Initialize this service.<br>
     Used internally.
 ]]
-function Noir.Classes.ServiceClass:_Initialize()
+function Noir.Classes.Service:_Initialize()
     -- Checks
     if self.Initialized then
-        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to initialize this service when it has already initialized.", true, self.Name)
-        return
-    end
-
-    if self.Started then
-        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has already started.", true, self.Name)
-        return
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_Initialize()", "%s: Attempted to initialize this service when it has already initialized.", self.Name)
     end
 
     -- Set initialized
@@ -109,15 +103,15 @@ end
     Start this service.<br>
     Used internally.
 ]]
-function Noir.Classes.ServiceClass:_Start()
+function Noir.Classes.Service:_Start()
     -- Checks
     if self.Started then
-        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has already started.", true, self.Name)
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_Start()", "%s: Attempted to start this service when it has already started.", self.Name)
         return
     end
 
     if not self.Initialized then
-        Noir.Libraries.Logging:Error("NoirService", "%s: Attempted to start this service when it has not initialized yet.", true, self.Name)
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_Start()", "%s: Attempted to start this service when it has not initialized yet.", self.Name)
         return
     end
 
@@ -136,30 +130,23 @@ end
     Checks if g_savedata is intact.<br>
     Used internally.
 ]]
----@return boolean
-function Noir.Classes.ServiceClass:_CheckSaveData()
+function Noir.Classes.Service:_CheckSaveData()
     -- Checks
     if not g_savedata then
-        Noir.Libraries.Logging:Error("NoirService", "_CheckSaveData(): g_savedata is nil.", false)
-        return false
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_CheckSaveData()", "g_savedata doesn't exist.")
     end
 
     if not g_savedata.Noir then
-        Noir.Libraries.Logging:Error("NoirService", "._CheckSaveData(): g_savedata.Noir is nil.", false)
-        return false
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_CheckSaveData()", "g_savedata.Noir doesn't exist.")
     end
 
     if not g_savedata.Noir.Services then
-        Noir.Libraries.Logging:Error("NoirService", "._CheckSaveData(): g_savedata.Noir.Services is nil.", false)
-        return false
+        Noir.Debugging:RaiseError("Noir.Classes.Service:_CheckSaveData()", "g_savedata.Noir.Services doesn't exist.")
     end
 
     if not g_savedata.Noir.Services[self.Name] then
         g_savedata.Noir.Services[self.Name] = {}
     end
-
-    -- All good!
-    return true
 end
 
 --[[
@@ -173,8 +160,8 @@ end
 ]]
 ---@param index string
 ---@param data any
-function Noir.Classes.ServiceClass:Save(index, data)
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Save()", "index", index, "string")
+function Noir.Classes.Service:Save(index, data)
+    Noir.TypeChecking:Assert("Noir.Classes.Service:Save()", "index", index, "string")
     self:GetSaveData()[index] = data
 end
 
@@ -190,9 +177,9 @@ end
 ---@param index string
 ---@param default any
 ---@return any
-function Noir.Classes.ServiceClass:Load(index, default)
+function Noir.Classes.Service:Load(index, default)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Load()", "index", index, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Service:Load()", "index", index, "string")
 
     -- Get the value
     local value = self:GetSaveData()[index]
@@ -219,9 +206,9 @@ end
 ---@param index string
 ---@param default any
 ---@return any
-function Noir.Classes.ServiceClass:EnsuredLoad(index, default)
+function Noir.Classes.Service:EnsuredLoad(index, default)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:EnsuredLoad()", "index", index, "string")
+    Noir.TypeChecking:Assert("Noir.Classes.Service:EnsuredLoad()", "index", index, "string")
 
     -- Get the value
     local value = self:Load(index)
@@ -246,8 +233,8 @@ end
     end
 ]]
 ---@param index string
-function Noir.Classes.ServiceClass:Remove(index)
-    Noir.TypeChecking:Assert("Noir.Classes.ServiceClass:Remove()", "index", index, "string")
+function Noir.Classes.Service:Remove(index)
+    Noir.TypeChecking:Assert("Noir.Classes.Service:Remove()", "index", index, "string")
     self:GetSaveData()[index] = nil
 end
 
@@ -262,11 +249,9 @@ end
     end
 ]]
 ---@return table
-function Noir.Classes.ServiceClass:GetSaveData()
+function Noir.Classes.Service:GetSaveData()
     -- Check g_savedata
-    if not self:_CheckSaveData() then
-        return {}
-    end
+    self:_CheckSaveData()
 
     -- Return
     return g_savedata.Noir.Services[self.Name]

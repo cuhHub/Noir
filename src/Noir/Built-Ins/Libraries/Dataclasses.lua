@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@
     A library that allows you to create dataclasses, similar to Python.
 
     local InventoryItem = Noir.Libraries.Dataclasses:New("InventoryItem", {
-        Noir.Libraries.Dataclasses:Field("Name", "String"),
-        Noir.Libraries.Dataclasses:Field("Weight", "Number"),
-        Noir.Libraries.Dataclasses:Field("Stackable", "Boolean")
+        Noir.Libraries.Dataclasses:Field("Name", "string"),
+        Noir.Libraries.Dataclasses:Field("Weight", "number"),
+        Noir.Libraries.Dataclasses:Field("Stackable", "boolean")
     })
 
     local item = InventoryItem:New("Sword", 5, true)
@@ -45,7 +45,7 @@
 ]]
 ---@class NoirDataclassesLib: NoirLibrary
 Noir.Libraries.Dataclasses = Noir.Libraries:Create(
-    "DataclassesLibrary",
+    "Dataclasses",
     "A library that allows you to create dataclasses, similar to Python.",
     nil,
     {"Cuh4"}
@@ -55,9 +55,9 @@ Noir.Libraries.Dataclasses = Noir.Libraries:Create(
     Create a new dataclass.
 
     local InventoryItem = Noir.Libraries.Dataclasses:New("InventoryItem", {
-        Noir.Libraries.Dataclasses:Field("Name", "String"),
-        Noir.Libraries.Dataclasses:Field("Weight", "Number"),
-        Noir.Libraries.Dataclasses:Field("Stackable", "Boolean")
+        Noir.Libraries.Dataclasses:Field("Name", "string"),
+        Noir.Libraries.Dataclasses:Field("Weight", "number"),
+        Noir.Libraries.Dataclasses:Field("Stackable", "boolean")
     })
 
     local item = InventoryItem:New("Sword", 5, true)
@@ -77,36 +77,28 @@ function Noir.Libraries.Dataclasses:New(name, fields)
     local dataclass = Noir.Class(name)
 
     function dataclass:Init(...)
-        -- Pack into table
         local args = {...} ---@type table<integer, any>
 
-        -- Check number of arguments
-        if #args ~= #fields then
-            Noir.Libraries.Logging:Error(("%s (Dataclass)"):format(name), "Invalid number of arguments. Expected %s, got %s.", true, #fields, #args)
-            return
-        end
+        for index, field in pairs(fields) do
+            local argument = args[index]
 
-        -- Iterate through arguments and create fields in this dataclass
-        for index, arg in pairs(args) do
-            -- Get field
-            local field = fields[index]
-
-            if not field then
-                Noir.Libraries.Logging:Error(("%s (Dataclass)"):format(name), "An argument provided doesn't have a corresponding field.", true)
+            -- If nil and nil isn't allowed, raise error
+            if argument == nil and not Noir.Libraries.Table:Find(field.Types, "nil") then
+                Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "Missing argument #%d. Expected %s, got nil.", index, table.concat(field.Types, " | "))
                 return
             end
 
-            -- Type check
-            Noir.TypeChecking:Assert("Dataclass:Init()", field.Name, arg, field.Type)
+            -- Perform type check
+            Noir.TypeChecking:Assert(("%s:Init()"):format(name), field.Name, argument, table.unpack(field.Types))
 
-            -- Ensure we're not overwriting anyway
+            -- Ensure we're not overwriting
             if self[field.Name] then
-                Noir.Libraries.Logging:Error(("%s (Dataclass)"):format(name), "'%s' overwrites an existing field (possibly a built-in field to a class like 'ClassName'). To fix this, rename the field to something else.", true, field.Name)
+                Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "'%s' overwrites an existing field (possibly a built-in field to a class like 'ClassName'). To fix this, rename the field to something else.", field.Name)
                 return
             end
 
             -- Insert field
-            self[field.Name] = arg
+            self[field.Name] = argument
         end
     end
 
@@ -118,15 +110,15 @@ end
     Returns a dataclass field to be used with Noir.Libraries.Dataclasses:New().
 ]]
 ---@param name string
----@param type NoirTypeCheckingType
+---@param ... NoirTypeCheckingType
 ---@return NoirDataclassField
-function Noir.Libraries.Dataclasses:Field(name, type)
+function Noir.Libraries.Dataclasses:Field(name, ...)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Libraries.Dataclasses:Field()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Libraries.Dataclasses:Field()", "type", type, "string")
+    Noir.TypeChecking:AssertMany("Noir.Libraries.Dataclasses:Field()", "...", {...}, "string")
 
     -- Construct and return field
-    return {Name = name, Type = type}
+    return {Name = name, Types = {...}}
 end
 
 -------------------------------
@@ -138,4 +130,4 @@ end
 ]]
 ---@class NoirDataclassField
 ---@field Name string
----@field Type NoirTypeCheckingType
+---@field Types table<integer, NoirTypeCheckingType>

@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -41,14 +41,14 @@
 ---@field ParentEvent NoirEvent The event that this connection is connected to
 ---@field Connected boolean Whether or not this connection is connected
 ---@field Index integer The index of this connection in `ParentEvent.ConnectionsOrder`
-Noir.Classes.ConnectionClass = Noir.Class("NoirConnection")
+Noir.Classes.Connection = Noir.Class("Connection")
 
 --[[
     Initializes new connection class objects.
 ]]
 ---@param callback function
-function Noir.Classes.ConnectionClass:Init(callback)
-    Noir.TypeChecking:Assert("Noir.Classes.ConnectionClass:Init()", "callback", callback, "function")
+function Noir.Classes.Connection:Init(callback)
+    Noir.TypeChecking:Assert("Noir.Classes.Connection:Init()", "callback", callback, "function")
 
     self.Callback = callback
     self.ParentEvent = nil
@@ -62,10 +62,9 @@ end
 ]]
 ---@param ... any
 ---@return any
-function Noir.Classes.ConnectionClass:Fire(...)
+function Noir.Classes.Connection:Fire(...)
     if not self.Connected then
-        Noir.Libraries.Logging:Error("NoirConnection", "Attempted to fire an event connection when it is not connected.", true)
-        return
+        Noir.Debugging:RaiseError("Noir.Classes.Connection:Fire()", "Attempted to fire an event connection when it is not connected.")
     end
 
     return self.Callback(...)
@@ -74,10 +73,9 @@ end
 --[[
     Disconnects the callback from the event.
 ]]
-function Noir.Classes.ConnectionClass:Disconnect()
+function Noir.Classes.Connection:Disconnect()
     if not self.Connected then
-        Noir.Libraries.Logging:Error("NoirConnection", "Attempted to disconnect an event connection when it is not connected.", true)
-        return
+        Noir.Debugging:RaiseError("Noir.Classes.Connection:Disconnect()", "Attempted to disconnect an event connection when it is not connected.")
     end
 
     self.ParentEvent:Disconnect(self)

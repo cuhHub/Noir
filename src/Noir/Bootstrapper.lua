@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -44,12 +44,12 @@ Noir.Bootstrapper = {}
 ---@param service NoirService
 function Noir.Bootstrapper:WrapServiceMethodsForService(service)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Bootstrapper:WrapServiceMethodsForService()", "service", service, Noir.Classes.ServiceClass)
+    Noir.TypeChecking:Assert("Noir.Bootstrapper:WrapServiceMethodsForService()", "service", service, Noir.Classes.Service)
 
     -- Prevent wrapping non-custom methods (aka methods not provided by the user)
     local blacklistedMethods = {}
 
-    for name, _ in pairs(Noir.Classes.ServiceClass) do
+    for name, _ in pairs(Noir.Classes.Service) do
         blacklistedMethods[name] = true
     end
 
@@ -68,8 +68,7 @@ function Noir.Bootstrapper:WrapServiceMethodsForService(service)
         -- Wrap the method
         service[name] = function(...)
             if not service.Initialized then
-                Noir.Libraries.Logging:Error(service.Name.." (Service)", "Attempted to call '%s()' of '%s' (service) when the service hasn't initialized yet.", true, name, service.Name)
-                return
+                Noir.Debugging:RaiseError("Noir.Bootstrapper:WrapServiceMethodsForService()", "Attempted to call '%s()' of '%s' (service) when the service hasn't initialized yet.", name, service.Name)
             end
 
             return method(...)
@@ -117,6 +116,10 @@ function Noir.Bootstrapper:InitializeServices()
     ---@param serviceA NoirService
     ---@param serviceB NoirService
     table.sort(servicesToInit, function(serviceA, serviceB)
+        if serviceA.IsBuiltIn ~= serviceB.IsBuiltIn then
+            return serviceA.IsBuiltIn
+        end
+
         return serviceA.InitPriority < serviceB.InitPriority
     end)
 
@@ -155,6 +158,10 @@ function Noir.Bootstrapper:StartServices()
     ---@param serviceA NoirService
     ---@param serviceB NoirService
     table.sort(servicesToStart, function(serviceA, serviceB)
+        if serviceA.IsBuiltIn ~= serviceB.IsBuiltIn then
+            return serviceA.IsBuiltIn
+        end
+
         return serviceA.StartPriority < serviceB.StartPriority
     end)
 
@@ -173,4 +180,24 @@ end
 function Noir.Bootstrapper:SetIsDedicatedServer()
     local host = server.getPlayers()[1]
     Noir.IsDedicatedServer = host and (host.steam_id == 0 and host.object_id == nil)
+end
+
+--[[
+    Sets the `Noir.AddonName` to the name of your addon.<br>
+    Do not use this in your code. This is used internally.
+]]
+function Noir.Bootstrapper:SetAddonName()
+    local index, success = server.getAddonIndex()
+
+    if not success then
+        Noir.Debugging:RaiseError("Noir.Bootstrapper:SetAddonName()", "Failed to get addon index.")
+    end
+
+    local data = server.getAddonData(index)
+
+    if not data then
+        Noir.Debugging:RaiseError("Noir.Bootstrapper:SetAddonName()", "Failed to get addon data.")
+    end
+
+    Noir.AddonName = data.name
 end

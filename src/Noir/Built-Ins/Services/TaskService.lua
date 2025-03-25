@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ function Noir.Services.TaskService:_HandleTasks()
     for _, task in pairs(self:GetTasks(true)) do
         if not self:_IsValidTaskType(task.TaskType) then
             self:RemoveTask(task)
-            Noir.Libraries.Logging:Error("TaskService", ":_HandleTasks() - Task #%d has an invalid task type of '%s'. Removing and ignoring.", false, task.ID, task.TaskType)
+            Noir.Debugging:RaiseError("TaskService:_HandleTasks()", "Task #%d has an invalid task type of '%s'. Please ensure when creating a task, you use the correct type (assuming you're using `:_AddTask()`)", task.ID, task.TaskType)
 
             goto continue
         end
@@ -175,11 +175,16 @@ function Noir.Services.TaskService:_AddTask(callback, duration, arguments, isRep
     Noir.TypeChecking:Assert("Noir.Services.TaskService:_AddTask()", "taskType", taskType, "string")
     Noir.TypeChecking:Assert("Noir.Services.TaskService:_AddTask()", "startedAt", startedAt, "number")
 
+    -- Check task type
+    if not self:_IsValidTaskType(taskType) then
+        Noir.Debugging:RaiseError("TaskService:_AddTask()", "Invalid task type of '%s'. Please ensure when creating a task, you use the correct type.", taskType)
+    end
+
     -- Increment ID
     self._TaskID = self._TaskID + 1
 
     -- Create task
-    local task = Noir.Classes.TaskClass:New(self._TaskID, taskType, duration, isRepeating, arguments, startedAt)
+    local task = Noir.Classes.Task:New(self._TaskID, taskType, duration, isRepeating, arguments, startedAt)
     task.OnCompletion:Connect(callback)
 
     self.Tasks[task.ID] = task
@@ -336,7 +341,7 @@ end
 ---@param task NoirTask
 function Noir.Services.TaskService:RemoveTask(task)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTask()", "task", task, Noir.Classes.TaskClass)
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTask()", "task", task, Noir.Classes.Task)
 
     -- Remove task
     self.Tasks[task.ID] = nil
@@ -359,7 +364,7 @@ end
 ]]
 ---@param tbl table<integer, any>
 ---@param chunkSize integer How many values to iterate per tick
----@param callback fun(value: any, currentTick: integer|nil, completed: boolean|nil) `currentTick` and `completed` are never nil. They are marked as so to mark the paramters as optional
+---@param callback fun(index: any, value: any, currentTick: integer|nil, completed: boolean|nil) `currentTick` and `completed` are never nil. this is just to mark the paramters as optional
 ---@return NoirTickIterationProcess
 function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
     -- Type checking
@@ -371,7 +376,7 @@ function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
     self._TickIterationProcessID = self._TickIterationProcessID + 1
 
     -- Create iteration process
-    local iterationProcess = Noir.Classes.TickIterationProcessClass:New(self._TickIterationProcessID, tbl, chunkSize)
+    local iterationProcess = Noir.Classes.TickIterationProcess:New(self._TickIterationProcessID, tbl, chunkSize)
     iterationProcess.IterationEvent:Connect(callback)
 
     -- Store iteration process
@@ -400,7 +405,7 @@ end
 ---@param tickIterationProcess NoirTickIterationProcess
 function Noir.Services.TaskService:RemoveTickIterationProcess(tickIterationProcess)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTickIterationProcess()", "tickIterationProcess", tickIterationProcess, Noir.Classes.TickIterationProcessClass)
+    Noir.TypeChecking:Assert("Noir.Services.TaskService:RemoveTickIterationProcess()", "tickIterationProcess", tickIterationProcess, Noir.Classes.TickIterationProcess)
 
     -- Remove iteration process
     self.TickIterationProcesses[tickIterationProcess.ID] = nil

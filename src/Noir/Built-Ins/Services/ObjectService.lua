@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -52,8 +52,8 @@
 ]]
 ---@class NoirObjectService: NoirService
 ---@field Objects table<integer, NoirObject> A table containing all objects
----@field OnRegister NoirEvent Fired when an object is registered (first arg: NoirObject)
----@field OnUnregister NoirEvent Fired when an object is unregistered (first arg: NoirObject)
+---@field OnRegister NoirEvent Fired when an object is registered. This is NOT when an object spawns, only when this serviec finds an object (first arg: NoirObject)
+---@field OnUnregister NoirEvent Fired when an object is unregistered, usually on despawn by this addon (first arg: NoirObject)
 ---@field OnLoad NoirEvent Fired when an object is loaded (first arg: NoirObject)
 ---@field OnUnload NoirEvent Fired when an object is unloaded (first arg: NoirObject)
 ---@field _OnObjectLoadConnection NoirConnection A connection to the onObjectLoad game callback
@@ -81,28 +81,12 @@ end
 function Noir.Services.ObjectService:ServiceStart()
     -- Listen for object loading/unloading
     self._OnObjectLoadConnection = Noir.Callbacks:Connect("onObjectLoad", function(object_id)
-        -- Get object
         local object = self:GetObject(object_id) -- creates an object if it doesn't already exist
-
-        if not object then
-            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnObjectLoadConnection callback.", false)
-            return
-        end
-
-        -- Call method
         self:_OnObjectLoad(object)
     end)
 
     self._OnObjectUnloadConnection = Noir.Callbacks:Connect("onObjectUnload", function(object_id)
-        -- Get object
         local object = self:GetObject(object_id)
-
-        if not object then
-            Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in OnObjectUnloadConnection callback.", false)
-            return
-        end
-
-        -- Call method
         self:_OnObjectUnload(object)
     end)
 end
@@ -113,7 +97,7 @@ end
 ]]
 function Noir.Services.ObjectService:_LoadObjects()
     for _, object in pairs(self:_GetSavedObjects()) do
-        self:RegisterObject(object.ID, true)
+        self:_RegisterObject(object.ID, true)
     end
 end
 
@@ -124,7 +108,7 @@ end
 ---@param object NoirObject
 function Noir.Services.ObjectService:_OnObjectLoad(object)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectLoad()", "object", object, Noir.Classes.ObjectClass)
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectLoad()", "object", object, Noir.Classes.Object)
 
     -- Fire event, set loaded
     object.Loaded = true
@@ -142,21 +126,69 @@ end
 ---@param object NoirObject
 function Noir.Services.ObjectService:_OnObjectUnload(object)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectUnload()", "object", object, Noir.Classes.ObjectClass)
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_OnObjectUnload()", "object", object, Noir.Classes.Object)
 
     -- Fire events, set loaded
     object.Loaded = false
     object.OnUnload:Fire()
     self.OnUnload:Fire(object)
 
-    -- Remove from g_savedata if the object was removed and unloaded, otherwise save
-    Noir.Services.TaskService:AddTickTask(function()
-        if not object:Exists() then
-            self:_RemoveObjectSavedata(object.ID)
-        else
-            self:_SaveObjectSavedata(object)
-        end
-    end, 1) -- untested, but this delay might be needed in case the object is unloaded first, then removed
+    -- Remove from savedata (this should be done when the object is despawned, but it is impossible afaik to find out if this object despawned via this callback)
+    self:_RemoveObjectSavedata(object.ID)
+end
+
+
+--[[
+    Registers an object by ID.<br>
+    Used internally. Use :GetObject() to retrieve an object instead.
+]]
+---@param object_id integer
+---@param _preventEventTrigger boolean|nil
+---@return NoirObject
+function Noir.Services.ObjectService:_RegisterObject(object_id, _preventEventTrigger)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_RegisterObject()", "object_id", object_id, "number")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_RegisterObject()", "_preventEventTrigger", _preventEventTrigger, "boolean", "nil")
+
+    -- Check if the object exists and is loaded
+    local loaded, exists = server.getObjectSimulating(object_id)
+
+    -- Create object
+    local object = Noir.Classes.Object:New(object_id)
+    object.Loaded = loaded and exists
+
+    self.Objects[object_id] = object
+
+    -- Fire event
+    if not _preventEventTrigger then -- this is here for objects that are being registered from g_savedata
+        self.OnRegister:Fire(object)
+    end
+
+    -- Save to g_savedata
+    self:_SaveObjectSavedata(object)
+
+    -- Return
+    return object
+end
+
+--[[
+    Removes the object with the given ID.<br>
+    Used internally. Do not use in your code.
+]]
+---@param object NoirObject
+function Noir.Services.ObjectService:_RemoveObject(object)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_RemoveObject()", "object", object, Noir.Classes.Object)
+
+    -- Fire event
+    object.OnUnregister:Fire()
+    self.OnUnregister:Fire(object)
+
+    -- Remove object
+    self.Objects[object.ID] = nil
+
+    -- Remove from g_savedata
+    self:_RemoveObjectSavedata(object.ID)
 end
 
 --[[
@@ -188,7 +220,7 @@ end
 ---@param object NoirObject
 function Noir.Services.ObjectService:_SaveObjectSavedata(object)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_SaveObjectSavedata()", "object", object, Noir.Classes.ObjectClass)
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:_SaveObjectSavedata()", "object", object, Noir.Classes.Object)
 
     -- Save to g_savedata
     local saved = self:_GetSavedObjects()
@@ -222,84 +254,16 @@ function Noir.Services.ObjectService:GetObjects()
 end
 
 --[[
-    Registers an object by ID.
-]]
----@param object_id integer
----@param _preventEventTrigger boolean|nil
----@return NoirObject|nil
-function Noir.Services.ObjectService:RegisterObject(object_id, _preventEventTrigger)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:RegisterObject()", "object_id", object_id, "number")
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:RegisterObject()", "_preventEventTrigger", _preventEventTrigger, "boolean", "nil")
-
-    -- Check if the object exists and is loaded
-    local loaded, exists = server.getObjectSimulating(object_id)
-
-    if not exists then
-        self:_RemoveObjectSavedata(object_id) -- prevent memory leak
-        return
-    end
-
-    -- Create object
-    local object = Noir.Classes.ObjectClass:New(object_id)
-    object.Loaded = loaded
-
-    self.Objects[object_id] = object
-
-    -- Fire event
-    if not _preventEventTrigger then -- this is here for objects that are being registered from g_savedata
-        self.OnRegister:Fire(object)
-    end
-
-    -- Save to g_savedata
-    self:_SaveObjectSavedata(object)
-
-    -- Remove on object despawn
-    object.OnDespawn:Once(function()
-        self:RemoveObject(object_id)
-    end)
-
-    -- Return
-    return object
-end
-
---[[
     Returns the object with the given ID.
 ]]
 ---@param object_id integer
----@return NoirObject|nil
+---@return NoirObject
 function Noir.Services.ObjectService:GetObject(object_id)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:GetObject()", "object_id", object_id, "number")
 
     -- Get object
-    return self.Objects[object_id] or self:RegisterObject(object_id)
-end
-
---[[
-    Removes the object with the given ID.
-]]
----@param object_id integer
-function Noir.Services.ObjectService:RemoveObject(object_id)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:RemoveObject()", "object_id", object_id, "number")
-
-    -- Get object
-    local object = self:GetObject(object_id)
-
-    if not object then
-        Noir.Libraries.Logging:Error("ObjectService", "Failed to get object in :RemoveObject().", false)
-        return
-    end
-
-    -- Fire event
-    self.OnUnregister:Fire(object)
-
-    -- Remove object
-    self.Objects[object_id] = nil
-
-    -- Remove from g_savedata
-    self:_RemoveObjectSavedata(object_id)
+    return self.Objects[object_id] or self:_RegisterObject(object_id)
 end
 
 --[[
@@ -317,7 +281,7 @@ function Noir.Services.ObjectService:SpawnObject(objectType, position)
     local object_id, success = server.spawnObject(position, objectType)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnObject() failed due to server.spawnObject() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnObject()", "server.spawnObject() was unsuccessful. is `objectType` valid?")
         return
     end
 
@@ -325,7 +289,7 @@ function Noir.Services.ObjectService:SpawnObject(objectType, position)
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnObject().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnObject()", ":GetObject() returned nil.")
         return
     end
 
@@ -348,7 +312,7 @@ function Noir.Services.ObjectService:SpawnCharacter(outfitType, position)
     local object_id, success = server.spawnCharacter(position, outfitType)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnCharacter() failed due to server.spawnCharacter() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnCharacter()", "server.spawnCharacter() was unsuccessful. Is `outfitType` valid?")
         return
     end
 
@@ -356,7 +320,7 @@ function Noir.Services.ObjectService:SpawnCharacter(outfitType, position)
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnCharacter().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnCharacter()", ":GetObject() returned nil.")
         return
     end
 
@@ -381,7 +345,7 @@ function Noir.Services.ObjectService:SpawnCreature(creatureType, position, sizeM
     local object_id, success = server.spawnCreature(position, creatureType, sizeMultiplier or 1)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnCreature() failed due to server.spawnCreature() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnCreature()", "server.spawnCreature() was unsuccessful. is `creatureType` valid?")
         return
     end
 
@@ -389,7 +353,7 @@ function Noir.Services.ObjectService:SpawnCreature(creatureType, position, sizeM
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnCreature().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnCreature()", ":GetObject() returned nil.")
         return
     end
 
@@ -414,7 +378,7 @@ function Noir.Services.ObjectService:SpawnAnimal(animalType, position, sizeMulti
     local object_id, success = server.spawnAnimal(position, animalType, sizeMultiplier or 1)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnAnimal() failed due to server.spawnAnimal() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnAnimal()", "server.spawnAnimal() was unsuccessful. Is `animalType` valid?")
         return
     end
 
@@ -422,7 +386,7 @@ function Noir.Services.ObjectService:SpawnAnimal(animalType, position, sizeMulti
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnAnimal().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnAnimal()", ":GetObject() returned nil.")
         return
     end
 
@@ -449,7 +413,7 @@ function Noir.Services.ObjectService:SpawnEquipment(equipmentType, position, int
     local object_id, success = server.spawnEquipment(position, equipmentType, int, float)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnEquipment() failed due to server.spawnEquipment() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnEquipment()", "server.spawnEquipment() was unsuccessful. Is `equipmentType` valid?")
         return
     end
 
@@ -457,7 +421,7 @@ function Noir.Services.ObjectService:SpawnEquipment(equipmentType, position, int
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnEquipment().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnEquipment()", ":GetObject() returned nil.")
         return
     end
 
@@ -473,24 +437,24 @@ end
 ---@param magnitude number -1 explodes instantly. Nearer to 0 means the explosion takes longer to happen. Must be below 0 for explosions to work.
 ---@param isLit boolean Lights the fire. If the magnitude is >1, this will need to be true for the fire to first warm up before exploding.
 ---@param isExplosive boolean
----@param parentVehicleID integer|nil
+---@param parentBody NoirBody|nil
 ---@param explosionMagnitude number The size of the explosion (0-5)
 ---@return NoirObject|nil
-function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit, isExplosive, parentVehicleID, explosionMagnitude)
+function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit, isExplosive, parentBody, explosionMagnitude)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "position", position, "table")
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "size", size, "number")
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "magnitude", magnitude, "number")
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "isLit", isLit, "boolean")
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "isExplosive", isExplosive, "boolean")
-    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "parentVehicleID", parentVehicleID, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "parentBody", parentBody, Noir.Classes.Body, "nil")
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "explosionMagnitude", explosionMagnitude, "number")
 
     -- Spawn the fire
-    local object_id, success = server.spawnFire(position, size, magnitude, isLit, isExplosive, parentVehicleID or 0, explosionMagnitude)
+    local object_id, success = server.spawnFire(position, size, magnitude, isLit, isExplosive, parentBody and parentBody.ID or 0, explosionMagnitude)
 
     if not success then
-        Noir.Libraries.Logging:Error("ObjectService", ":SpawnFire() failed due to server.spawnFire() being unsuccessful.", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnFire()", "server.spawnFire() was unsuccessful. Ensure the provided parameters are correct.")
         return
     end
 
@@ -498,7 +462,7 @@ function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit,
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Libraries.Logging:Error("ObjectService", ":GetObject() returned nil in :SpawnFire().", false)
+        Noir.Debugging:RaiseError("ObjectService:SpawnFire()", ":GetObject() returned nil.")
         return
     end
 

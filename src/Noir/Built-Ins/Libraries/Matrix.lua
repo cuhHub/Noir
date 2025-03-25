@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@
 ]]
 ---@class NoirMatrixLib: NoirLibrary
 Noir.Libraries.Matrix = Noir.Libraries:Create(
-    "MatrixLibrary",
+    "Matrix",
     "A library containing helper methods relating to Stormworks matrices.",
     nil,
     {"Cuh4"}
@@ -124,4 +124,18 @@ function Noir.Libraries.Matrix:ToString(pos)
     -- Convert the matrix to a string
     local x, y, z = matrix.position(pos)
     return ("%.1f, %.1f, %.1f"):format(x, y, z)
+end
+
+--[[
+    Returns the magnitude of a matrix's XYZ vector.
+]]
+---@param pos SWMatrix
+---@return number
+function Noir.Libraries.Matrix:Magnitude(pos)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Matrix:Magnitude()", "pos", pos, "table")
+
+    -- Return
+    local x, y, z = matrix.position(pos)
+    return math.sqrt((x * x) + (y * y) + (z * z))
 end

@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ function Noir.Libraries:Create(name, shortDescription, longDescription, authors)
     Noir.TypeChecking:Assert("Noir.Libraries:Create()", "authors", authors, "table", "nil")
 
     -- Create library
-    local library = Noir.Classes.LibraryClass:New(name, shortDescription or "N/A", longDescription or "N/A", authors or {})
+    local library = Noir.Classes.Library:New(name, shortDescription or "N/A", longDescription or "N/A", authors or {})
 
     -- Return library
     return library

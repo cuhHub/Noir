@@ -1,0 +1,10 @@
+{
+    "order" : [
+        "Widget.lua",
+        "MapLabelWidget.lua",
+        "MapObjectWidget.lua",
+        "ScreenPopupWidget.lua",
+        "PopupWidget.lua",
+        "MapLineWidget.lua"
+    ]
+}

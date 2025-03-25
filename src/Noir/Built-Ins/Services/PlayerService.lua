@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@
 ---@field OnJoin NoirEvent Arguments: player (NoirPlayer) | Fired when a player joins the server
 ---@field OnLeave NoirEvent Arguments: player (NoirPlayer) | Fired when a player leaves the server
 ---@field OnDie NoirEvent Arguments: player (NoirPlayer) | Fired when a player dies
----@field OnSit NoirEvent Arguments: player (NoirPlayer), body (NoirBody), seatName (string) | Fired when a player sits in a seat
----@field OnUnsit NoirEvent Arguments: player (NoirPlayer), body (NoirBody), seatName (string) | Fired when a player unsits in a seat
+---@field OnSit NoirEvent Arguments: player (NoirPlayer), body (NoirBody|nil), seatName (string) | Fired when a player sits in a seat (body can be nil if the player sat on a map object, etc)
+---@field OnUnsit NoirEvent Arguments: player (NoirPlayer), body (NoirBody|nil), seatName (string) | Fired when a player unsits in a seat (body can be nil if the player sat on a map object, etc)
 ---@field OnRespawn NoirEvent Arguments: player (NoirPlayer) | Fired when a player respawns
 ---@field Players table<integer, NoirPlayer> The players in the server
 ---@field _JoinCallback NoirConnection A connection to the onPlayerDie event
@@ -104,8 +104,7 @@ function Noir.Services.PlayerService:ServiceStart()
         -- Get player
         local player = self:GetPlayer(peer_id)
 
-        if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just left, but their data couldn't be found.", false)
+        if not player then -- likely unnamed client
             return
         end
 
@@ -113,7 +112,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local success = self:_RemovePlayerData(player)
 
         if not success then
-            Noir.Libraries.Logging:Error("PlayerService", "onPlayerLeave player data removal failed.", false)
+            Noir.Debugging:RaiseError("PlayerService", "onPlayerLeave player data removal failed.")
             return
         end
 
@@ -126,7 +125,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just died, but they don't have data.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just died, but they don't have data.")
             return
         end
 
@@ -139,7 +138,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just respawned, but they don't have data.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just respawned, but they don't have data.")
             return
         end
 
@@ -152,17 +151,12 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just sat in a body, but they don't have data.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just sat in a body, but they don't have data.")
             return
         end
 
         -- Get body
-        local body = Noir.Services.VehicleService:GetBody(vehicle_id)
-
-        if not body then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just sat in a body, but that body doesn't exist.", false)
-            return
-        end
+        local body = Noir.Services.VehicleService:GetBody(vehicle_id) -- can be nil if the player sat on a bed on the map
 
         -- Call sit event
         self.OnSit:Fire(player, body, seat_name)
@@ -173,17 +167,12 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just got up from a body seat, but they don't have data.", false)
+            Noir.Debugging:RaiseError("PlayerService", "A player just got up from a body seat, but they don't have data.")
             return
         end
 
         -- Get body
-        local body = Noir.Services.VehicleService:GetBody(vehicle_id)
-
-        if not body then
-            Noir.Libraries.Logging:Error("PlayerService", "A player just got up from a body seat, but that body doesn't exist.", false)
-            return
-        end
+        local body = Noir.Services.VehicleService:GetBody(vehicle_id) -- can be nil if the player sat on a bed on the map
 
         -- Call unsit event
         self.OnUnsit:Fire(player, body, seat_name)
@@ -202,7 +191,6 @@ function Noir.Services.PlayerService:_LoadPlayers()
 
         -- Check if already loaded
         if self:GetPlayer(player.id) then
-            Noir.Libraries.Logging:Info("PlayerService", "server.getPlayers(): %s already has data. Ignoring.", player.name)
             goto continue
         end
 
@@ -210,7 +198,7 @@ function Noir.Services.PlayerService:_LoadPlayers()
         local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
 
         if not createdPlayer then
-            Noir.Libraries.Logging:Error("PlayerService", "server.getPlayers(): Player data creation failed.", false)
+            Noir.Debugging:RaiseError("PlayerService:_LoadPlayers()", "Player data creation failed.")
             goto continue
         end
 
@@ -259,12 +247,12 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
 
     -- Check if player already exists
     if self:GetPlayer(peer_id) then
-        Noir.Libraries.Logging:Error("PlayerService", "Attempted to give player data to an existing player. This player has been ignored.", false)
+        Noir.Debugging:RaiseError("PlayerService:_GivePlayerData()", "Attempted to give data to a player that already exists.")
         return
     end
 
     -- Create player
-    local player = Noir.Classes.PlayerClass:New(
+    local player = Noir.Classes.Player:New(
         name,
         peer_id,
         tostring(steam_id),
@@ -291,11 +279,11 @@ end
 ---@return boolean success Whether or not the operation was successful
 function Noir.Services.PlayerService:_RemovePlayerData(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemovePlayerData()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemovePlayerData()", "player", player, Noir.Classes.Player)
 
     -- Check if player exists in this service
     if not self:GetPlayer(player.ID) then
-        Noir.Libraries.Logging:Error("PlayerService", "Attempted to remove player data from a non-existent player.", false)
+        Noir.Debugging:RaiseError("PlayerService:_RemovePlayerData()", "Attempted to remove a player from the service that isn't in the service.")
         return false
     end
 
@@ -333,7 +321,7 @@ end
 ---@param player NoirPlayer
 function Noir.Services.PlayerService:_MarkRecognized(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_MarkRecognized()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_MarkRecognized()", "player", player, Noir.Classes.Player)
 
     -- Mark as recognized
     self:GetSaveData().RecognizedIDs[player.ID] = true
@@ -347,7 +335,7 @@ end
 ---@return boolean
 function Noir.Services.PlayerService:_IsRecognized(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_IsRecognized()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_IsRecognized()", "player", player, Noir.Classes.Player)
 
     -- Return true if recognized
     return self:GetSaveData().RecognizedIDs[player.ID] ~= nil
@@ -368,7 +356,7 @@ end
 ---@param player NoirPlayer
 function Noir.Services.PlayerService:_UnmarkRecognized(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_UnmarkRecognized()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_UnmarkRecognized()", "player", player, Noir.Classes.Player)
 
     -- Remove from recognized
     self:GetSaveData().RecognizedIDs[player.ID] = nil
@@ -391,7 +379,7 @@ end
 ---@param property string
 function Noir.Services.PlayerService:_SaveProperty(player, property)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "player", player, Noir.Classes.Player)
     Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "property", property, "string")
 
     -- Property saving
@@ -412,7 +400,7 @@ end
 ---@return table<string, boolean>|nil
 function Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GetSavedPropertiesForPlayer()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GetSavedPropertiesForPlayer()", "player", player, Noir.Classes.Player)
 
     -- Return saved properties for player
     return self:_GetSavedProperties()[player.ID]
@@ -425,7 +413,7 @@ end
 ---@param player NoirPlayer
 function Noir.Services.PlayerService:_RemoveSavedProperties(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemoveSavedProperties()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemoveSavedProperties()", "player", player, Noir.Classes.Player)
 
     -- Remove saved properties
     local properties = self:_GetSavedProperties()
@@ -503,7 +491,7 @@ end
 ---@return NoirPlayer|nil
 function Noir.Services.PlayerService:GetPlayerByCharacter(character)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerByCharacter()", "character", character, Noir.Classes.ObjectClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:GetPlayerByCharacter()", "character", character, Noir.Classes.Object)
 
     -- Get player
     for _, player in pairs(self:GetPlayers(true)) do
@@ -538,8 +526,8 @@ end
 ---@return boolean
 function Noir.Services.PlayerService:IsSamePlayer(playerA, playerB)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:IsSamePlayer()", "playerA", playerA, Noir.Classes.PlayerClass)
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:IsSamePlayer()", "playerB", playerB, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:IsSamePlayer()", "playerA", playerA, Noir.Classes.Player)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:IsSamePlayer()", "playerB", playerB, Noir.Classes.Player)
 
     -- Return if both players are the same
     return playerA.ID == playerB.ID

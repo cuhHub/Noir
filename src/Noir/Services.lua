@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -86,12 +86,11 @@ function Noir.Services:CreateService(name, isBuiltIn, shortDescription, longDesc
 
     -- Check if service already exists
     if self.CreatedServices[name] then
-        Noir.Libraries.Logging:Error("Service Creation", "Attempted to create a service that already exists. The already existing service has been returned instead.", false)
-        return self.CreatedServices[name]
+        Noir.Debugging:RaiseError(":CreateService()", "Attempted to create a service with the same name as an already-existing service. Name: %s", name)
     end
 
     -- Create service
-    local service = Noir.Classes.ServiceClass:New(name, isBuiltIn or false, shortDescription or "N/A", longDescription or "N/A", authors or {})
+    local service = Noir.Classes.Service:New(name, isBuiltIn or false, shortDescription or "N/A", longDescription or "N/A", authors or {})
 
     -- Register service internally
     self.CreatedServices[name] = service
@@ -118,14 +117,12 @@ function Noir.Services:GetService(name)
 
     -- Check if service exists
     if not service then
-        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that doesn't exist ('%s').", true, name)
-        return
+        Noir.Debugging:RaiseError(":GetService()", "Attempted to retrieve a service that doesn't exist ('%s').", name)
     end
 
     -- Check if service has been initialized
     if not service.Initialized then
-        Noir.Libraries.Logging:Error("Service Retrieval", "Attempted to retrieve a service that hasn't initialized yet ('%s').", false, service.Name)
-        return
+        Noir.Debugging:RaiseError(":GetService()", "Attempted to retrieve a service that hasn't initialized yet ('%s').", service.Name)
     end
 
     return service
@@ -141,8 +138,7 @@ function Noir.Services:RemoveService(name)
 
     -- Check if service exists
     if not self.CreatedServices[name] then
-        Noir.Libraries.Logging:Error("Service Removal", "Attempted to remove a service that doesn't exist ('%s').", true, name)
-        return
+        Noir.Debugging:RaiseError(":RemoveService()", "Attempted to remove a service that doesn't exist ('%s').", name)
     end
 
     -- Remove service
@@ -157,7 +153,7 @@ end
 ---@return string
 function Noir.Services:FormatService(service)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services:FormatService()", "service", service, Noir.Classes.ServiceClass)
+    Noir.TypeChecking:Assert("Noir.Services:FormatService()", "service", service, Noir.Classes.Service)
 
     -- Format service
     return ("'%s'%s%s"):format(service.Name, #service.Authors >= 1 and " by "..table.concat(service.Authors, ", ") or "", service.IsBuiltIn and " (Built-In)" or "")

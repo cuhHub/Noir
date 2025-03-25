@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ function Noir.Services.HTTPService:ServiceStart()
         end
 
         -- Trigger response
-        request.OnResponse:Fire(Noir.Classes.HTTPResponseClass:New(response))
+        request.OnResponse:Fire(Noir.Classes.HTTPResponse:New(response))
 
         -- Remove request
         table.remove(self.ActiveRequests, index)
@@ -134,23 +134,26 @@ end
 ]]
 ---@param URL string
 ---@param port integer
----@param callback fun(response: NoirHTTPResponse)
+---@param callback fun(response: NoirHTTPResponse)|nil
 ---@return NoirHTTPRequest|nil
 function Noir.Services.HTTPService:GET(URL, port, callback)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "URL", URL, "string")
     Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "port", port, "number")
-    Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "callback", callback, "function")
+    Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "callback", callback, "function", "nil")
 
     -- Check if port is valid
     if not self:IsPortValid(port) then
-        Noir.Libraries.Logging:Error("HTTPService", "Port is out of range, expected a port between %d and %d.", true, self._PortRangeMin, self._PortRangeMax)
+        Noir.Debugging:RaiseError("HTTPService", "Port is out of range, expected a port between %d and %d.", self._PortRangeMin, self._PortRangeMax)
         return
     end
 
     -- Create request object
-    local request = Noir.Classes.HTTPRequestClass:New(URL, port)
-    request.OnResponse:Once(callback)
+    local request = Noir.Classes.HTTPRequest:New(URL, port)
+
+    if callback then
+        request.OnResponse:Once(callback)
+    end
 
     -- Send request
     server.httpGet(port, URL)

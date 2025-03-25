@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ function Noir.Services.MessageService:ServiceStart()
         local author = Noir.Services.PlayerService:GetPlayer(peerID)
 
         if not author then
-            Noir.Libraries.Logging:Error("MessageService", "`onChatMessage` gave an unrecognized peer ID.", false)
+            Noir.Debugging:RaiseError("MessageService", "Failed to get author of message via 'onChatMessage' callback.")
             return
         end
 
@@ -157,14 +157,14 @@ function Noir.Services.MessageService:_RegisterMessage(title, content, author, i
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "title", title, "string")
     Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "content", content, "string")
-    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "author", author, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "author", author, Noir.Classes.Player, "nil")
     Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "isAddon", isAddon, "boolean")
     Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "sentAt", sentAt, "number", "nil")
-    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "recipient", recipient, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "recipient", recipient, Noir.Classes.Player, "nil")
     Noir.TypeChecking:Assert("Noir.Services.MessageService:_RegisterMessage()", "fireEvent", fireEvent, "boolean", "nil")
 
     -- Create message
-    local message = Noir.Classes.MessageClass:New(
+    local message = Noir.Classes.Message:New(
         author,
         isAddon,
         content,
@@ -195,7 +195,7 @@ end
 ---@param message NoirMessage
 function Noir.Services.MessageService:_SaveMessage(message)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.MessageService:_SaveMessage()", "message", message, Noir.Classes.MessageClass)
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:_SaveMessage()", "message", message, Noir.Classes.Message)
 
     -- Save
     self:_InsertIntoTable(self._SavedMessages, message:_Serialize(), self._MessageLimit)
@@ -214,13 +214,13 @@ end
 ---@return NoirMessage
 function Noir.Services.MessageService:SendMessage(player, title, content, ...)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.MessageService:SendMessage()", "player", player, Noir.Classes.PlayerClass, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:SendMessage()", "player", player, Noir.Classes.Player, "nil")
     Noir.TypeChecking:Assert("Noir.Services.MessageService:SendMessage()", "title", title, "string")
     Noir.TypeChecking:Assert("Noir.Services.MessageService:SendMessage()", "content", content, "string")
 
     -- Send message
     local formattedContent = ... and content:format(...) or content
-    server.announce(title, formattedContent, player and player.ID)
+    server.announce(title, formattedContent, player and player.ID or -1)
 
     -- Register message
     local message = self:_RegisterMessage(
@@ -244,7 +244,7 @@ end
 ---@return table<integer, NoirMessage>
 function Noir.Services.MessageService:GetMessagesByPlayer(player)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.MessageService:GetMessagesByPlayer()", "player", player, Noir.Classes.PlayerClass)
+    Noir.TypeChecking:Assert("Noir.Services.MessageService:GetMessagesByPlayer()", "player", player, Noir.Classes.Player)
 
     -- Get messages
     local messages = {}

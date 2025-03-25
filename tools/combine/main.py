@@ -8,7 +8,7 @@ Repo: https://github.com/cuhHub/Noir
 
 ---
 
-Copyright (C) 2024 Cuh4
+Copyright (C) 2025 Cuh4
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -210,16 +210,23 @@ class Combiner():
             
         return False
 
-# -----------------------------------------
-# // ---- Main
-# -----------------------------------------
-
+# ---- // Main
 @click.command()
 @click.option("--directory", "-d", "-p", "--path", type = str, required = True, help = "The directory containing files to combine.")
 @click.option("--destination", "-de", type = str, required = True, help = "The file which should have the content of all files combined. Created automatically if it doesn't exist.")
 @click.option("--allow_file_extension", "-afe", default = [], multiple = True, help = "The file extensions to allow.")
 @click.option("--ignore_path", "-ip", default = [], multiple = True, help = "The paths to ignore when combining.")
 def combiner_tool(directory: str, destination: str, allow_file_extension: list[str], ignore_path: list[str]):
+    """
+    Combine all files in the directory into one.
+
+    Args:
+        directory (str): The directory containing files to combine.
+        destination (str): The file which should have the content of all files combined. Created automatically if it doesn't exist.
+        allow_file_extension (list[str]): The file extensions to allow.
+        ignore_path (list[str]): The paths to ignore when combining.
+    """    
+    
     # Combine files
     ignored = [Path(path) for path in ignore_path]
     ignored.extend([Path(__file__)])

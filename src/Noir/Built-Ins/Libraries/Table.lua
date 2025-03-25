@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@
 ]]
 ---@class NoirTableLib: NoirLibrary
 Noir.Libraries.Table = Noir.Libraries:Create(
-    "TableLibrary",
+    "Table",
     "A library containing helper methods relating to tables.",
     nil,
     {"Cuh4"}
@@ -384,11 +384,7 @@ function Noir.Libraries.Table:FindDeep(tbl, value)
         if iterValue == value then
             return index, tbl
         elseif type(iterValue) == "table" then
-            local _index, _tbl = self:FindDeep(iterValue, value)
-
-            if _index and _tbl then
-                return _index, _tbl
-            end
+            return self:FindDeep(iterValue, value)
         end
     end
 end

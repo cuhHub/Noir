@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -60,6 +60,9 @@ require("Noir.Built-Ins.Classes.Vehicle")
 require("Noir.Built-Ins.Classes.Message")
 require("Noir.Built-Ins.Classes.TickIterationProcess")
 require("Noir.Built-Ins.Classes.AITargetData")
+require("Noir.Built-Ins.Classes.Tracker")
+require("Noir.Built-Ins.Classes.Widgets.Widget")
+require("Noir.Built-Ins.Classes.Widgets.MapLabelWidget")
 
 require("Noir.Libraries")
 
@@ -73,6 +76,7 @@ require("Noir.Built-Ins.Libraries.Base64")
 require("Noir.Built-Ins.Libraries.Matrix")
 require("Noir.Built-Ins.Libraries.Dataclasses")
 require("Noir.Built-Ins.Libraries.HTTP")
+require("Noir.Built-Ins.Libraries.Deprecation")
 
 require("Noir.Services")
 
@@ -86,7 +90,9 @@ require("Noir.Built-Ins.Services.NotificationService")
 require("Noir.Built-Ins.Services.HTTPService")
 require("Noir.Built-Ins.Services.VehicleService")
 require("Noir.Built-Ins.Services.MessageService")
+require("Noir.Built-Ins.Services.UIService")
 
+require("Noir.Debugging")
 require("Noir.Callbacks")
 require("Noir.Bootstrapper")
 require("Noir.Noir")

@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -39,14 +39,14 @@
 ---@field TargetBody NoirBody|nil The body that the character is targeting (if any).
 ---@field TargetCharacter NoirObject|nil The character that the character is targeting (if any).
 ---@field TargetPos SWMatrix The position that the character is targeting.
-Noir.Classes.AITargetClass = Noir.Class("NoirAITarget")
+Noir.Classes.AITarget = Noir.Class("AITarget")
 
 --[[
     Initializes class objects from this class.
 ]]
 ---@param data SWTargetData
-function Noir.Classes.AITargetClass:Init(data)
-    Noir.TypeChecking:Assert("Noir.Classes.AITargetClass:Init()", "data", data, "table")
+function Noir.Classes.AITarget:Init(data)
+    Noir.TypeChecking:Assert("Noir.Classes.AITarget:Init()", "data", data, "table")
 
     self.TargetBody = data.vehicle and Noir.Services.VehicleService:GetBody(data.vehicle)
     self.TargetCharacter = data.character and Noir.Services.ObjectService:GetObject(data.character)

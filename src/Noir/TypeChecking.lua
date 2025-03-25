@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ Noir.TypeChecking = {}
 
 --[[
     Raises an error if the value is not any of the provided types.<br>
-    This has basic support for classes. It will check if the provided value is a Noir class if needed, but it will not check if it's the right class.
+    This supports checking if a value is a specific class or not too.
 ]]
 ---@param origin string The location of the thing (method, function, etc) that called this so the user can find out where something went wrong
 ---@param parameterName string The name of the parameter that is being type checked
@@ -73,11 +73,9 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
     end
 
     -- Otherwise, raise an error
-    Noir.Libraries.Logging:Error(
-        "Invalid Type",
-        "%s: Expected %s for parameter '%s', but got '%s'.",
-        true,
+    Noir.Debugging:RaiseError(
         origin,
+        "Expected %s for parameter '%s', but got '%s'.",
         self:_FormatTypes(types),
         parameterName,
         self._DummyClass:IsClass(value) and value.ClassName.." (Class)" or valueType
@@ -96,7 +94,6 @@ function Noir.TypeChecking:AssertMany(origin, parameterName, values, ...)
     self:Assert("Noir.TypeChecking:AssertMany()", "origin", origin, "string")
     self:Assert("Noir.TypeChecking:AssertMany()", "parameterName", parameterName, "string")
     self:Assert("Noir.TypeChecking:AssertMany()", "values", values, "table")
-    self:AssertMany("Noir.TypeChecking:AssertMany()", "...", {...}, "string", "class")
 
     -- Perform type checking for provided values
     for _, value in pairs(values) do

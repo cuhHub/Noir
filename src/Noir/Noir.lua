@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2024 Cuh4
+        Copyright (C) 2025 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -46,7 +46,8 @@ Noir.Version = "{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
 ---@return string minor The MINOR part of the version
 ---@return string patch The PATCH part of the version
 function Noir:GetVersion()
-    return table.unpack(Noir.Libraries.String:Split(self.Version, "."))
+    local major, minor, patch = table.unpack(Noir.Libraries.String:Split(self.Version, "."))
+    return major, minor, patch
 end
 
 --[[
@@ -58,6 +59,11 @@ end
     end)
 ]]
 Noir.Started = Noir.Libraries.Events:Create()
+
+--[[
+    The name of this addon.
+]]
+Noir.AddonName = ""
 
 --[[
     This represents whether or not the framework has started.
@@ -96,12 +102,12 @@ Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
 function Noir:Start()
     -- Checks
     if self.IsStarting then
-        self.Libraries.Logging:Error("Start", "The addon attempted to start Noir when it is in the process of starting.", true)
+        self.Debugging:RaiseError("Start", "The addon attempted to start Noir when it is in the process of starting.")
         return
     end
 
     if self.HasStarted then
-        self.Libraries.Logging:Error("Start", "The addon attempted to start Noir more than once.", true)
+        self.Debugging:RaiseError("Start", "The addon attempted to start Noir more than once.")
         return
     end
 
@@ -118,8 +124,9 @@ function Noir:Start()
             self.IsStarting = false
             self.HasStarted = true
 
-            -- Set Noir.IsDedicatedServer
+            -- Set Noir.x
             self.Bootstrapper:SetIsDedicatedServer()
+            self.Bootstrapper:SetAddonName()
 
             -- Initialize services
             self.Bootstrapper:InitializeServices()
