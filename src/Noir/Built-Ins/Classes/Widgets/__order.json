@@ -3,6 +3,7 @@
         "Widget.lua",
         "MapLabelWidget.lua",
         "MapObjectWidget.lua",
-        "ScreenPopupWidget.lua"
+        "ScreenPopupWidget.lua",
+        "PopupWidget.lua"
     ]
 }

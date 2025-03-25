@@ -99,41 +99,41 @@ function Noir.Services.UIService:_LoadWidgets()
     local savedWidgets = self:_GetSavedWidgets()
 
     for _, savedWidget in pairs(savedWidgets) do
-        if savedWidget.Player ~= -1 and not Noir.Services.PlayerService:GetPlayer(savedWidget.Player) then -- player must've left. no need to store ui
+        if savedWidget.Player ~= -1 and not Noir.Services.PlayerService:GetPlayer(savedWidget.Player) then -- player must've left. no need to load this widget
             goto continue
         end
 
-        if savedWidget.WidgetType == "MapObject" then
-            local widget = Noir.Classes.MapObjectWidget:Deserialize(savedWidget--[[@as NoirSerializedMapObjectWidget]])
+        ---@type table<NoirWidgetType, function>
+        local deserializers = {
+            MapObject = function(serializedWidget)
+                return Noir.Classes.MapObjectWidget:Deserialize(serializedWidget)
+            end,
 
-            if not widget then
-                goto continue
+            MapLabel = function(serializedWidget)
+                return Noir.Classes.MapLabelWidget:Deserialize(serializedWidget)
+            end,
+
+            Popup = function(serializedWidget)
+                return Noir.Classes.PopupWidget:Deserialize(serializedWidget)
+            end,
+
+            ScreenPopup = function(serializedWidget)
+                return Noir.Classes.ScreenPopupWidget:Deserialize(serializedWidget)
             end
+        }
 
-            self:_AddWidget(widget)
-        elseif savedWidget.WidgetType == "ScreenPopup" then
-            local widget = Noir.Classes.ScreenPopupWidget:Deserialize(savedWidget--[[@as NoirSerializedScreenPopupWidget]])
-
-            if not widget then
-                goto continue
-            end
-
-            self:_AddWidget(widget)
-        elseif savedWidget.WidgetType == "PhysicalPopup" then
-
-        elseif savedWidget.WidgetType == "MapLabel" then
-            local widget = Noir.Classes.MapLabelWidget:Deserialize(savedWidget--[[@as NoirSerializedMapLabelWidget]])
-
-            if not widget then
-                goto continue
-            end
-
-            self:_AddWidget(widget)
-        elseif savedWidget.WidgetType == "MapLine" then
-
-        else
+        if not deserializers[savedWidget.WidgetType] then
             Noir.Libraries.Logging:Warning("UIService", "Got unknown saved widget of type: %s", savedWidget.WidgetType)
+            goto continue
         end
+
+        local widget = deserializers[savedWidget.WidgetType](savedWidget)
+
+        if not widget then
+            goto continue
+        end
+
+        self:_AddWidget(widget)
 
         ::continue::
     end
@@ -218,8 +218,8 @@ function Noir.Services.UIService:CreateMapLabel(text, labelType, position, visib
     )
 
     widget:Update()
-
     self:_AddWidget(widget)
+
     return widget
 end
 
@@ -251,8 +251,41 @@ function Noir.Services.UIService:CreateScreenPopup(text, X, Y, visible, player)
     )
 
     widget:Update()
-
     self:_AddWidget(widget)
+
+    return widget
+end
+
+--[[
+    Creates a popup widget.<br>
+    This is a 2D popup that is shown in 3D space. It can be attached to a body or an object too.<br>
+    This is used in the Stormworks career tutorial.
+]]
+---@param text string
+---@param position SWMatrix
+---@param renderDistance number in meters
+---@param visible boolean
+---@param player NoirPlayer|nil
+---@return NoirPopupWidget
+function Noir.Services.UIService:CreatePopup(text, position, renderDistance, visible, player)
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreatePopup()", "text", text, "string")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreatePopup()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreatePopup()", "renderDistance", renderDistance, "number")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreatePopup()", "visible", visible, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreatePopup()", "player", player, Noir.Classes.Player, "nil")
+
+    local widget = Noir.Classes.PopupWidget:New(
+        server.getMapID(),
+        visible,
+        text,
+        position,
+        renderDistance,
+        player
+    )
+
+    widget:Update()
+    self:_AddWidget(widget)
+
     return widget
 end
 
@@ -303,8 +336,8 @@ function Noir.Services.UIService:CreateMapObject(title, text, objectType, positi
     )
 
     widget:Update()
-
     self:_AddWidget(widget)
+
     return widget
 end
 
@@ -330,8 +363,6 @@ function Noir.Services.UIService:GetWidgetsShownToPlayer(player)
         if not widget.Player or Noir.Services.PlayerService:IsSamePlayer(player, widget.Player) then
             table.insert(widgets, widget)
         end
-
-        ::continue::
     end
 
     return widgets
