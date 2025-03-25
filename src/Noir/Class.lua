@@ -76,8 +76,7 @@ function Noir.Class(name, ...)
     class._IsObject = false
     class._ClassMethods = {
         ["New"] = true,
-        ["Init"] = true,
-        ["_Descend"] = true,
+        ["Init"] = true
     }
 
     function class:New(...)
