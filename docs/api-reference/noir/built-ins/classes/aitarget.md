@@ -1,13 +1,13 @@
 # AITarget
 
-**Noir.Classes.AITargetClass**: `NoirClass`
+**Noir.Classes.AITarget**: `NoirClass`
 
 Represents AI target data for a character.
 
 ---
 
 ```lua
-Noir.Classes.AITargetClass:Init(data)
+Noir.Classes.AITarget:Init(data)
 ```
 Initializes class objects from this class.
 

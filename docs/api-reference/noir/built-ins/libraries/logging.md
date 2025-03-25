@@ -28,7 +28,7 @@ Arguments: (log: string)
 
 Represents the logging layout.
 
-Requires two '%s' in the layout. First %s is the log type, the second %s is the log title. The message is then added after the layout.
+Requires two '%s' in the layout. First %s is the addon name, second %s is the log type, and the third %s is the log title. The message is then added after the layout.
 
 ---
 
@@ -71,16 +71,13 @@ Used internally.
 ---
 
 ```lua
-Noir.Libraries.Logging:Error(title, message, triggerError, ...)
+Noir.Libraries.Logging:Error(title, message, ...)
 ```
 Sends an error log.
-
-Passing true to the third argument will intentionally cause an addon error to be thrown.
 
 ### Parameters
 - `title`: string
 - `message`: any
-- `triggerError`: boolean
 - `...`: any
 
 ---

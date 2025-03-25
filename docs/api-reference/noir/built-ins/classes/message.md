@@ -1,13 +1,13 @@
 # Message
 
-**Noir.Classes.MessageClass**: `NoirClass`
+**Noir.Classes.Message**: `NoirClass`
 
 Represents a message.
 
 ---
 
 ```lua
-Noir.Classes.MessageClass:Init(author, isAddon, content, title, sentAt, recipient)
+Noir.Classes.Message:Init(author, isAddon, content, title, sentAt, recipient)
 ```
 Initializes message class objects.
 
@@ -22,7 +22,7 @@ Initializes message class objects.
 ---
 
 ```lua
-Noir.Classes.MessageClass:_Serialize()
+Noir.Classes.Message:_Serialize()
 ```
 Serializes the message into a g_savedata-safe format.
 
@@ -34,7 +34,7 @@ Used internally.
 ---
 
 ```lua
-Noir.Classes.MessageClass:_Deserialize(serializedMessage)
+Noir.Classes.Message:_Deserialize(serializedMessage)
 ```
 Deserializes the message from a g_savedata-safe format.
 

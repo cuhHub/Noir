@@ -1,13 +1,13 @@
 # Service
 
-**Noir.Classes.ServiceClass**: `NoirClass`
+**Noir.Classes.Service**: `NoirClass`
 
 Represents a Noir service.
 
 ---
 
 ```lua
-Noir.Classes.ServiceClass:Init(name, isBuiltIn, shortDescription, longDescription, authors)
+Noir.Classes.Service:Init(name, isBuiltIn, shortDescription, longDescription, authors)
 ```
 Initializes service class objects.
 
@@ -21,7 +21,7 @@ Initializes service class objects.
 ---
 
 ```lua
-Noir.Classes.ServiceClass:_Initialize()
+Noir.Classes.Service:_Initialize()
 ```
 Initialize this service.
 
@@ -30,7 +30,7 @@ Used internally.
 ---
 
 ```lua
-Noir.Classes.ServiceClass:_Start()
+Noir.Classes.Service:_Start()
 ```
 Start this service.
 
@@ -39,19 +39,16 @@ Used internally.
 ---
 
 ```lua
-Noir.Classes.ServiceClass:_CheckSaveData()
+Noir.Classes.Service:_CheckSaveData()
 ```
 Checks if g_savedata is intact.
 
 Used internally.
 
-### Returns
-- `boolean`
-
 ---
 
 ```lua
-Noir.Classes.ServiceClass:Save(index, data)
+Noir.Classes.Service:Save(index, data)
 ```
 Save a value to g_savedata under this service.
 
@@ -62,7 +59,7 @@ Save a value to g_savedata under this service.
 ---
 
 ```lua
-Noir.Classes.ServiceClass:Load(index, default)
+Noir.Classes.Service:Load(index, default)
 ```
 Load data from this service's g_savedata entry that was saved via the :Save() method.
 
@@ -75,7 +72,7 @@ Load data from this service's g_savedata entry that was saved via the :Save() me
 ---
 
 ```lua
-Noir.Classes.ServiceClass:EnsuredLoad(index, default)
+Noir.Classes.Service:EnsuredLoad(index, default)
 ```
 Similar to `:Load()`, this method loads a value from this service's g_savedata entry.
 
@@ -90,7 +87,7 @@ However, if the value doesn't exist, the default value provided to this method i
 ---
 
 ```lua
-Noir.Classes.ServiceClass:Remove(index)
+Noir.Classes.Service:Remove(index)
 ```
 Remove data from this service's g_savedata entry that was saved.
 
@@ -100,7 +97,7 @@ Remove data from this service's g_savedata entry that was saved.
 ---
 
 ```lua
-Noir.Classes.ServiceClass:GetSaveData()
+Noir.Classes.Service:GetSaveData()
 ```
 Returns this service's g_savedata table for direct modification.
 

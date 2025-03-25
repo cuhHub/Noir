@@ -71,3 +71,15 @@ Converts a matrix to a readable format.
 - `pos`: SWMatrix
 ### Returns
 - `string`
+
+---
+
+```lua
+Noir.Libraries.Matrix:Magnitude(pos)
+```
+Returns the magnitude of a matrix's XYZ vector.
+
+### Parameters
+- `pos`: SWMatrix
+### Returns
+- `number`

@@ -1,13 +1,13 @@
 # Connection
 
-**Noir.Classes.ConnectionClass**: `NoirClass`
+**Noir.Classes.Connection**: `NoirClass`
 
 Represents a connection to an event.
 
 ---
 
 ```lua
-Noir.Classes.ConnectionClass:Init(callback)
+Noir.Classes.Connection:Init(callback)
 ```
 Initializes new connection class objects.
 
@@ -17,7 +17,7 @@ Initializes new connection class objects.
 ---
 
 ```lua
-Noir.Classes.ConnectionClass:Fire(...)
+Noir.Classes.Connection:Fire(...)
 ```
 Triggers the callback's stored function.
 
@@ -29,6 +29,6 @@ Triggers the callback's stored function.
 ---
 
 ```lua
-Noir.Classes.ConnectionClass:Disconnect()
+Noir.Classes.Connection:Disconnect()
 ```
 Disconnects the callback from the event.

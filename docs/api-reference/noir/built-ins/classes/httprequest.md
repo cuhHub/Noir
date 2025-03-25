@@ -1,13 +1,13 @@
 # HTTPRequest
 
-**Noir.Classes.HTTPRequestClass**: `NoirClass`
+**Noir.Classes.HTTPRequest**: `NoirClass`
 
 Represents a HTTP request.
 
 ---
 
 ```lua
-Noir.Classes.HTTPRequestClass:Init(URL, port)
+Noir.Classes.HTTPRequest:Init(URL, port)
 ```
 Initializes HTTP request class objects.
 

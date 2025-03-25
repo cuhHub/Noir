@@ -82,7 +82,7 @@ Used internally.
 ---
 
 ```lua
-Noir.Services.VehicleService:_RegisterBody(ID, player, spawnPosition, cost, fireEvent)
+Noir.Services.VehicleService:_RegisterBody(ID, player, fireEvent)
 ```
 Register a body to the vehicle service.
 
@@ -91,8 +91,6 @@ Used internally.
 ### Parameters
 - `ID`: integer
 - `player`: NoirPlayer|nil
-- `spawnPosition`: SWMatrix
-- `cost`: number
 - `fireEvent`: boolean
 ### Returns
 - `NoirBody|nil`
@@ -176,6 +174,52 @@ Used internally.
 - `body`: NoirBody
 - `autoDespawnParentVehicle`: boolean
 - `fireEvent`: boolean
+
+---
+
+```lua
+Noir.Services.VehicleService:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
+```
+Setup data for a spawned vehicle.
+
+### Parameters
+- `primaryVehicleID`: integer
+- `vehicleIDs`: table<integer, integer>
+- `position`: SWMatrix
+### Returns
+- `NoirVehicle|nil`
+
+---
+
+```lua
+Noir.Services.VehicleService:SpawnVehicleFromMissionComponent(componentID, locationID, position, addonIndex)
+```
+Spawn a vehicle from a mission component.
+
+Uses `server.spawnAddonComponent` under the hood.
+
+### Parameters
+- `componentID`: integer
+- `locationID`: integer
+- `position`: SWMatrix
+- `addonIndex`: integer|nil - Defaults to this addon's index
+### Returns
+- `NoirVehicle|nil`
+
+---
+
+```lua
+Noir.Services.VehicleService:SpawnVehicleByFileName(fileName, position)
+```
+Spawn a vehicle by file name.
+
+Uses `server.spawnVehicle` under the hood.
+
+### Parameters
+- `fileName`: string
+- `position`: SWMatrix
+### Returns
+- `NoirVehicle|nil`
 
 ---
 

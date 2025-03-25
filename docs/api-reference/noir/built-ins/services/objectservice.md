@@ -40,6 +40,33 @@ Used internally. Do not use in your code.
 ---
 
 ```lua
+Noir.Services.ObjectService:_RegisterObject(object_id, _preventEventTrigger)
+```
+Registers an object by ID.
+
+Used internally. Use :GetObject() to retrieve an object instead.
+
+### Parameters
+- `object_id`: integer
+- `_preventEventTrigger`: boolean|nil
+### Returns
+- `NoirObject`
+
+---
+
+```lua
+Noir.Services.ObjectService:_RemoveObject(object)
+```
+Removes the object with the given ID.
+
+Used internally. Do not use in your code.
+
+### Parameters
+- `object`: NoirObject
+
+---
+
+```lua
 Noir.Services.ObjectService:_SaveObjects(objects)
 ```
 Overwrite saved objects.
@@ -98,19 +125,6 @@ Get all objects.
 ---
 
 ```lua
-Noir.Services.ObjectService:RegisterObject(object_id, _preventEventTrigger)
-```
-Registers an object by ID.
-
-### Parameters
-- `object_id`: integer
-- `_preventEventTrigger`: boolean|nil
-### Returns
-- `NoirObject|nil`
-
----
-
-```lua
 Noir.Services.ObjectService:GetObject(object_id)
 ```
 Returns the object with the given ID.
@@ -118,17 +132,7 @@ Returns the object with the given ID.
 ### Parameters
 - `object_id`: integer
 ### Returns
-- `NoirObject|nil`
-
----
-
-```lua
-Noir.Services.ObjectService:RemoveObject(object_id)
-```
-Removes the object with the given ID.
-
-### Parameters
-- `object_id`: integer
+- `NoirObject`
 
 ---
 
@@ -202,7 +206,7 @@ Spawn an equipment item.
 ---
 
 ```lua
-Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit, isExplosive, parentVehicleID, explosionMagnitude)
+Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit, isExplosive, parentBody, explosionMagnitude)
 ```
 Spawn a fire.
 
@@ -212,7 +216,7 @@ Spawn a fire.
 - `magnitude`: number - -1 explodes instantly. Nearer to 0 means the explosion takes longer to happen. Must be below 0 for explosions to work.
 - `isLit`: boolean - Lights the fire. If the magnitude is >1, this will need to be true for the fire to first warm up before exploding.
 - `isExplosive`: boolean
-- `parentVehicleID`: integer|nil
+- `parentBody`: NoirBody|nil
 - `explosionMagnitude`: number - The size of the explosion (0-5)
 ### Returns
 - `NoirObject|nil`

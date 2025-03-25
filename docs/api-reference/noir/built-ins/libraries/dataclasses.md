@@ -20,12 +20,12 @@ Create a new dataclass.
 ---
 
 ```lua
-Noir.Libraries.Dataclasses:Field(name, type)
+Noir.Libraries.Dataclasses:Field(name, ...)
 ```
 Returns a dataclass field to be used with Noir.Libraries.Dataclasses:New().
 
 ### Parameters
 - `name`: string
-- `type`: NoirTypeCheckingType
+- `...`: NoirTypeCheckingType
 ### Returns
 - `NoirDataclassField`

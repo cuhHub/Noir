@@ -1,27 +1,27 @@
 # Event
 
-**Noir.Classes.EventClass**: `NoirClass`
+**Noir.Classes.Event**: `NoirClass`
 
 Represents an event.
 
 ---
 
 ```lua
-Noir.Classes.EventClass:Init()
+Noir.Classes.Event:Init()
 ```
 Initializes event class objects.
 
 ---
 
 ```lua
-Noir.Classes.EventClass:Fire(...)
+Noir.Classes.Event:Fire(...)
 ```
 Fires the event, passing any provided arguments to the connections.
 
 ---
 
 ```lua
-Noir.Classes.EventClass:Connect(callback)
+Noir.Classes.Event:Connect(callback)
 ```
 Connects a function to the event. A connection is automatically made for the function.
 
@@ -35,7 +35,7 @@ If connecting to an event that is currently being handled, it will be added afte
 ---
 
 ```lua
-Noir.Classes.EventClass:_ConnectFinalize(connection)
+Noir.Classes.Event:_ConnectFinalize(connection)
 ```
 Finalizes the connection to the event, allowing it to be run.
 
@@ -47,7 +47,7 @@ Used internally.
 ---
 
 ```lua
-Noir.Classes.EventClass:Once(callback)
+Noir.Classes.Event:Once(callback)
 ```
 Connects a callback to the event that will automatically be disconnected upon the event being fired.
 
@@ -61,7 +61,7 @@ If connecting to an event that is currently being handled, it will be added afte
 ---
 
 ```lua
-Noir.Classes.EventClass:Disconnect(connection)
+Noir.Classes.Event:Disconnect(connection)
 ```
 Disconnects the provided connection from the event.
 
@@ -73,7 +73,7 @@ The disconnection may be delayed if done while handling the event.
 ---
 
 ```lua
-Noir.Classes.EventClass:_DisconnectImmediate(connection)
+Noir.Classes.Event:_DisconnectImmediate(connection)
 ```
 **Should only be used internally.**
 

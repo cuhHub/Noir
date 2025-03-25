@@ -1,13 +1,13 @@
 # Object
 
-**Noir.Classes.ObjectClass**: `NoirClass`
+**Noir.Classes.Object**: `NoirClass`
 
 Represents a Stormworks object.
 
 ---
 
 ```lua
-Noir.Classes.ObjectClass:Init(ID)
+Noir.Classes.Object:Init(ID)
 ```
 Initializes object class objects.
 
@@ -17,7 +17,7 @@ Initializes object class objects.
 ---
 
 ```lua
-Noir.Classes.ObjectClass:_Serialize()
+Noir.Classes.Object:_Serialize()
 ```
 Serializes this object into g_savedata format.
 
@@ -29,7 +29,7 @@ Used internally. Do not use in your code.
 ---
 
 ```lua
-Noir.Classes.ObjectClass:_Deserialize(serializedObject)
+Noir.Classes.Object:_Deserialize(serializedObject)
 ```
 Deserializes this object from g_savedata format.
 
@@ -43,17 +43,17 @@ Used internally. Do not use in your code.
 ---
 
 ```lua
-Noir.Classes.ObjectClass:GetData()
+Noir.Classes.Object:GetData()
 ```
 Returns the data of this object.
 
 ### Returns
-- `SWObjectData|nil`
+- `SWObjectData`
 
 ---
 
 ```lua
-Noir.Classes.ObjectClass:IsSimulating()
+Noir.Classes.Object:IsSimulating()
 ```
 Returns whether or not this object is simulating.
 
@@ -63,7 +63,7 @@ Returns whether or not this object is simulating.
 ---
 
 ```lua
-Noir.Classes.ObjectClass:Exists()
+Noir.Classes.Object:Exists()
 ```
 Returns whether or not this object exists.
 
@@ -73,14 +73,14 @@ Returns whether or not this object exists.
 ---
 
 ```lua
-Noir.Classes.ObjectClass:Despawn()
+Noir.Classes.Object:Despawn()
 ```
 Despawn this object.
 
 ---
 
 ```lua
-Noir.Classes.ObjectClass:GetPosition()
+Noir.Classes.Object:GetPosition()
 ```
 Get this object's position.
 
@@ -90,7 +90,7 @@ Get this object's position.
 ---
 
 ```lua
-Noir.Classes.ObjectClass:Teleport(position)
+Noir.Classes.Object:Teleport(position)
 ```
 Teleport this object.
 
@@ -100,14 +100,14 @@ Teleport this object.
 ---
 
 ```lua
-Noir.Classes.ObjectClass:Revive()
+Noir.Classes.Object:Revive()
 ```
 Revive this character (if character).
 
 ---
 
 ```lua
-Noir.Classes.ObjectClass:SetData(hp, interactable, AI)
+Noir.Classes.Object:SetData(hp, interactable, AI)
 ```
 Set this object's data (if character).
 
@@ -119,7 +119,7 @@ Set this object's data (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:GetHealth()
+Noir.Classes.Object:GetHealth()
 ```
 Returns this character's health (if character).
 
@@ -129,7 +129,7 @@ Returns this character's health (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:SetTooltip(tooltip)
+Noir.Classes.Object:SetTooltip(tooltip)
 ```
 Set this character's/creature's tooltip (if character or creature).
 
@@ -139,7 +139,7 @@ Set this character's/creature's tooltip (if character or creature).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:SetAIState(state)
+Noir.Classes.Object:SetAIState(state)
 ```
 Set this character's AI state (if character).
 
@@ -149,7 +149,7 @@ Set this character's AI state (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:GetAITarget()
+Noir.Classes.Object:GetAITarget()
 ```
 Returns this character's AI target (if character).
 
@@ -159,7 +159,7 @@ Returns this character's AI target (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:SetAICharacterTarget(target)
+Noir.Classes.Object:SetAICharacterTarget(target)
 ```
 Set this character's AI character target (if character).
 
@@ -169,7 +169,7 @@ Set this character's AI character target (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:SetAIBodyTarget(body)
+Noir.Classes.Object:SetAIBodyTarget(body)
 ```
 Set this character's AI body target (if character).
 
@@ -179,7 +179,7 @@ Set this character's AI body target (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:SetAIPositionTarget(position)
+Noir.Classes.Object:SetAIPositionTarget(position)
 ```
 Set this character's AI position target (if character).
 
@@ -189,14 +189,14 @@ Set this character's AI position target (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:Kill()
+Noir.Classes.Object:Kill()
 ```
 Kills this character (if character).
 
 ---
 
 ```lua
-Noir.Classes.ObjectClass:GetVehicle()
+Noir.Classes.Object:GetVehicle()
 ```
 Returns the vehicle this character is sat in (if character).
 
@@ -206,7 +206,7 @@ Returns the vehicle this character is sat in (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:GetItem(slot)
+Noir.Classes.Object:GetItem(slot)
 ```
 Returns the item this character is holding in the specified slot (if character).
 
@@ -218,7 +218,7 @@ Returns the item this character is holding in the specified slot (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:GiveItem(slot, equipmentID, isActive, int, float)
+Noir.Classes.Object:GiveItem(slot, equipmentID, isActive, int, float)
 ```
 Give this character an item (if character).
 
@@ -232,7 +232,7 @@ Give this character an item (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:IsDowned()
+Noir.Classes.Object:IsDowned()
 ```
 Returns whether or not this character is downed (dead, incapaciated, or hp <= 0) (if character).
 
@@ -242,7 +242,7 @@ Returns whether or not this character is downed (dead, incapaciated, or hp <= 0)
 ---
 
 ```lua
-Noir.Classes.ObjectClass:Seat(body, name, voxelX, voxelY, voxelZ)
+Noir.Classes.Object:Seat(body, name, voxelX, voxelY, voxelZ)
 ```
 Seat this character in a seat (if character).
 
@@ -256,7 +256,7 @@ Seat this character in a seat (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:SetMoveTarget(position)
+Noir.Classes.Object:SetMoveTarget(position)
 ```
 Set the move target of this character (if creature).
 
@@ -266,7 +266,7 @@ Set the move target of this character (if creature).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:Damage(amount)
+Noir.Classes.Object:Damage(amount)
 ```
 Damage this character by a certain amount (if character).
 
@@ -276,7 +276,7 @@ Damage this character by a certain amount (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:Heal(amount)
+Noir.Classes.Object:Heal(amount)
 ```
 Heal this character by a certain amount (if character).
 
@@ -286,7 +286,7 @@ Heal this character by a certain amount (if character).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:GetFireData()
+Noir.Classes.Object:GetFireData()
 ```
 Get this fire's data (if fire).
 
@@ -296,7 +296,7 @@ Get this fire's data (if fire).
 ---
 
 ```lua
-Noir.Classes.ObjectClass:SetFireData(isLit, isExplosive)
+Noir.Classes.Object:SetFireData(isLit, isExplosive)
 ```
 Set this fire's data (if fire).
 

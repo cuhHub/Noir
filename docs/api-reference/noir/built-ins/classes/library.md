@@ -1,13 +1,13 @@
 # Library
 
-**Noir.Classes.LibraryClass**: `NoirClass`
+**Noir.Classes.Library**: `NoirClass`
 
 Represents a library.
 
 ---
 
 ```lua
-Noir.Classes.LibraryClass:Init(name, shortDescription, longDescription, authors)
+Noir.Classes.Library:Init(name, shortDescription, longDescription, authors)
 ```
 Initializes library class objects.
 

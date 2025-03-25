@@ -1,6 +1,6 @@
 # Body
 
-**Noir.Classes.BodyClass**: `NoirClass`
+**Noir.Classes.Body**: `NoirClass`
 
 Represents a body which is apart of a vehicle.
 
@@ -9,21 +9,19 @@ In Stormworks, this is actually a vehicle apart of a vehicle group.
 ---
 
 ```lua
-Noir.Classes.BodyClass:Init(ID, owner, spawnPosition, cost, loaded)
+Noir.Classes.Body:Init(ID, owner, loaded)
 ```
 Initializes body class objects.
 
 ### Parameters
 - `ID`: any
 - `owner`: NoirPlayer|nil
-- `spawnPosition`: SWMatrix
-- `cost`: number
 - `loaded`: boolean
 
 ---
 
 ```lua
-Noir.Classes.BodyClass:_Serialize()
+Noir.Classes.Body:_Serialize()
 ```
 Serialize the body.
 
@@ -35,7 +33,7 @@ Used internally.
 ---
 
 ```lua
-Noir.Classes.BodyClass:_Deserialize(serializedBody, setParentVehicle)
+Noir.Classes.Body:_Deserialize(serializedBody, setParentVehicle)
 ```
 Deserialize the body.
 
@@ -45,12 +43,22 @@ Used internally.
 - `serializedBody`: NoirSerializedBody
 - `setParentVehicle`: boolean|nil
 ### Returns
-- `NoirBody|nil`
+- `NoirBody`
 
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetPosition(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:GetName()
+```
+Returns the name of the body, or nil if there is none (relies on map icon component)
+
+### Returns
+- `string|nil`
+
+---
+
+```lua
+Noir.Classes.Body:GetPosition(voxelX, voxelY, voxelZ)
 ```
 Returns the position of this body.
 
@@ -62,7 +70,7 @@ Returns the position of this body.
 ---
 
 ```lua
-Noir.Classes.BodyClass:Damage(damageAmount, voxelX, voxelY, voxelZ, radius)
+Noir.Classes.Body:Damage(damageAmount, voxelX, voxelY, voxelZ, radius)
 ```
 Damage this body at the provided voxel.
 
@@ -76,7 +84,7 @@ Damage this body at the provided voxel.
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetInvulnerable(invulnerable)
+Noir.Classes.Body:SetInvulnerable(invulnerable)
 ```
 Makes the body invulnerable/vulnerable to damage.
 
@@ -86,7 +94,7 @@ Makes the body invulnerable/vulnerable to damage.
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetEditable(editable)
+Noir.Classes.Body:SetEditable(editable)
 ```
 Makes the body editable/non-editable (dictates whether or not the body can be brought back to the workbench).
 
@@ -96,7 +104,7 @@ Makes the body editable/non-editable (dictates whether or not the body can be br
 ---
 
 ```lua
-Noir.Classes.BodyClass:Teleport(position)
+Noir.Classes.Body:Teleport(position)
 ```
 Teleport the body to the specified position.
 
@@ -106,7 +114,7 @@ Teleport the body to the specified position.
 ---
 
 ```lua
-Noir.Classes.BodyClass:Move(position)
+Noir.Classes.Body:Move(position)
 ```
 Move the body to the specified position. Essentially teleports the body without reloading it.
 
@@ -118,7 +126,7 @@ Rotation is ignored.
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetBattery(batteryName, amount)
+Noir.Classes.Body:SetBattery(batteryName, amount)
 ```
 Set a battery's charge (by name).
 
@@ -129,7 +137,7 @@ Set a battery's charge (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetBatteryByVoxel(voxelX, voxelY, voxelZ, amount)
+Noir.Classes.Body:SetBatteryByVoxel(voxelX, voxelY, voxelZ, amount)
 ```
 Set a battery's charge (by voxel).
 
@@ -142,7 +150,7 @@ Set a battery's charge (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetHopper(hopperName, amount, resourceType)
+Noir.Classes.Body:SetHopper(hopperName, amount, resourceType)
 ```
 Set a hopper's amount (by name).
 
@@ -154,7 +162,7 @@ Set a hopper's amount (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetHopperByVoxel(voxelX, voxelY, voxelZ, amount, resourceType)
+Noir.Classes.Body:SetHopperByVoxel(voxelX, voxelY, voxelZ, amount, resourceType)
 ```
 Set a hopper's amount (by voxel).
 
@@ -168,7 +176,7 @@ Set a hopper's amount (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetKeypad(keypadName, value)
+Noir.Classes.Body:SetKeypad(keypadName, value)
 ```
 Set a keypad's value (by name).
 
@@ -179,7 +187,7 @@ Set a keypad's value (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetKeypadByVoxel(voxelX, voxelY, voxelZ, value)
+Noir.Classes.Body:SetKeypadByVoxel(voxelX, voxelY, voxelZ, value)
 ```
 Set a keypad's value (by voxel).
 
@@ -192,7 +200,7 @@ Set a keypad's value (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetSeat(seatName, axisPitch, axisRoll, axisUpDown, axisYaw, button1, button2, button3, button4, button5, button6, trigger)
+Noir.Classes.Body:SetSeat(seatName, axisPitch, axisRoll, axisUpDown, axisYaw, button1, button2, button3, button4, button5, button6, trigger)
 ```
 Set a seat's values (by name).
 
@@ -213,7 +221,7 @@ Set a seat's values (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetSeatByVoxel(voxelX, voxelY, voxelZ, axisPitch, axisRoll, axisUpDown, axisYaw, button1, button2, button3, button4, button5, button6, trigger)
+Noir.Classes.Body:SetSeatByVoxel(voxelX, voxelY, voxelZ, axisPitch, axisRoll, axisUpDown, axisYaw, button1, button2, button3, button4, button5, button6, trigger)
 ```
 Set a seat's values (by voxel).
 
@@ -236,7 +244,7 @@ Set a seat's values (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetWeapon(weaponName, amount)
+Noir.Classes.Body:SetWeapon(weaponName, amount)
 ```
 Set a weapon's ammo count (by name).
 
@@ -247,7 +255,7 @@ Set a weapon's ammo count (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetWeaponByVoxel(voxelX, voxelY, voxelZ, amount)
+Noir.Classes.Body:SetWeaponByVoxel(voxelX, voxelY, voxelZ, amount)
 ```
 Set a weapon's ammo count (by voxel).
 
@@ -260,7 +268,7 @@ Set a weapon's ammo count (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetTransponder(isActive)
+Noir.Classes.Body:SetTransponder(isActive)
 ```
 Set this body's transponder activity.
 
@@ -270,7 +278,7 @@ Set this body's transponder activity.
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetTank(tankName, amount, fluidType)
+Noir.Classes.Body:SetTank(tankName, amount, fluidType)
 ```
 Set a tank's contents (by name).
 
@@ -282,7 +290,7 @@ Set a tank's contents (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetTankByVoxel(voxelX, voxelY, voxelZ, amount, fluidType)
+Noir.Classes.Body:SetTankByVoxel(voxelX, voxelY, voxelZ, amount, fluidType)
 ```
 Set a tank's contents (by voxel).
 
@@ -296,7 +304,7 @@ Set a tank's contents (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetShowOnMap(isShown)
+Noir.Classes.Body:SetShowOnMap(isShown)
 ```
 Set whether or not this body is shown on the map.
 
@@ -306,14 +314,14 @@ Set whether or not this body is shown on the map.
 ---
 
 ```lua
-Noir.Classes.BodyClass:ResetState()
+Noir.Classes.Body:ResetState()
 ```
 Reset this body's state.
 
 ---
 
 ```lua
-Noir.Classes.BodyClass:SetTooltip(tooltip)
+Noir.Classes.Body:SetTooltip(tooltip)
 ```
 Set this body's tooltip.
 
@@ -323,7 +331,7 @@ Set this body's tooltip.
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetBattery(batteryName)
+Noir.Classes.Body:GetBattery(batteryName)
 ```
 Get a battey's data (by name).
 
@@ -335,7 +343,7 @@ Get a battey's data (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetBatteryByVoxel(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:GetBatteryByVoxel(voxelX, voxelY, voxelZ)
 ```
 Get a battey's data (by voxel).
 
@@ -349,7 +357,7 @@ Get a battey's data (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetButton(buttonName)
+Noir.Classes.Body:GetButton(buttonName)
 ```
 Get a button's data (by name).
 
@@ -361,7 +369,7 @@ Get a button's data (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetButtonByVoxel(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:GetButtonByVoxel(voxelX, voxelY, voxelZ)
 ```
 Get a button's data (by voxel).
 
@@ -375,7 +383,7 @@ Get a button's data (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetComponents()
+Noir.Classes.Body:GetComponents()
 ```
 Get this body's components.
 
@@ -385,7 +393,7 @@ Get this body's components.
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetData()
+Noir.Classes.Body:GetData()
 ```
 Get this body's data.
 
@@ -395,7 +403,7 @@ Get this body's data.
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetDial(dialName)
+Noir.Classes.Body:GetDial(dialName)
 ```
 Get a dial's data (by name).
 
@@ -407,7 +415,7 @@ Get a dial's data (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetDialByVoxel(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:GetDialByVoxel(voxelX, voxelY, voxelZ)
 ```
 Get a dial's data (by voxel).
 
@@ -421,7 +429,7 @@ Get a dial's data (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetFireCount()
+Noir.Classes.Body:GetFireCount()
 ```
 Returns the number of surfaces that are on fire.
 
@@ -431,7 +439,7 @@ Returns the number of surfaces that are on fire.
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetHopper(hopperName)
+Noir.Classes.Body:GetHopper(hopperName)
 ```
 Get a hopper's data (by name).
 
@@ -443,7 +451,7 @@ Get a hopper's data (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetHopperByVoxel(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:GetHopperByVoxel(voxelX, voxelY, voxelZ)
 ```
 Get a hopper's data (by voxel).
 
@@ -457,7 +465,7 @@ Get a hopper's data (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetRopeHook(hookName)
+Noir.Classes.Body:GetRopeHook(hookName)
 ```
 Get a rope hook's data (by name).
 
@@ -469,7 +477,7 @@ Get a rope hook's data (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetRopeHookByVoxel(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:GetRopeHookByVoxel(voxelX, voxelY, voxelZ)
 ```
 Get a rope hook's data (by voxel).
 
@@ -483,7 +491,7 @@ Get a rope hook's data (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetSeat(seatName)
+Noir.Classes.Body:GetSeat(seatName)
 ```
 Get a seat's data (by name).
 
@@ -495,7 +503,7 @@ Get a seat's data (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetSeatByVoxel(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:GetSeatByVoxel(voxelX, voxelY, voxelZ)
 ```
 Get a seat's data (by voxel).
 
@@ -509,7 +517,7 @@ Get a seat's data (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetSign(signName)
+Noir.Classes.Body:GetSign(signName)
 ```
 Get a sign's data (by name).
 
@@ -521,7 +529,7 @@ Get a sign's data (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetSignByVoxel(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:GetSignByVoxel(voxelX, voxelY, voxelZ)
 ```
 Get a sign's data (by voxel).
 
@@ -535,7 +543,7 @@ Get a sign's data (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetTank(tankName)
+Noir.Classes.Body:GetTank(tankName)
 ```
 Get a tank's data (by name).
 
@@ -547,7 +555,7 @@ Get a tank's data (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetTankByVoxel(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:GetTankByVoxel(voxelX, voxelY, voxelZ)
 ```
 Get a tank's data (by voxel).
 
@@ -561,7 +569,7 @@ Get a tank's data (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetWeapon(weaponName)
+Noir.Classes.Body:GetWeapon(weaponName)
 ```
 Get a weapon's data (by name).
 
@@ -573,7 +581,7 @@ Get a weapon's data (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:GetWeaponByVoxel(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:GetWeaponByVoxel(voxelX, voxelY, voxelZ)
 ```
 Get a weapon's data (by voxel).
 
@@ -587,7 +595,7 @@ Get a weapon's data (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:PressButton(buttonName)
+Noir.Classes.Body:PressButton(buttonName)
 ```
 Presses a button on this body (by name).
 
@@ -597,7 +605,7 @@ Presses a button on this body (by name).
 ---
 
 ```lua
-Noir.Classes.BodyClass:PressButtonByVoxel(voxelX, voxelY, voxelZ)
+Noir.Classes.Body:PressButtonByVoxel(voxelX, voxelY, voxelZ)
 ```
 Presses a button on this body (by voxel).
 
@@ -609,14 +617,32 @@ Presses a button on this body (by voxel).
 ---
 
 ```lua
-Noir.Classes.BodyClass:Despawn()
+Noir.Classes.Body:SpawnRopeHook(voxelX, voxelY, voxelZ, targetBody, targetVoxelX, targetVoxelY, targetVoxelZ, length, ropeType)
+```
+Spawns a rope connected by a hook on this body to a hook on another (or this) body.
+
+### Parameters
+- `voxelX`: integer
+- `voxelY`: integer
+- `voxelZ`: integer
+- `targetBody`: NoirBody|nil - nil = this body
+- `targetVoxelX`: integer
+- `targetVoxelY`: integer
+- `targetVoxelZ`: integer
+- `length`: number
+- `ropeType`: SWRopeTypeEnum
+
+---
+
+```lua
+Noir.Classes.Body:Despawn()
 ```
 Despawn the body.
 
 ---
 
 ```lua
-Noir.Classes.BodyClass:Exists()
+Noir.Classes.Body:Exists()
 ```
 Returns whether or not the body exists.
 
@@ -626,7 +652,7 @@ Returns whether or not the body exists.
 ---
 
 ```lua
-Noir.Classes.BodyClass:IsSimulating()
+Noir.Classes.Body:IsSimulating()
 ```
 Returns whether or not the body is simulating.
 

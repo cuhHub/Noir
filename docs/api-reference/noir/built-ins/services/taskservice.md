@@ -180,7 +180,7 @@ Works for sequential and non-sequential tables, although **order is NOT guarante
 ### Parameters
 - `tbl`: table<integer, any>
 - `chunkSize`: integer - How many values to iterate per tick
-- `callback`: fun(value: - any, currentTick: integer|nil, completed: boolean|nil) `currentTick` and `completed` are never nil. They are marked as so to mark the paramters as optional
+- `callback`: fun(index: - any, value: any, currentTick: integer|nil, completed: boolean|nil) `currentTick` and `completed` are never nil. this is just to mark the paramters as optional
 ### Returns
 - `NoirTickIterationProcess`
 

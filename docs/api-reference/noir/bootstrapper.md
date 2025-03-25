@@ -59,3 +59,12 @@ Determines whether or not the server this addon is being ran in is a dedicated s
 This evaluation is then used to set `Noir.IsDedicatedServer`.
 
 Do not use this in your code. This is used internally.
+
+---
+
+```lua
+Noir.Bootstrapper:SetAddonName()
+```
+Sets the `Noir.AddonName` to the name of your addon.
+
+Do not use this in your code. This is used internally.

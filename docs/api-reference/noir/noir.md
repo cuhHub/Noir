@@ -16,6 +16,12 @@ Use this event to safely run your code.
 
 ---
 
+**Noir.AddonName**: `string`
+
+The name of this addon.
+
+---
+
 **Noir.HasStarted**: `boolean`
 
 This represents whether or not the framework has started.

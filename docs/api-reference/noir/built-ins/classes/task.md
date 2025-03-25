@@ -1,13 +1,13 @@
 # Task
 
-**Noir.Classes.TaskClass**: `NoirClass`
+**Noir.Classes.Task**: `NoirClass`
 
 Represents a task.
 
 ---
 
 ```lua
-Noir.Classes.TaskClass:Init(ID, taskType, duration, isRepeating, arguments, startedAt)
+Noir.Classes.Task:Init(ID, taskType, duration, isRepeating, arguments, startedAt)
 ```
 Initializes task class objects.
 
@@ -22,7 +22,7 @@ Initializes task class objects.
 ---
 
 ```lua
-Noir.Classes.TaskClass:SetRepeating(isRepeating)
+Noir.Classes.Task:SetRepeating(isRepeating)
 ```
 Sets whether or not this task is repeating.
 
@@ -36,7 +36,7 @@ If not, the task will be triggered once, then removed from the TaskService.
 ---
 
 ```lua
-Noir.Classes.TaskClass:SetDuration(duration)
+Noir.Classes.Task:SetDuration(duration)
 ```
 Sets the duration of this task.
 
@@ -46,7 +46,7 @@ Sets the duration of this task.
 ---
 
 ```lua
-Noir.Classes.TaskClass:SetArguments(arguments)
+Noir.Classes.Task:SetArguments(arguments)
 ```
 Sets the arguments that will be passed to this task upon finishing.
 
@@ -56,6 +56,6 @@ Sets the arguments that will be passed to this task upon finishing.
 ---
 
 ```lua
-Noir.Classes.TaskClass:Remove()
+Noir.Classes.Task:Remove()
 ```
 Remove this task from the task service.

@@ -1,6 +1,6 @@
 # Vehicle
 
-**Noir.Classes.VehicleClass**: `NoirClass`
+**Noir.Classes.Vehicle**: `NoirClass`
 
 Represents a vehicle.
 
@@ -9,7 +9,7 @@ In Stormworks, this is actually a vehicle group.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:Init(ID, owner, spawnPosition, cost)
+Noir.Classes.Vehicle:Init(ID, owner, spawnPosition, cost)
 ```
 Initializes vehicle class objects.
 
@@ -22,7 +22,7 @@ Initializes vehicle class objects.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:_Serialize()
+Noir.Classes.Vehicle:_Serialize()
 ```
 Serialize the vehicle.
 
@@ -34,7 +34,7 @@ Used internally.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:_Deserialize(serializedVehicle, addBodies)
+Noir.Classes.Vehicle:_Deserialize(serializedVehicle, addBodies)
 ```
 Deserialize a serialized vehicle.
 
@@ -49,7 +49,7 @@ Deserialize a serialized vehicle.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:_CalculatePrimaryBody()
+Noir.Classes.Vehicle:_CalculatePrimaryBody()
 ```
 Calculate the primary body.
 
@@ -58,7 +58,7 @@ Used internally.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:_AddBody(body)
+Noir.Classes.Vehicle:_AddBody(body)
 ```
 Add a body to the vehicle.
 
@@ -70,7 +70,7 @@ Used internally.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:_RemoveBody(body)
+Noir.Classes.Vehicle:_RemoveBody(body)
 ```
 Remove a body from the vehicle.
 
@@ -82,7 +82,7 @@ Used internally.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:GetPosition(voxelX, voxelY, voxelZ)
+Noir.Classes.Vehicle:GetPosition(voxelX, voxelY, voxelZ)
 ```
 Return this vehicle's position.
 
@@ -98,7 +98,7 @@ Uses the vehicle's primary body internally.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:GetBody(ID)
+Noir.Classes.Vehicle:GetBody(ID)
 ```
 Get a child body by its ID.
 
@@ -110,7 +110,7 @@ Get a child body by its ID.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:Teleport(position)
+Noir.Classes.Vehicle:Teleport(position)
 ```
 Teleport the vehicle to a new position.
 
@@ -120,7 +120,7 @@ Teleport the vehicle to a new position.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:Move(position)
+Noir.Classes.Vehicle:Move(position)
 ```
 Move the vehicle to a new position, essentially teleports without reloading the vehicle.
 
@@ -132,6 +132,6 @@ Note that rotation is ignored.
 ---
 
 ```lua
-Noir.Classes.VehicleClass:Despawn()
+Noir.Classes.Vehicle:Despawn()
 ```
 Despawn the vehicle.

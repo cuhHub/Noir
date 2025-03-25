@@ -8,9 +8,13 @@ This code is from https://gist.github.com/tylerneylon/59f4bcf316be525b30ab
 
 ---
 
-**Noir.Libraries.JSON.Null**: `table`
+**Noir.Libraries.JSON._Null**: `table`
 
 Represents a null value.
+
+You do not need to reference this. Null values will just be nil in a decoded JSON object.
+
+Used internally. Do not use this in your code.
 
 ---
 

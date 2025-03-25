@@ -1,13 +1,13 @@
 # Player
 
-**Noir.Classes.PlayerClass**: `NoirClass`
+**Noir.Classes.Player**: `NoirClass`
 
 Represents a player.
 
 ---
 
 ```lua
-Noir.Classes.PlayerClass:Init(name, ID, steam, admin, auth, permissions)
+Noir.Classes.Player:Init(name, ID, steam, admin, auth, permissions)
 ```
 Initializes player class objects.
 
@@ -22,7 +22,7 @@ Initializes player class objects.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:SetPermission(permission)
+Noir.Classes.Player:SetPermission(permission)
 ```
 Give this player a permission.
 
@@ -32,7 +32,7 @@ Give this player a permission.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:HasPermission(permission)
+Noir.Classes.Player:HasPermission(permission)
 ```
 Returns whether or not this player has a permission.
 
@@ -44,7 +44,7 @@ Returns whether or not this player has a permission.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:RemovePermission(permission)
+Noir.Classes.Player:RemovePermission(permission)
 ```
 Remove a permission from this player.
 
@@ -54,7 +54,7 @@ Remove a permission from this player.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:GetPermissions()
+Noir.Classes.Player:GetPermissions()
 ```
 Returns a table containing the player's permissions.
 
@@ -64,7 +64,7 @@ Returns a table containing the player's permissions.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:SetAuth(auth)
+Noir.Classes.Player:SetAuth(auth)
 ```
 Sets whether or not this player is authed.
 
@@ -74,7 +74,7 @@ Sets whether or not this player is authed.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:SetAdmin(admin)
+Noir.Classes.Player:SetAdmin(admin)
 ```
 Sets whether or not this player is an admin.
 
@@ -84,21 +84,21 @@ Sets whether or not this player is an admin.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:Kick()
+Noir.Classes.Player:Kick()
 ```
 Kicks this player.
 
 ---
 
 ```lua
-Noir.Classes.PlayerClass:Ban()
+Noir.Classes.Player:Ban()
 ```
 Bans this player.
 
 ---
 
 ```lua
-Noir.Classes.PlayerClass:Teleport(pos)
+Noir.Classes.Player:Teleport(pos)
 ```
 Teleports this player.
 
@@ -108,7 +108,7 @@ Teleports this player.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:GetPosition()
+Noir.Classes.Player:GetPosition()
 ```
 Returns this player's position.
 
@@ -118,7 +118,7 @@ Returns this player's position.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:SetAudioMood(mood)
+Noir.Classes.Player:SetAudioMood(mood)
 ```
 Set the player's audio mood.
 
@@ -128,17 +128,17 @@ Set the player's audio mood.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:GetCharacter()
+Noir.Classes.Player:GetCharacter()
 ```
 Returns this player's character as a NoirObject.
 
 ### Returns
-- `NoirObject|nil`
+- `NoirObject`
 
 ---
 
 ```lua
-Noir.Classes.PlayerClass:GetLook()
+Noir.Classes.Player:GetLook()
 ```
 Returns this player's look direction.
 
@@ -150,7 +150,7 @@ Returns this player's look direction.
 ---
 
 ```lua
-Noir.Classes.PlayerClass:Notify(title, message, notificationType)
+Noir.Classes.Player:Notify(title, message, notificationType)
 ```
 Send this player a notification.
 
