@@ -86,6 +86,6 @@ This attribute can either be `true` or `false` and represents whether or not thi
 
 ## Noir.Version Attribute
 
-Finally, Noir has an attribute called `Version` which represents the current version of Noir.
+Finally, Noir has an attribute called `Version` which represents the current version of Noir. You can use `local major, minor, patch = Noir:GetVersion()` to separate the major, minor and patch segments of the version string.
 
 This version is logged to DebugView (default) or chat depending on `Noir.Libraries.Logging.LoggingMode` when Noir starts, along with other information.

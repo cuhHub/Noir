@@ -25,17 +25,15 @@ layout:
 ## What Are Classes?
 
 {% hint style="warning" %}
-All of this might be confusing if you don't understand OOP. Consider reading up on [this](https://en.wikipedia.org/wiki/Object-oriented\_programming) if you don't know or properly understand OOP.
+All of this might be confusing if you don't understand OOP. Consider reading up on [this](https://en.wikipedia.org/wiki/Object-oriented_programming) if you don't know or properly understand OOP.
 {% endhint %}
 
 In Noir, classes are simply advanced tables that can be cloned numerous times into class objects.
 
 This is an example of a class. The `---@` bits are for intellisense.
 
-{% code lineNumbers="true" %}
+{% code title="person.lua" lineNumbers="true" %}
 ```lua
----------- Creating a class
-
 ---@class Person: NoirClass <-- For intellisense
 ---@field New fun(self: Person, name: string, occupation: string): Person <-- so the Lua extension thinks Person:New() returns a Person and not a NoirClass
 ---@field name string The name of this person
@@ -53,7 +51,7 @@ function Person:PrintInfo()
     print(("I am %s, my occupation is %s."):format(self.name, self.occupation))
 end
 
----------- Creating an object from the class
+-- Creating an object/instance from the class above
 local JohnDoe = Person:New("John Doe", "Unoccupied")
 JohnDoe:PrintInfo()
 ```
@@ -117,15 +115,18 @@ Noir's classes system has support for inheritance. To inherit from another class
 
 {% code title="Cuh4.lua" lineNumbers="true" %}
 ```lua
-local Cuh4 = Noir.Class("Cuh4", MyClass)
+local Cuh4 = Noir.Class("Cuh4", MyClass, ...) -- you can inherit from multiple classes
 
 function Cuh4:Init()
-    self:InitializeParent("Cuh4")
+    self:InitFrom(
+      MyClass, -- class to initialize from
+      "Cuh4"
+    )
 end
 ```
 {% endcode %}
 
-`self:InitializeParent()` essentially creates an object from `MyClass` (the parent) and passes all created attributes and methods down to the new `Cuh4` object.
+`self:InitFrom()` essentially creates an object from `MyClass` (the parent class we passed to the method) and passes all created attributes and methods down to the new `Cuh4` object.
 
 {% code title="main.lua" lineNumbers="true" %}
 ```lua

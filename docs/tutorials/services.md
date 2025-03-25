@@ -241,3 +241,27 @@ function MyService:ACustomMethod()
     return true
 end
 ```
+
+Alternatively, you can also do:
+
+```lua
+---@class MyService: NoirService
+local MyService = Noir.Services:CreateService("MyService")
+
+function MyService:ServiceInit()
+    -- A service attribute
+    ---@type boolean
+    self.something = true
+end
+
+function MyService:ServiceStart()
+    
+end
+
+function MyService:ACustomMethod()
+    server.announce("Server", "Hello World")
+    return true
+end
+```
+
+However if the attribute is clearly defined, you can remove the `---@type`declaration.
