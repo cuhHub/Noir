@@ -819,6 +819,45 @@ function Noir.Classes.Body:PressButtonByVoxel(voxelX, voxelY, voxelZ)
 end
 
 --[[
+    Spawns a rope connected by a hook on this body to a hook on another (or this) body.
+]]
+---@param voxelX integer
+---@param voxelY integer
+---@param voxelZ integer
+---@param targetBody NoirBody|nil nil = this body
+---@param targetVoxelX integer
+---@param targetVoxelY integer
+---@param targetVoxelZ integer
+---@param length number
+---@param ropeType SWRopeTypeEnum
+function Noir.Classes.Body:SpawnRopeHook(voxelX, voxelY, voxelZ, targetBody, targetVoxelX, targetVoxelY, targetVoxelZ, length, ropeType)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Classes.Body:SpawnRopeHook()", "voxelX", voxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Body:SpawnRopeHook()", "voxelY", voxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Body:SpawnRopeHook()", "voxelZ", voxelZ, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Body:SpawnRopeHook()", "targetBody", targetBody, Noir.Classes.Body, "nil")
+    Noir.TypeChecking:Assert("Noir.Classes.Body:SpawnRopeHook()", "targetVoxelX", targetVoxelX, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Body:SpawnRopeHook()", "targetVoxelY", targetVoxelY, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Body:SpawnRopeHook()", "targetVoxelZ", targetVoxelZ, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Body:SpawnRopeHook()", "length", length, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Body:SpawnRopeHook()", "ropeType", ropeType, "number")
+
+    -- Spawn rope hook
+    server.spawnVehicleRope(
+        self.ID,
+        voxelX,
+        voxelY,
+        voxelZ,
+        targetBody and targetBody.ID or self.ID,
+        targetVoxelX,
+        targetVoxelY,
+        targetVoxelZ,
+        length,
+        ropeType
+    )
+end
+
+--[[
     Despawn the body.
 ]]
 function Noir.Classes.Body:Despawn()
