@@ -102,7 +102,10 @@ function Noir.Classes.MapObjectWidget:Init(ID, visible, title, text, objectType,
 end
 
 --[[
-    Attaches this map object to a body.
+    Attaches this map object to a body.<br>
+    Upon doing so, the map object will follow the body's position until detached with the `:Detach()` method.<br>
+    You can offset the map object with the `AttachmentOffset` property.<br>
+    Note that `:Update()` is called automatically.
 ]]
 ---@param body NoirBody
 function Noir.Classes.MapObjectWidget:AttachToBody(body)
@@ -113,7 +116,10 @@ function Noir.Classes.MapObjectWidget:AttachToBody(body)
 end
 
 --[[
-    Attaches this map object to an object.
+    Attaches this map object to an object.<br>
+    Upon doing so, the map object will follow the object's position until detached with the `:Detach()` method.<br>
+    You can offset the map object with the `AttachmentOffset` property.<br>
+    Note that `:Update()` is called automatically.
 ]]
 ---@param object NoirObject
 function Noir.Classes.MapObjectWidget:AttachToObject(object)

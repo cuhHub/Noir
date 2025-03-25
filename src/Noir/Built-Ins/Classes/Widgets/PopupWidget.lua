@@ -76,7 +76,10 @@ function Noir.Classes.PopupWidget:Init(ID, visible, text, position, renderDistan
 end
 
 --[[
-    Attaches this popup to a body.
+    Attaches this popup to a body.<br>
+    Upon doing so, the popup will follow the body's position until detached with the `:Detach()` method.<br>
+    You can offset the popup from the body by setting the `AttachmentOffset` property.<br>
+    Note that `:Update()` is called automatically.
 ]]
 ---@param body NoirBody
 function Noir.Classes.PopupWidget:AttachToBody(body)
@@ -87,7 +90,10 @@ function Noir.Classes.PopupWidget:AttachToBody(body)
 end
 
 --[[
-    Attaches this popup to an object.
+    Attaches this popup to an object.<br>
+    Upon doing so, the popup will follow the object's position until detached with the `:Detach()` method.<br>
+    You can offset the popup from the object by setting the `AttachmentOffset` property.<br>
+    Note that `:Update()` is called automatically.
 ]]
 ---@param object NoirObject
 function Noir.Classes.PopupWidget:AttachToObject(object)
