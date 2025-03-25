@@ -384,11 +384,7 @@ function Noir.Libraries.Table:FindDeep(tbl, value)
         if iterValue == value then
             return index, tbl
         elseif type(iterValue) == "table" then
-            local _index, _tbl = self:FindDeep(iterValue, value)
-
-            if _index and _tbl then
-                return _index, _tbl
-            end
+            return self:FindDeep(iterValue, value)
         end
     end
 end
