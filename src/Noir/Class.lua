@@ -68,13 +68,17 @@ function Noir.Class(name, ...)
     ---@field ClassName string The name of this class/object
     ---@field _Parents table<integer, NoirClass> The parent classes that this class inherits from
     ---@field _IsObject boolean Represents whether or not this is a class or a class object (an object created from a class due to class:New() call)
-    ---@field _ClassMethods table<integer, string> A list of methods that are only available on classes and not objects created from classes. Used for :_Descend() exceptions internally
+    ---@field _ClassMethods table<string, boolean> A list of methods that are only available on classes and not objects created from classes. Used for :_Descend() exceptions internally
     ---@field Init fun(self: NoirClass, ...) A function that initializes objects created from this class
     local class = {} ---@diagnostic disable-line
     class.ClassName = name
     class._Parents = {...}
     class._IsObject = false
-    class._ClassMethods = {"New", "Init", "_Descend"}
+    class._ClassMethods = {
+        ["New"] = true,
+        ["Init"] = true,
+        ["_Descend"] = true,
+    }
 
     function class:New(...)
         -- Create class object
@@ -106,7 +110,7 @@ function Noir.Class(name, ...)
     ]]
     ---@param from NoirClass
     ---@param object NoirClass|table
-    ---@param exceptions table<integer, string>
+    ---@param exceptions table<string, boolean>
     function class._Descend(from, object, exceptions)
         -- Type checking
         Noir.TypeChecking:Assert("Noir.Class()._Descend()", "from", from, "class")
