@@ -45,10 +45,10 @@
 ---@field AttachmentObject NoirObject|nil The object to optionally attach the map object to
 ---@field AttachmentOffset SWMatrix The offset to apply to the body/object attachment
 ---@field _AttachmentMode SWPositionTypeEnum The map object attachment mode
----@field ColorR number The red color value of this map object
----@field ColorG number The green color value of this map object
----@field ColorB number The blue color value of this map object
----@field ColorA number The alpha color value of this map object
+---@field ColorR number The red color value of this map object (0-255)
+---@field ColorG number The green color value of this map object (0-255)
+---@field ColorB number The blue color value of this map object (0-255)
+---@field ColorA number The alpha color value of this map object (0-255)
 Noir.Classes.MapObjectWidget = Noir.Class("MapObjectWidget", Noir.Classes.Widget)
 
 --[[
