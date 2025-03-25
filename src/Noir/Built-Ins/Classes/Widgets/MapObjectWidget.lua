@@ -194,7 +194,7 @@ function Noir.Classes.MapObjectWidget:Deserialize(serializedWidget)
     elseif serializedWidget.AttachmentMode == 2 then
         local object = Noir.Services.ObjectService:GetObject(serializedWidget.AttachmentObjectID)
 
-        if not widget.AttachmentObject:Exists() then
+        if not object or not object:Exists() then
             self:Detach()
             return widget
         end
