@@ -76,7 +76,7 @@
     }
 
     local trackers = Noir.Debugging:TrackAll("myTbl", myTbl)
-    -- To track all funcctions in your addon that are non-local, you can use the above method on `_ENV`. :TrackAll() will ignore 
+    -- To track all functions in your addon that are non-local, you can use the above method on `_ENV`. :TrackAll() will ignore non-local functions as they aren't in `_ENV` anyway
 
     -- Getting least performant functions
     Noir.Debugging:GetLeastPerformantTracked() -- A table of trackers. Index 1 being the least performant
@@ -269,7 +269,9 @@ function Noir.Debugging:TrackAll(name, tbl)
     local trackers = {}
 
     for index, value in pairs(tbl) do
+        print(name.."[\"%s\"]", index)
         if type(value) == "table" then
+            print("   table, going deeper")
             trackers = Noir.Libraries.Table:Merge(trackers, self:TrackAll(("%s.%s"):format(name, index), value))
             goto continue
         end
