@@ -269,9 +269,7 @@ function Noir.Debugging:TrackAll(name, tbl)
     local trackers = {}
 
     for index, value in pairs(tbl) do
-        print(name.."[\"%s\"]", index)
         if type(value) == "table" then
-            print("   table, going deeper")
             trackers = Noir.Libraries.Table:Merge(trackers, self:TrackAll(("%s.%s"):format(name, index), value))
             goto continue
         end
