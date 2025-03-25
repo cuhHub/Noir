@@ -105,20 +105,24 @@ function Noir.Services.UIService:_LoadWidgets()
 
         ---@type table<NoirWidgetType, function>
         local deserializers = {
-            MapObject = function(serializedWidget)
+            ["MapObject"] = function(serializedWidget)
                 return Noir.Classes.MapObjectWidget:Deserialize(serializedWidget)
             end,
 
-            MapLabel = function(serializedWidget)
+            ["MapLabel"] = function(serializedWidget)
                 return Noir.Classes.MapLabelWidget:Deserialize(serializedWidget)
             end,
 
-            Popup = function(serializedWidget)
+            ["Popup"] = function(serializedWidget)
                 return Noir.Classes.PopupWidget:Deserialize(serializedWidget)
             end,
 
-            ScreenPopup = function(serializedWidget)
+            ["ScreenPopup"] = function(serializedWidget)
                 return Noir.Classes.ScreenPopupWidget:Deserialize(serializedWidget)
+            end,
+
+            ["MapLine"] = function(serializedWidget)
+                return Noir.Classes.MapLineWidget:Deserialize(serializedWidget)
             end
         }
 
@@ -280,6 +284,50 @@ function Noir.Services.UIService:CreatePopup(text, position, renderDistance, vis
         text,
         position,
         renderDistance,
+        player
+    )
+
+    widget:Update()
+    self:_AddWidget(widget)
+
+    return widget
+end
+
+--[[
+    Creates a map line widget.<br>
+    Simply renders a line connecting two points on the map.
+]]
+---@param startPosition SWMatrix
+---@param endPosition SWMatrix
+---@param width number
+---@param visible boolean
+---@param colorR number|nil
+---@param colorG number|nil
+---@param colorB number|nil
+---@param colorA number|nil
+---@param player NoirPlayer|nil
+---@return NoirMapLineWidget
+function Noir.Services.UIService:CreateMapLine(startPosition, endPosition, width, visible, colorR, colorG, colorB, colorA, player)
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapLine()", "startPosition", startPosition, "table")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapLine()", "endPosition", endPosition, "table")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapLine()", "width", width, "number")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapLine()", "visible", visible, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapLine()", "colorR", colorR, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapLine()", "colorG", colorG, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapLine()", "colorB", colorB, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapLine()", "colorA", colorA, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Services.UIService:CreateMapLine()", "player", player, Noir.Classes.Player, "nil")
+
+    local widget = Noir.Classes.MapLineWidget:New(
+        server.getMapID(),
+        visible,
+        startPosition,
+        endPosition,
+        width,
+        colorR or 255,
+        colorG or 255,
+        colorB or 255,
+        colorA or 255,
         player
     )
 
