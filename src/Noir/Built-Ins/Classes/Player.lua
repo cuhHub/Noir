@@ -213,7 +213,7 @@ end
 --[[
     Returns this player's character as a NoirObject.
 ]]
----@return NoirObject|nil
+---@return NoirObject
 function Noir.Classes.Player:GetCharacter()
     -- Get the character
     local character = server.getPlayerCharacterID(self.ID)
