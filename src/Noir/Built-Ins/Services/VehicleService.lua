@@ -106,12 +106,22 @@ function Noir.Services.VehicleService:ServiceStart()
     -- Listen for vehicles spawning
     self._OnGroupSpawnConnection = Noir.Callbacks:Connect("onGroupSpawn", function(group_id, peer_id, x, y, z, group_cost)
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)
+
+        if self:GetVehicle(group_id) then
+            return
+        end
+
         self:_RegisterVehicle(group_id, player, matrix.translation(x, y, z), group_cost, true)
     end)
 
     -- Listen for bodies spawning
     self._OnBodySpawnConnection = Noir.Callbacks:Connect("onVehicleSpawn", function(vehicle_id, peer_id, x, y, z, group_cost, group_id)
         local player = Noir.Services.PlayerService:GetPlayer(peer_id)
+
+        if self:GetBody(vehicle_id) then
+            return
+        end
+
         self:_RegisterBody(vehicle_id, player, true)
     end)
 
@@ -519,6 +529,105 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
 end
 
 --[[
+    Setup data for a spawned vehicle.
+]]
+---@param primaryVehicleID integer
+---@param vehicleIDs table<integer, integer>
+---@param position SWMatrix
+---@return NoirVehicle|nil
+function Noir.Services.VehicleService:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SetupVehicle()", "primaryVehicleID", primaryVehicleID, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SetupVehicle()", "vehicleIDs", vehicleIDs, "table")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SetupVehicle()", "position", position, "table")
+
+    -- Create bodies
+    local primaryBody
+
+    for _, vehicleID in pairs(vehicleIDs) do
+        local body = self:_RegisterBody(vehicleID, nil, true)
+
+        if primaryVehicleID == vehicleID then
+            primaryBody = body
+        end
+    end
+
+    -- Check if primaryBody exists
+    if not primaryBody then
+        Noir.Debugging:RaiseError("VehicleService:_SetupVehicle()", "Failed to spawn a vehicle. `primaryBody` is nil.")
+        return
+    end
+
+    -- Get group ID
+    local primaryBodyData = primaryBody:GetData()
+
+    if not primaryBodyData then
+        Noir.Debugging:RaiseError("VehicleService:_SetupVehicle()", "Failed to spawn a vehicle. `primaryBodyData` is nil.")
+        return
+    end
+
+    local groupID = primaryBodyData.group_id
+
+    -- Return vehicle
+    return self:_RegisterVehicle(groupID, nil, position, 0, true)
+end
+
+--[[
+    Spawn a vehicle from a mission component.<br>
+    Uses `server.spawnAddonComponent` under the hood.
+]]
+---@param componentID integer
+---@param locationID integer
+---@param position SWMatrix
+---@param addonIndex integer|nil Defaults to this addon's index
+---@return NoirVehicle|nil
+function Noir.Services.VehicleService:SpawnVehicleFromMissionComponent(componentID, locationID, position, addonIndex)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleFromMissionComponent()", "componentID", componentID, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleFromMissionComponent()", "locationID", locationID, "number")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleFromMissionComponent()", "position", position, "table")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleFromMissionComponent()", "addonIndex", addonIndex, "number", "nil")
+
+    -- Spawn vehicle
+    local data, success = server.spawnAddonComponent(position, addonIndex or (server.getAddonIndex()), locationID, componentID)
+
+    if not success then
+        Noir.Debugging:RaiseError("VehicleService:SpawnVehicleFromMissionComponent()", "Failed to spawn a vehicle. `server.spawnAddonComponent` returned unsuccessful.")
+        return
+    end
+
+    if data.type ~= 3 then
+        Noir.Debugging:RaiseError("VehicleService:SpawnVehicleFromMissionComponent()", "Failed to spawn a vehicle. Component is not a vehicle.")
+        return
+    end
+
+    return self:_SetupVehicle(data.id, data.vehicle_ids, position)
+end
+
+--[[
+    Spawn a vehicle by file name.<br>
+    Uses `server.spawnVehicle` under the hood.
+]]
+---@param fileName string
+---@param position SWMatrix
+---@return NoirVehicle|nil
+function Noir.Services.VehicleService:SpawnVehicleByFileName(fileName, position)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleByFileName()", "fileName", fileName, "string")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:SpawnVehicleByFileName()", "position", position, "table")
+
+    -- Spawn vehicle
+    local primaryVehicleID, success, vehicleIDs = server.spawnVehicle(position, fileName)
+
+    if not success then
+        Noir.Debugging:RaiseError("VehicleService:SpawnVehicleByFileName()", "Failed to spawn a vehicle. `server.spawnVehicle` returned unsuccessful.")
+        return
+    end
+
+    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
+end
+
+--[[
     Spawn a vehicle.<br>
     Uses `server.spawnAddonVehicle` under the hood.
 ]]
@@ -535,41 +644,12 @@ function Noir.Services.VehicleService:SpawnVehicle(componentID, position, addonI
     -- Spawn vehicle
     local primaryVehicleID, success, vehicleIDs = server.spawnAddonVehicle(position, addonIndex or (server.getAddonIndex()), componentID)
 
-    -- Check if successful
     if not success then
         Noir.Debugging:RaiseError("VehicleService:SpawnVehicle()", "Failed to spawn a vehicle. `server.spawnAddonVehicle` returned unsuccessful.")
         return
     end
 
-    -- Create bodies
-    local primaryBody
-
-    for _, vehicleID in pairs(vehicleIDs) do
-        local body = self:_RegisterBody(vehicleID, nil, true)
-
-        if primaryVehicleID == vehicleID then
-            primaryBody = body
-        end
-    end
-
-    -- Check if primaryBody exists
-    if not primaryBody then
-        Noir.Debugging:RaiseError("VehicleService:SpawnVehicle()", "Failed to spawn a vehicle. `primaryBody` is nil.")
-        return
-    end
-
-    -- Get group ID
-    local primaryBodyData = primaryBody:GetData()
-
-    if not primaryBodyData then
-        Noir.Debugging:RaiseError("VehicleService:SpawnVehicle()", "Failed to spawn a vehicle. `primaryBodyData` is nil.")
-        return
-    end
-
-    local groupID = primaryBodyData.group_id
-
-    -- Return vehicle
-    return self:_RegisterVehicle(groupID, nil, position, 0, true)
+    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
 end
 
 --[[
