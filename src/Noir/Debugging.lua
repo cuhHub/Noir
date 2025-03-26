@@ -32,10 +32,10 @@
 -------------------------------
 
 --[[
-    A module of Noir for debugging your code. This allows you to raise errors in the event something goes wrong<br>
+    A module of Noir for debugging your code. This allows you to raise errors in the event something goes wrong
     as well as track functions to see how well they are performing and sort these functions in order of performance.<br>
     This can be useful for figuring out what functions are performing the worst which can help you optimize your addon.<br>
-    This is not recommended to use in production as this service may slow your addon. Please use it for debugging purposes only.
+    This is not recommended to use in production it service may slow your addon. Please use it for debugging purposes only.
 
     -- Enabling debug
     Noir.Debugging.Enabled = true
