@@ -118,7 +118,17 @@ function Noir.Debugging:RaiseError(source, message, ...)
     _ENV["Noir: An error was raised. See logs for details."]()
 end
 
-error = Noir.Debugging.RaiseError ---@ar_ignore
+--[[
+    Raises an error.<br>
+    This method can still be called regardless of if debugging is enabled or not.<br>
+    This is an alias for `Noir.Debugging:RaiseError()`.
+]]
+---@param source string
+---@param message string
+---@param ... any
+function error(source, message, ...)
+    Noir.Debugging:RaiseError(source, message, ...)
+end
 
 --[[
     Returns all tracked functions with the option to copy.
