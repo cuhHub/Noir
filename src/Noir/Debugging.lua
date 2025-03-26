@@ -107,7 +107,8 @@ Noir.Debugging._TrackingExceptions = {
 
 --[[
     Raises an error.<br>
-    This method can still be called regardless of if debugging is enabled or not.
+    This method can still be called regardless of if debugging is enabled or not.<br>
+    `error()` is aliased to this method.
 ]]
 ---@param source string
 ---@param message string
@@ -116,6 +117,8 @@ function Noir.Debugging:RaiseError(source, message, ...)
     Noir.Libraries.Logging:Error("Error", source..": "..message, ...)
     _ENV["Noir: An error was raised. See logs for details."]()
 end
+
+error = Noir.Debugging.RaiseError ---@ar_ignore
 
 --[[
     Returns all tracked functions with the option to copy.
