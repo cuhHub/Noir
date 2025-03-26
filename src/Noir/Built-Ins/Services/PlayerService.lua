@@ -109,12 +109,7 @@ function Noir.Services.PlayerService:ServiceStart()
         end
 
         -- Remove player
-        local success = self:_RemovePlayerData(player)
-
-        if not success then
-            Noir.Debugging:RaiseError("PlayerService", "onPlayerLeave player data removal failed.")
-            return
-        end
+        self:_RemovePlayerData(player)
 
         -- Call leave event
         self.OnLeave:Fire(player)
@@ -184,10 +179,12 @@ end
 ]]
 function Noir.Services.PlayerService:_LoadPlayers()
     for _, player in pairs(server.getPlayers()) do
-        -- Check if unnamed client
+        -- Check if server
         if player.steam_id == 0 then
             goto continue
         end
+
+        -- Check if unnamed client
 
         -- Check if already loaded
         if self:GetPlayer(player.id) then
@@ -199,7 +196,7 @@ function Noir.Services.PlayerService:_LoadPlayers()
 
         if not createdPlayer then
             Noir.Debugging:RaiseError("PlayerService:_LoadPlayers()", "Player data creation failed.")
-            goto continue
+            goto continue -- purely for lua lsp to stop bitching. this `goto` statement doesn't actually execute
         end
 
         -- Load saved properties (eg: permissions)
@@ -276,7 +273,6 @@ end
     Used internally.
 ]]
 ---@param player NoirPlayer
----@return boolean success Whether or not the operation was successful
 function Noir.Services.PlayerService:_RemovePlayerData(player)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemovePlayerData()", "player", player, Noir.Classes.Player)
@@ -284,7 +280,6 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
     -- Check if player exists in this service
     if not self:GetPlayer(player.ID) then
         Noir.Debugging:RaiseError("PlayerService:_RemovePlayerData()", "Attempted to remove a player from the service that isn't in the service.")
-        return false
     end
 
     -- Remove player
@@ -296,8 +291,6 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
 
     -- Unmark as recognized
     self:_UnmarkRecognized(player)
-
-    return true
 end
 
 --[[
