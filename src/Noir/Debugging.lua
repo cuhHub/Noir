@@ -100,9 +100,7 @@ Noir.Debugging.Trackers = {}
     A table containing all functions and tables that should not be tracked.
 ]]
 Noir.Debugging._TrackingExceptions = {
-    [Noir.Debugging] = true,
-    -- [Noir.Libraries.Logging] = true,
-    -- [Noir.TypeChecking] = true
+    [Noir] = true
 }
 
 --[[
@@ -263,13 +261,19 @@ end
 ]]
 ---@param name string
 ---@param tbl table<integer, function>
+---@param _journey table<table, boolean>|nil Used internally to prevent infinite recursion
 ---@return table<integer, NoirTracker>
-function Noir.Debugging:TrackAll(name, tbl)
+function Noir.Debugging:TrackAll(name, tbl, _journey)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Debugging:TrackAll()", "name", name, "string")
     Noir.TypeChecking:Assert("Noir.Debugging:TrackAll()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Debugging:TrackAll()", "_journey", _journey, "table", "nil")
 
     -- Checks
+    if not _journey then
+        _journey = {}
+    end
+
     if not self.Enabled then
         return {}
     end
@@ -282,8 +286,16 @@ function Noir.Debugging:TrackAll(name, tbl)
     local trackers = {}
 
     for index, value in pairs(tbl) do
+        if _journey[value] then
+            goto continue
+        end
+
+        _journey[value] = true
+
         if type(value) == "table" then
-            trackers = Noir.Libraries.Table:Merge(trackers, self:TrackAll(("%s.%s"):format(name, index), value))
+            local _trackers = self:TrackAll(("%s.%s"):format(name, index), value, _journey)
+            trackers = Noir.Libraries.Table:Merge(trackers, _trackers)
+
             goto continue
         end
 
