@@ -63,6 +63,10 @@ require("Noir.Built-Ins.Classes.AITargetData")
 require("Noir.Built-Ins.Classes.Tracker")
 require("Noir.Built-Ins.Classes.Widgets.Widget")
 require("Noir.Built-Ins.Classes.Widgets.MapLabelWidget")
+require("Noir.Built-Ins.Classes.Widgets.MapObjectWidget")
+require("Noir.Built-Ins.Classes.Widgets.MapLineWidget")
+require("Noir.Built-Ins.Classes.Widgets.ScreenPopupWidget")
+require("Noir.Built-Ins.Classes.Widgets.PopupWidget")
 
 require("Noir.Libraries")
 
