@@ -85,7 +85,7 @@ end
 function Noir.Classes.Service:_Initialize()
     -- Checks
     if self.Initialized then
-        Noir.Debugging:RaiseError("Noir.Classes.Service:_Initialize()", "%s: Attempted to initialize this service when it has already initialized.", self.Name)
+        error("Noir.Classes.Service:_Initialize()", "%s: Attempted to initialize this service when it has already initialized.", self.Name)
     end
 
     -- Set initialized
@@ -106,12 +106,12 @@ end
 function Noir.Classes.Service:_Start()
     -- Checks
     if self.Started then
-        Noir.Debugging:RaiseError("Noir.Classes.Service:_Start()", "%s: Attempted to start this service when it has already started.", self.Name)
+        error("Noir.Classes.Service:_Start()", "%s: Attempted to start this service when it has already started.", self.Name)
         return
     end
 
     if not self.Initialized then
-        Noir.Debugging:RaiseError("Noir.Classes.Service:_Start()", "%s: Attempted to start this service when it has not initialized yet.", self.Name)
+        error("Noir.Classes.Service:_Start()", "%s: Attempted to start this service when it has not initialized yet.", self.Name)
         return
     end
 
@@ -133,15 +133,15 @@ end
 function Noir.Classes.Service:_CheckSaveData()
     -- Checks
     if not g_savedata then
-        Noir.Debugging:RaiseError("Noir.Classes.Service:_CheckSaveData()", "g_savedata doesn't exist.")
+        error("Noir.Classes.Service:_CheckSaveData()", "g_savedata doesn't exist.")
     end
 
     if not g_savedata.Noir then
-        Noir.Debugging:RaiseError("Noir.Classes.Service:_CheckSaveData()", "g_savedata.Noir doesn't exist.")
+        error("Noir.Classes.Service:_CheckSaveData()", "g_savedata.Noir doesn't exist.")
     end
 
     if not g_savedata.Noir.Services then
-        Noir.Debugging:RaiseError("Noir.Classes.Service:_CheckSaveData()", "g_savedata.Noir.Services doesn't exist.")
+        error("Noir.Classes.Service:_CheckSaveData()", "g_savedata.Noir.Services doesn't exist.")
     end
 
     if not g_savedata.Noir.Services[self.Name] then

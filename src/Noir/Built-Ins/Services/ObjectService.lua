@@ -271,7 +271,7 @@ end
 ]]
 ---@param objectType SWObjectTypeEnum
 ---@param position SWMatrix
----@return NoirObject|nil
+---@return NoirObject
 function Noir.Services.ObjectService:SpawnObject(objectType, position)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnObject()", "objectType", objectType, "number")
@@ -281,16 +281,14 @@ function Noir.Services.ObjectService:SpawnObject(objectType, position)
     local object_id, success = server.spawnObject(position, objectType)
 
     if not success then
-        Noir.Debugging:RaiseError("ObjectService:SpawnObject()", "server.spawnObject() was unsuccessful. is `objectType` valid?")
-        return
+        error("ObjectService:SpawnObject()", "server.spawnObject() was unsuccessful. is `objectType` valid?")
     end
 
     -- Wrap object in a class
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Debugging:RaiseError("ObjectService:SpawnObject()", ":GetObject() returned nil.")
-        return
+        error("ObjectService:SpawnObject()", ":GetObject() returned nil.")
     end
 
     -- Return
@@ -302,7 +300,7 @@ end
 ]]
 ---@param outfitType SWOutfitTypeEnum
 ---@param position SWMatrix
----@return NoirObject|nil
+---@return NoirObject
 function Noir.Services.ObjectService:SpawnCharacter(outfitType, position)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnCharacter()", "outfitType", outfitType, "number")
@@ -312,16 +310,14 @@ function Noir.Services.ObjectService:SpawnCharacter(outfitType, position)
     local object_id, success = server.spawnCharacter(position, outfitType)
 
     if not success then
-        Noir.Debugging:RaiseError("ObjectService:SpawnCharacter()", "server.spawnCharacter() was unsuccessful. Is `outfitType` valid?")
-        return
+        error("ObjectService:SpawnCharacter()", "server.spawnCharacter() was unsuccessful. Is `outfitType` valid?")
     end
 
     -- Wrap object in a class
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Debugging:RaiseError("ObjectService:SpawnCharacter()", ":GetObject() returned nil.")
-        return
+        error("ObjectService:SpawnCharacter()", ":GetObject() returned nil.")
     end
 
     -- Return
@@ -334,7 +330,7 @@ end
 ---@param creatureType SWCreatureTypeEnum
 ---@param position SWMatrix
 ---@param sizeMultiplier number|nil Default: 1
----@return NoirObject|nil
+---@return NoirObject
 function Noir.Services.ObjectService:SpawnCreature(creatureType, position, sizeMultiplier)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnCreature()", "creatureType", creatureType, "number")
@@ -345,16 +341,14 @@ function Noir.Services.ObjectService:SpawnCreature(creatureType, position, sizeM
     local object_id, success = server.spawnCreature(position, creatureType, sizeMultiplier or 1)
 
     if not success then
-        Noir.Debugging:RaiseError("ObjectService:SpawnCreature()", "server.spawnCreature() was unsuccessful. is `creatureType` valid?")
-        return
+        error("ObjectService:SpawnCreature()", "server.spawnCreature() was unsuccessful. is `creatureType` valid?")
     end
 
     -- Wrap object in a class
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Debugging:RaiseError("ObjectService:SpawnCreature()", ":GetObject() returned nil.")
-        return
+        error("ObjectService:SpawnCreature()", ":GetObject() returned nil.")
     end
 
     -- Return
@@ -367,7 +361,7 @@ end
 ---@param animalType SWAnimalTypeEnum
 ---@param position SWMatrix
 ---@param sizeMultiplier number|nil Default: 1
----@return NoirObject|nil
+---@return NoirObject
 function Noir.Services.ObjectService:SpawnAnimal(animalType, position, sizeMultiplier)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnAnimal()", "animalType", animalType, "number")
@@ -378,16 +372,14 @@ function Noir.Services.ObjectService:SpawnAnimal(animalType, position, sizeMulti
     local object_id, success = server.spawnAnimal(position, animalType, sizeMultiplier or 1)
 
     if not success then
-        Noir.Debugging:RaiseError("ObjectService:SpawnAnimal()", "server.spawnAnimal() was unsuccessful. Is `animalType` valid?")
-        return
+        error("ObjectService:SpawnAnimal()", "server.spawnAnimal() was unsuccessful. Is `animalType` valid?")
     end
 
     -- Wrap object in a class
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Debugging:RaiseError("ObjectService:SpawnAnimal()", ":GetObject() returned nil.")
-        return
+        error("ObjectService:SpawnAnimal()", ":GetObject() returned nil.")
     end
 
     -- Return
@@ -401,7 +393,7 @@ end
 ---@param position SWMatrix
 ---@param int integer
 ---@param float integer
----@return NoirObject|nil
+---@return NoirObject
 function Noir.Services.ObjectService:SpawnEquipment(equipmentType, position, int, float)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnEquipment()", "equipmentType", equipmentType, "number")
@@ -413,16 +405,14 @@ function Noir.Services.ObjectService:SpawnEquipment(equipmentType, position, int
     local object_id, success = server.spawnEquipment(position, equipmentType, int, float)
 
     if not success then
-        Noir.Debugging:RaiseError("ObjectService:SpawnEquipment()", "server.spawnEquipment() was unsuccessful. Is `equipmentType` valid?")
-        return
+        error("ObjectService:SpawnEquipment()", "server.spawnEquipment() was unsuccessful. Is `equipmentType` valid?")
     end
 
     -- Wrap object in a class
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Debugging:RaiseError("ObjectService:SpawnEquipment()", ":GetObject() returned nil.")
-        return
+        error("ObjectService:SpawnEquipment()", ":GetObject() returned nil.")
     end
 
     -- Return
@@ -439,7 +429,7 @@ end
 ---@param isExplosive boolean
 ---@param parentBody NoirBody|nil
 ---@param explosionMagnitude number The size of the explosion (0-5)
----@return NoirObject|nil
+---@return NoirObject
 function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit, isExplosive, parentBody, explosionMagnitude)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.ObjectService:SpawnFire()", "position", position, "table")
@@ -454,16 +444,14 @@ function Noir.Services.ObjectService:SpawnFire(position, size, magnitude, isLit,
     local object_id, success = server.spawnFire(position, size, magnitude, isLit, isExplosive, parentBody and parentBody.ID or 0, explosionMagnitude)
 
     if not success then
-        Noir.Debugging:RaiseError("ObjectService:SpawnFire()", "server.spawnFire() was unsuccessful. Ensure the provided parameters are correct.")
-        return
+        error("ObjectService:SpawnFire()", "server.spawnFire() was unsuccessful. Ensure the provided parameters are correct.")
     end
 
     -- Wrap object in a class
     local object = self:GetObject(object_id)
 
     if not object then
-        Noir.Debugging:RaiseError("ObjectService:SpawnFire()", ":GetObject() returned nil.")
-        return
+        error("ObjectService:SpawnFire()", ":GetObject() returned nil.")
     end
 
     -- Return

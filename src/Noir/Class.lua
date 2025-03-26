@@ -96,7 +96,7 @@ function Noir.Class(name, ...)
         if self.Init then
             self.Init(object, ...)
         else
-            Noir.Debugging:RaiseError("Class", "'%s' is missing an :Init() method. This method is required for classes. See the documentation for info.", self.ClassName)
+            error("Class", "'%s' is missing an :Init() method. This method is required for classes. See the documentation for info.", self.ClassName)
         end
 
         -- Return the object
@@ -141,7 +141,7 @@ function Noir.Class(name, ...)
     function class:InitFrom(parent, ...)
         -- Check if this was called from an object
         if not self._IsObject then
-            Noir.Debugging:RaiseError("Class", "Attempted to call :InitFrom() when 'self' is a class and not an object.")
+            error("Class", "Attempted to call :InitFrom() when 'self' is a class and not an object.")
         end
 
         -- Create an object from the parent class

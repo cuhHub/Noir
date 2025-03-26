@@ -109,7 +109,7 @@ function Noir.Classes.Body:_Deserialize(serializedBody, setParentVehicle)
         local parentVehicle = Noir.Services.VehicleService:GetVehicle(serializedBody.ParentVehicle)
 
         if not parentVehicle then
-            Noir.Debugging:RaiseError("Noir.Classes.Body:_Deserialize()", "Could not find parent vehicle for a deserialized body.")
+            error("Noir.Classes.Body:_Deserialize()", "Could not find parent vehicle for a deserialized body.")
         end
 
         body.ParentVehicle = parentVehicle

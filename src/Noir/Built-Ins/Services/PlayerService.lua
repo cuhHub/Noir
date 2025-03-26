@@ -120,8 +120,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Debugging:RaiseError("PlayerService", "A player just died, but they don't have data.")
-            return
+            error("PlayerService", "A player just died, but they don't have data.")
         end
 
         -- Call die event
@@ -133,8 +132,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Debugging:RaiseError("PlayerService", "A player just respawned, but they don't have data.")
-            return
+            error("PlayerService", "A player just respawned, but they don't have data.")
         end
 
         -- Call respawn event
@@ -146,8 +144,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Debugging:RaiseError("PlayerService", "A player just sat in a body, but they don't have data.")
-            return
+            error("PlayerService", "A player just sat in a body, but they don't have data.")
         end
 
         -- Get body
@@ -162,8 +159,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:GetPlayer(peer_id)
 
         if not player then
-            Noir.Debugging:RaiseError("PlayerService", "A player just got up from a body seat, but they don't have data.")
-            return
+            error("PlayerService", "A player just got up from a body seat, but they don't have data.")
         end
 
         -- Get body
@@ -198,8 +194,7 @@ function Noir.Services.PlayerService:_LoadPlayers()
         local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
 
         if not createdPlayer then
-            Noir.Debugging:RaiseError("PlayerService:_LoadPlayers()", "Player data creation failed.")
-            goto continue -- purely for lua lsp to stop bitching. this `goto` statement doesn't actually execute
+            error("PlayerService:_LoadPlayers()", "Player data creation failed.")
         end
 
         -- Load saved properties (eg: permissions)
@@ -247,8 +242,7 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
 
     -- Check if player already exists
     if self:GetPlayer(peer_id) then
-        Noir.Debugging:RaiseError("PlayerService:_GivePlayerData()", "Attempted to give data to a player that already exists.")
-        return
+        error("PlayerService:_GivePlayerData()", "Attempted to give data to a player that already exists.")
     end
 
     -- Create player
@@ -282,7 +276,7 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
 
     -- Check if player exists in this service
     if not self:GetPlayer(player.ID) then
-        Noir.Debugging:RaiseError("PlayerService:_RemovePlayerData()", "Attempted to remove a player from the service that isn't in the service.")
+        error("PlayerService:_RemovePlayerData()", "Attempted to remove a player from the service that isn't in the service.")
     end
 
     -- Remove player
