@@ -110,7 +110,7 @@ end
 ---@param body NoirBody
 function Noir.Classes.MapObjectWidget:AttachToBody(body)
     self.AttachmentBody = body
-    self.Mode = 1
+    self._AttachmentMode = 1
 
     self:Update()
 end
@@ -124,7 +124,7 @@ end
 ---@param object NoirObject
 function Noir.Classes.MapObjectWidget:AttachToObject(object)
     self.AttachmentObject = object
-    self.Mode = 2
+    self._AttachmentMode = 2
 
     self:Update()
 end
@@ -135,7 +135,7 @@ end
 function Noir.Classes.MapObjectWidget:Detach()
     self.AttachmentBody = nil
     self.AttachmentObject = nil
-    self.Mode = 0
+    self._AttachmentMode = 0
 
     self:Update()
 end
