@@ -44,7 +44,7 @@ This will error if the service hasn't initialized yet.
 ### Parameters
 - `name`: string
 ### Returns
-- `NoirService|nil`
+- `NoirService`
 
 ---
 

@@ -47,7 +47,7 @@ All requests are localhost only. This is a Stormworks limitation.
 - `port`: integer
 - `callback`: fun(response: - NoirHTTPResponse)|nil
 ### Returns
-- `NoirHTTPRequest|nil`
+- `NoirHTTPRequest`
 
 ---
 

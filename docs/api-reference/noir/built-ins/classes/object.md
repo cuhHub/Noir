@@ -213,7 +213,7 @@ Returns the item this character is holding in the specified slot (if character).
 ### Parameters
 - `slot`: SWSlotNumberEnum
 ### Returns
-- `integer|nil`
+- `integer`
 
 ---
 
@@ -286,12 +286,24 @@ Heal this character by a certain amount (if character).
 ---
 
 ```lua
+Noir.Classes.Object:IsLit()
+```
+Returns if this fire is lit (if fire).
+
+### Returns
+- `boolean`
+
+---
+
+```lua
 Noir.Classes.Object:GetFireData()
 ```
+**⚠️ | Deprecated. Do not use.**
+
 Get this fire's data (if fire).
 
 ### Returns
-- `boolean`: isLit
+- `boolean`
 
 ---
 

@@ -40,7 +40,7 @@ Used internally.
 - `cost`: number
 - `fireEvent`: boolean
 ### Returns
-- `NoirVehicle|nil`
+- `NoirVehicle`
 
 ---
 
@@ -187,7 +187,7 @@ Setup data for a spawned vehicle.
 - `vehicleIDs`: table<integer, integer>
 - `position`: SWMatrix
 ### Returns
-- `NoirVehicle|nil`
+- `NoirVehicle`
 
 ---
 
@@ -204,7 +204,7 @@ Uses `server.spawnAddonComponent` under the hood.
 - `position`: SWMatrix
 - `addonIndex`: integer|nil - Defaults to this addon's index
 ### Returns
-- `NoirVehicle|nil`
+- `NoirVehicle`
 
 ---
 
@@ -219,7 +219,7 @@ Uses `server.spawnVehicle` under the hood.
 - `fileName`: string
 - `position`: SWMatrix
 ### Returns
-- `NoirVehicle|nil`
+- `NoirVehicle`
 
 ---
 
@@ -235,7 +235,7 @@ Uses `server.spawnAddonVehicle` under the hood.
 - `position`: SWMatrix
 - `addonIndex`: integer|nil - Defaults to this addon's index
 ### Returns
-- `NoirVehicle|nil`
+- `NoirVehicle`
 
 ---
 

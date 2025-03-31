@@ -145,7 +145,7 @@ Spawn an object.
 - `objectType`: SWObjectTypeEnum
 - `position`: SWMatrix
 ### Returns
-- `NoirObject|nil`
+- `NoirObject`
 
 ---
 
@@ -158,7 +158,7 @@ Spawn a character.
 - `outfitType`: SWOutfitTypeEnum
 - `position`: SWMatrix
 ### Returns
-- `NoirObject|nil`
+- `NoirObject`
 
 ---
 
@@ -172,7 +172,7 @@ Spawn a creature.
 - `position`: SWMatrix
 - `sizeMultiplier`: number|nil - Default: 1
 ### Returns
-- `NoirObject|nil`
+- `NoirObject`
 
 ---
 
@@ -186,7 +186,7 @@ Spawn an animal.
 - `position`: SWMatrix
 - `sizeMultiplier`: number|nil - Default: 1
 ### Returns
-- `NoirObject|nil`
+- `NoirObject`
 
 ---
 
@@ -201,7 +201,7 @@ Spawn an equipment item.
 - `int`: integer
 - `float`: integer
 ### Returns
-- `NoirObject|nil`
+- `NoirObject`
 
 ---
 
@@ -219,7 +219,7 @@ Spawn a fire.
 - `parentBody`: NoirBody|nil
 - `explosionMagnitude`: number - The size of the explosion (0-5)
 ### Returns
-- `NoirObject|nil`
+- `NoirObject`
 
 ---
 

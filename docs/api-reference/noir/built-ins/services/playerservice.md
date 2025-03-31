@@ -40,8 +40,6 @@ Used internally.
 
 ### Parameters
 - `player`: NoirPlayer
-### Returns
-- `boolean`: success - Whether or not the operation was successful
 
 ---
 
