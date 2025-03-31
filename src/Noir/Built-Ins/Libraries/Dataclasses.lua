@@ -84,8 +84,7 @@ function Noir.Libraries.Dataclasses:New(name, fields)
 
             -- If nil and nil isn't allowed, raise error
             if argument == nil and not Noir.Libraries.Table:Find(field.Types, "nil") then
-                Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "Missing argument #%d. Expected %s, got nil.", index, table.concat(field.Types, " | "))
-                return
+                error(("%s (Dataclass)"):format(name), "Missing argument #%d. Expected %s, got nil.", index, table.concat(field.Types, " | "))
             end
 
             -- Perform type check
@@ -93,8 +92,7 @@ function Noir.Libraries.Dataclasses:New(name, fields)
 
             -- Ensure we're not overwriting
             if self[field.Name] then
-                Noir.Debugging:RaiseError(("%s (Dataclass)"):format(name), "'%s' overwrites an existing field (possibly a built-in field to a class like 'ClassName'). To fix this, rename the field to something else.", field.Name)
-                return
+                error(("%s (Dataclass)"):format(name), "'%s' overwrites an existing field (possibly a built-in field to a class like 'ClassName'). To fix this, rename the field to something else.", field.Name)
             end
 
             -- Insert field

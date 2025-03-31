@@ -70,7 +70,7 @@ class Parser():
         if value.startswith("function"):
             return "function"
         
-        if value.startswith(r"{") and value.endswith(r"}"):
+        if value.startswith(r"{"):
             return "table"
         
         for custom, valueType in self.customTypes.items():
@@ -278,6 +278,10 @@ class Parser():
         
         # find attributes
         for line in self.content.split("\n"):
+            # check if should ignore
+            if line.endswith("---@ar_ignore"):
+                continue
+            
             # check if starts with Noir
             if line.find("Noir.") == -1:
                 continue
@@ -307,6 +311,9 @@ class Parser():
 
         for point in [*methods, *functions]:
             # validation
+            if self.getLine(point).endswith("---@ar_ignore"):
+                continue
+            
             if self.isInComment(point):
                 continue
             

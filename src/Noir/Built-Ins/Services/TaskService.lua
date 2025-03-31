@@ -142,10 +142,7 @@ end
 function Noir.Services.TaskService:_HandleTasks()
     for _, task in pairs(self:GetTasks(true)) do
         if not self:_IsValidTaskType(task.TaskType) then
-            self:RemoveTask(task)
-            Noir.Debugging:RaiseError("TaskService:_HandleTasks()", "Task #%d has an invalid task type of '%s'. Please ensure when creating a task, you use the correct type (assuming you're using `:_AddTask()`)", task.ID, task.TaskType)
-
-            goto continue
+            error("TaskService:_HandleTasks()", "Task #%d has an invalid task type of '%s'. Please ensure when creating a task, you use the correct type (assuming you're using `:_AddTask()`)", task.ID, task.TaskType)
         end
 
         local handler = self._TaskTypeHandlers[task.TaskType]
@@ -177,7 +174,7 @@ function Noir.Services.TaskService:_AddTask(callback, duration, arguments, isRep
 
     -- Check task type
     if not self:_IsValidTaskType(taskType) then
-        Noir.Debugging:RaiseError("TaskService:_AddTask()", "Invalid task type of '%s'. Please ensure when creating a task, you use the correct type.", taskType)
+        error("TaskService:_AddTask()", "Invalid task type of '%s'. Please ensure when creating a task, you use the correct type.", taskType)
     end
 
     -- Increment ID

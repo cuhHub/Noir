@@ -80,7 +80,7 @@ end
 ]]
 ---@return NoirSerializedWidget
 function Noir.Classes.Widget:_Serialize() ---@diagnostic disable-next-line missing-return
-    Noir.Debugging:RaiseError("Noir.Classes.Widget:_Serialize()", "This method is abstract and must be overridden.")
+    error("Noir.Classes.Widget:_Serialize()", "This method is abstract and must be overridden.")
 end
 
 --[[
@@ -91,7 +91,7 @@ end
 ---@param serializedWidget NoirSerializedWidget
 ---@return NoirWidget|nil
 function Noir.Classes.Widget:Deserialize(serializedWidget)
-    Noir.Debugging:RaiseError("Noir.Classes.Widget:Deserialize()", "This method is abstract and must be overridden.")
+    error("Noir.Classes.Widget:Deserialize()", "This method is abstract and must be overridden.")
 end
 
 --[[
@@ -119,7 +119,7 @@ end
 ]]
 ---@param player NoirPlayer
 function Noir.Classes.Widget:_Update(player)
-    Noir.Debugging:RaiseError("Noir.Classes.Widget:Update()", "This method is abstract and must be overridden.")
+    error("Noir.Classes.Widget:Update()", "This method is abstract and must be overridden.")
 end
 
 --[[
@@ -141,7 +141,7 @@ end
 ]]
 ---@param player NoirPlayer
 function Noir.Classes.Widget:_Destroy(player)
-    Noir.Debugging:RaiseError("Noir.Classes.Widget:_Destroy()", "This method is abstract and must be overridden.")
+    error("Noir.Classes.Widget:_Destroy()", "This method is abstract and must be overridden.")
 end
 
 --[[

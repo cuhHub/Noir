@@ -68,7 +68,7 @@ function Noir.Bootstrapper:WrapServiceMethodsForService(service)
         -- Wrap the method
         service[name] = function(...)
             if not service.Initialized then
-                Noir.Debugging:RaiseError("Noir.Bootstrapper:WrapServiceMethodsForService()", "Attempted to call '%s()' of '%s' (service) when the service hasn't initialized yet.", name, service.Name)
+                error("Noir.Bootstrapper:WrapServiceMethodsForService()", "Attempted to call '%s()' of '%s' (service) when the service hasn't initialized yet.", name, service.Name)
             end
 
             return method(...)
@@ -190,13 +190,13 @@ function Noir.Bootstrapper:SetAddonName()
     local index, success = server.getAddonIndex()
 
     if not success then
-        Noir.Debugging:RaiseError("Noir.Bootstrapper:SetAddonName()", "Failed to get addon index.")
+        error("Noir.Bootstrapper:SetAddonName()", "Failed to get addon index.")
     end
 
     local data = server.getAddonData(index)
 
     if not data then
-        Noir.Debugging:RaiseError("Noir.Bootstrapper:SetAddonName()", "Failed to get addon data.")
+        error("Noir.Bootstrapper:SetAddonName()", "Failed to get addon data.")
     end
 
     Noir.AddonName = data.name

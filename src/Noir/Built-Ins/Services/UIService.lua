@@ -447,8 +447,7 @@ function Noir.Services.UIService:RemoveWidget(ID)
     local widget = self:GetWidget(ID)
 
     if not widget then
-        Noir.Debugging:RaiseError("Noir.Services.UIService:RemoveWidget()", "No widget with ID %d exists.", ID)
-        return
+        error("Noir.Services.UIService:RemoveWidget()", "No widget with ID %d exists.", ID)
     end
 
     widget:Destroy()
@@ -471,7 +470,7 @@ function Noir.Services.UIService:_GetSerializedPlayer(ID)
     local player = Noir.Services.PlayerService:GetPlayer(ID)
 
     if not player then
-        Noir.Debugging:RaiseError("Noir.Services.UIService:_GetSerializedPlayer()", "Player with ID %d does not exist.", ID)
+        error("Noir.Services.UIService:_GetSerializedPlayer()", "Player with ID %d does not exist.", ID)
     end
 
     return player

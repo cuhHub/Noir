@@ -46,7 +46,7 @@ Noir.TypeChecking = {}
 ---@param value any
 ---@param ... NoirTypeCheckingType
 function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
-    -- Type checking can't be performed here otherwise we get a stack overflow :-( TODO: very small priority but might want to get this sorted in the future
+    -- TODO: Type checking can't be performed here otherwise we get a stack overflow :-( very small priority but might want to get this sorted in the future
 
     -- Pack types into a table
     local types = {...}
@@ -73,7 +73,7 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
     end
 
     -- Otherwise, raise an error
-    Noir.Debugging:RaiseError(
+    error(
         origin,
         "Expected %s for parameter '%s', but got '%s'.",
         self:_FormatTypes(types),
@@ -90,6 +90,8 @@ end
 ---@param values table<integer, any>
 ---@param ... NoirTypeCheckingType
 function Noir.TypeChecking:AssertMany(origin, parameterName, values, ...)
+    -- TODO: look at TODO in Noir.TypeChecking:Assert()
+
     -- Perform type checking on the provided parameters
     self:Assert("Noir.TypeChecking:AssertMany()", "origin", origin, "string")
     self:Assert("Noir.TypeChecking:AssertMany()", "parameterName", parameterName, "string")

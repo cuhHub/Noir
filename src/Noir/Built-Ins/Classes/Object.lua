@@ -98,7 +98,7 @@ function Noir.Classes.Object:GetData()
     local data = server.getObjectData(self.ID)
 
     if not data then
-        Noir.Debugging:RaiseError("Noir.Classes.Object:GetData()", ":GetData() failed for object %d. Data is nil", self.ID)
+        error("Noir.Classes.Object:GetData()", ":GetData() failed for object %d. Data is nil", self.ID)
     end
 
     -- Return the data
@@ -176,15 +176,7 @@ end
 ]]
 ---@return number
 function Noir.Classes.Object:GetHealth()
-    -- Get character data
-    local data = self:GetData()
-
-    if not data then
-        Noir.Debugging:RaiseError("Noir.Classes.Object:GetHealth()", ":GetData() returned nil.")
-    end
-
-    -- Return
-    return data.hp
+    return self:GetData().hp
 end
 
 --[[
@@ -273,7 +265,7 @@ end
     Returns the item this character is holding in the specified slot (if character).
 ]]
 ---@param slot SWSlotNumberEnum
----@return integer|nil
+---@return integer
 function Noir.Classes.Object:GetItem(slot)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Classes.Object:GetItem()", "slot", slot, "number")
@@ -282,8 +274,7 @@ function Noir.Classes.Object:GetItem(slot)
     local item, success = server.getCharacterItem(self.ID, slot)
 
     if not success then
-        Noir.Debugging:RaiseError("Noir.Classes.Object:GetItem()", "server.getCharacterItem(...) was unsuccessful.")
-        return
+        error("Noir.Classes.Object:GetItem()", "server.getCharacterItem(...) was unsuccessful. Is the slot out of range? Is this object a character?")
     end
 
     -- Return it
@@ -315,15 +306,7 @@ end
 ]]
 ---@return boolean
 function Noir.Classes.Object:IsDowned()
-    -- Get data
     local data = self:GetData()
-
-    if not data then
-        Noir.Debugging:RaiseError("Noir.Classes.Object:IsDowned()", ":GetData() returned nil.")
-        return false
-    end
-
-    -- Return
     return data.dead or data.incapacitated or data.hp <= 0
 end
 
@@ -349,7 +332,7 @@ function Noir.Classes.Object:Seat(body, name, voxelX, voxelY, voxelZ)
     elseif voxelX and voxelY and voxelZ then
         server.setSeated(self.ID, body.ID, voxelX, voxelY, voxelZ)
     else
-        Noir.Debugging:RaiseError("Noir.Classes.Object:Seat()", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().")
+        error("Noir.Classes.Object:Seat()", "Name, or voxelX and voxelY and voxelZ must be provided to NoirObject:Seat().")
     end
 end
 
@@ -398,20 +381,29 @@ function Noir.Classes.Object:Heal(amount)
 end
 
 --[[
-    Get this fire's data (if fire).
+    Returns if this fire is lit (if fire).
 ]]
----@return boolean isLit
-function Noir.Classes.Object:GetFireData()
+---@return boolean
+function Noir.Classes.Object:IsLit()
     -- Get fire data
     local isLit, success = server.getFireData(self.ID)
 
     if not success then
-        Noir.Debugging:RaiseError("Noir.Classes.Object:GetFireData()", "server.getFireData() was unsuccessful.")
-        return false
+        error("Noir.Classes.Object:IsLit()", "server.getFireData() was unsuccessful.")
     end
 
     -- Return
     return isLit
+end
+
+--[[
+    Get this fire's data (if fire).
+]]
+---@deprecated
+---@return boolean
+function Noir.Classes.Object:GetFireData()
+    Noir.Libraries.Deprecation:Deprecated("Noir.Classes.Object:GetFireData()", "Noir.Classes.Object:IsLit()", "This method will be removed in a future update.")
+    return self:IsLit()
 end
 
 --[[

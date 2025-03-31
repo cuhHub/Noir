@@ -32,10 +32,10 @@
 -------------------------------
 
 --[[
-    A module of Noir for debugging your code. This allows you to raise errors in the event something goes wrong<br>
+    A module of Noir for debugging your code. This allows you to raise errors in the event something goes wrong
     as well as track functions to see how well they are performing and sort these functions in order of performance.<br>
     This can be useful for figuring out what functions are performing the worst which can help you optimize your addon.<br>
-    This is not recommended to use in production as this service may slow your addon. Please use it for debugging purposes only.
+    This is not recommended to use in production it service may slow your addon. Please use it for debugging purposes only.
 
     -- Enabling debug
     Noir.Debugging.Enabled = true
@@ -100,14 +100,13 @@ Noir.Debugging.Trackers = {}
     A table containing all functions and tables that should not be tracked.
 ]]
 Noir.Debugging._TrackingExceptions = {
-    [Noir.Debugging] = true,
-    -- [Noir.Libraries.Logging] = true,
-    -- [Noir.TypeChecking] = true
+    [Noir] = true
 }
 
 --[[
     Raises an error.<br>
-    This method can still be called regardless of if debugging is enabled or not.
+    This method can still be called regardless of if debugging is enabled or not.<br>
+    `error()` is aliased to this method.
 ]]
 ---@param source string
 ---@param message string
@@ -115,6 +114,18 @@ Noir.Debugging._TrackingExceptions = {
 function Noir.Debugging:RaiseError(source, message, ...)
     Noir.Libraries.Logging:Error("Error", source..": "..message, ...)
     _ENV["Noir: An error was raised. See logs for details."]()
+end
+
+--[[
+    Raises an error.<br>
+    This method can still be called regardless of if debugging is enabled or not.<br>
+    This is an alias for `Noir.Debugging:RaiseError()`.
+]]
+---@param source string
+---@param message string
+---@param ... any
+function error(source, message, ...)
+    Noir.Debugging:RaiseError(source, message, ...)
 end
 
 --[[
@@ -250,13 +261,19 @@ end
 ]]
 ---@param name string
 ---@param tbl table<integer, function>
+---@param _journey table<table, boolean>|nil Used internally to prevent infinite recursion
 ---@return table<integer, NoirTracker>
-function Noir.Debugging:TrackAll(name, tbl)
+function Noir.Debugging:TrackAll(name, tbl, _journey)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Debugging:TrackAll()", "name", name, "string")
     Noir.TypeChecking:Assert("Noir.Debugging:TrackAll()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Debugging:TrackAll()", "_journey", _journey, "table", "nil")
 
     -- Checks
+    if not _journey then
+        _journey = {}
+    end
+
     if not self.Enabled then
         return {}
     end
@@ -269,8 +286,16 @@ function Noir.Debugging:TrackAll(name, tbl)
     local trackers = {}
 
     for index, value in pairs(tbl) do
+        if _journey[value] then
+            goto continue
+        end
+
+        _journey[value] = true
+
         if type(value) == "table" then
-            trackers = Noir.Libraries.Table:Merge(trackers, self:TrackAll(("%s.%s"):format(name, index), value))
+            local _trackers = self:TrackAll(("%s.%s"):format(name, index), value, _journey)
+            trackers = Noir.Libraries.Table:Merge(trackers, _trackers)
+
             goto continue
         end
 

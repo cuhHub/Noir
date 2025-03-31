@@ -135,7 +135,7 @@ end
 ---@param URL string
 ---@param port integer
 ---@param callback fun(response: NoirHTTPResponse)|nil
----@return NoirHTTPRequest|nil
+---@return NoirHTTPRequest
 function Noir.Services.HTTPService:GET(URL, port, callback)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.HTTPService:GET()", "URL", URL, "string")
@@ -144,8 +144,7 @@ function Noir.Services.HTTPService:GET(URL, port, callback)
 
     -- Check if port is valid
     if not self:IsPortValid(port) then
-        Noir.Debugging:RaiseError("HTTPService", "Port is out of range, expected a port between %d and %d.", self._PortRangeMin, self._PortRangeMax)
-        return
+        error("HTTPService", "Port is out of range, expected a port between %d and %d.", self._PortRangeMin, self._PortRangeMax)
     end
 
     -- Create request object
