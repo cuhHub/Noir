@@ -81,6 +81,8 @@ Noir.Services.VehicleService = Noir.Services:CreateService(
     {"Cuh4"}
 )
 
+Noir.Services.VehicleService.InitPriority = 5
+
 function Noir.Services.VehicleService:ServiceInit()
     self.Vehicles = {}
     self._SavedVehicles = self:Load("SavedVehicles", {})
