@@ -865,6 +865,15 @@ function Noir.Classes.Body:Despawn()
 end
 
 --[[
+    Sets the AI team of this body. Useful for AI targeting different bodies depending on team.
+]]
+---@param team SWAITeamEnum
+function Noir.Classes.Body:SetAITeam(team)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetAITeam()", "team", team, "number")
+    server.setAIVehicleTeam(self.ID, team)
+end
+
+--[[
     Returns whether or not the body exists.
 ]]
 ---@return boolean
