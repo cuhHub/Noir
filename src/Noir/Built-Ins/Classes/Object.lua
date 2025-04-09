@@ -212,6 +212,27 @@ function Noir.Classes.Object:GetAITarget()
 end
 
 --[[
+    Sets the AI team of this character (if character).
+]]
+---@param team SWAITeamEnum
+function Noir.Classes.Object:SetAITeam(team)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetAITeam()", "team", team, "number")
+    server.setAICharacterTeam(self.ID, team)
+end
+
+--[[
+    Sets whether or not a team should be targeted by this character (if character).
+]]
+---@param team SWAITeamEnum
+---@param isTarget boolean
+function Noir.Classes.Object:SetAITargetTeam(team, isTarget)
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetAITargetTeam()", "team", team, "number")
+    Noir.TypeChecking:Assert("Noir.Classes.Object:SetAITargetTeam()", "isTarget", isTarget, "boolean")
+
+    server.setAICharacterTargetTeam(self.ID, team, isTarget)
+end
+
+--[[
     Set this character's AI character target (if character).
 ]]
 ---@param target NoirObject
