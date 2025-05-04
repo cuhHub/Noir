@@ -137,4 +137,4 @@ Unfortunately, Noir's debugging tools does not allow you to detect errors that w
 
 ## And More...
 
-See the [api-reference](../api-reference/ "mention")for all available methods to mess with.
+See the [api-reference](../api-reference/ "mention") for all available methods to mess with.
