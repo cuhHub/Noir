@@ -174,6 +174,10 @@ end
     Load players current in-game.
 ]]
 function Noir.Services.PlayerService:_LoadPlayers()
+    if Noir.AddonReason == "SaveLoad" then
+        self:_ClearRecognized() -- clear recognized players on save load, otherwise players that were recognized before the save was loaded will be recognized again
+    end
+
     for _, player in pairs(server.getPlayers()) do
         -- Check if server
         if player.steam_id == 0 then
@@ -206,7 +210,8 @@ function Noir.Services.PlayerService:_LoadPlayers()
             end
         end
 
-        -- Call onJoin if unrecognized
+        -- Call onJoin if unrecognized in this session
+        -- This is here in case a player joined while the addon was not running (eg: if the addon errored and needed a reload)
         if not self:_IsRecognized(createdPlayer) then
             self.OnJoin:Fire(createdPlayer)
         end
@@ -375,11 +380,11 @@ function Noir.Services.PlayerService:_SaveProperty(player, property)
     -- Property saving
     local properties = self:_GetSavedProperties()
 
-    if not properties[player.ID] then
-        properties[player.ID] = {}
+    if not properties[player.Steam] then
+        properties[player.Steam] = {}
     end
 
-    properties[player.ID][property] = player[property]
+    properties[player.Steam][property] = player[property]
 end
 
 --[[
@@ -393,7 +398,7 @@ function Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
     Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GetSavedPropertiesForPlayer()", "player", player, Noir.Classes.Player)
 
     -- Return saved properties for player
-    return self:_GetSavedProperties()[player.ID]
+    return self:_GetSavedProperties()[player.Steam]
 end
 
 --[[
@@ -407,7 +412,7 @@ function Noir.Services.PlayerService:_RemoveSavedProperties(player)
 
     -- Remove saved properties
     local properties = self:_GetSavedProperties()
-    properties[player.ID] = nil
+    properties[player.Steam] = nil
 end
 
 --[[
