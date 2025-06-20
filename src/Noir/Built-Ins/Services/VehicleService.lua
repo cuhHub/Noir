@@ -130,7 +130,7 @@ function Noir.Services.VehicleService:ServiceStart()
         local body = self:GetBody(vehicle_id)
 
         if not body then
-            error("VehicleService", "A body was despawned that isn't recognized. ID: %s", vehicle_id)
+            return
         end
 
         self:_UnregisterBody(body, true, true)
