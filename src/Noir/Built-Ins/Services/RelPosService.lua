@@ -53,8 +53,8 @@
 Noir.Services.RelPosService = Noir.Services:CreateService(
     "RelPosService",
     true,
-    "",
-    "",
+    "A service that allows you to convert a global position into an offset from the tile the global position rests on (if any).",
+    "A service that allows you to convert a global position into an offset from the tile the global position rests on (if any). This allows you to create positions that work in all seeds without having to create a zone in the addon editor and such.",
     {"Cuh4"}
 )
 
