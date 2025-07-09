@@ -118,6 +118,8 @@ end
 ---@param relPos NoirRelPos
 ---@return table<integer, SWMatrix>
 function Noir.Services.RelPosService:GetGlobalPositions(relPos)
+    Noir.TypeChecking:Assert("Noir.Services.RelPosService:GetGlobalPositions()", "relPos", relPos, Noir.Classes.RelPos)
+
     local positions = self._TileCache[relPos.TileName]
 
     if not positions then
@@ -141,6 +143,8 @@ end
 ---@param position SWMatrix
 ---@return NoirRelPos
 function Noir.Services.RelPosService:GetRelPos(position)
+    Noir.TypeChecking:Assert("Noir.Services.RelPosService:GetRelPos()", "position", position, "table")
+
     local tile, success = server.getTile(position)
 
     if not success then
@@ -160,5 +164,8 @@ end
 ---@param offset SWMatrix
 ---@return NoirRelPos
 function Noir.Services.RelPosService:CreateRelPos(tileName, offset)
+    Noir.TypeChecking:Assert("Noir.Services.RelPosService:CreateRelPos()", "tileName", tileName, "string")
+    Noir.TypeChecking:Assert("Noir.Services.RelPosService:CreateRelPos()", "offset", offset, "table")
+
     return Noir.Classes.RelPos:New(tileName, offset)
 end
