@@ -42,8 +42,9 @@
 --[[
     This is a service that allows you to convert a global position into an offset from the tile the global position rests on (if any).<br>
     This allows you to create positions that work in all seeds without having to create a zone in the addon editor and such.<br>
-
-    In order to initially get a relative position for a global position and save it, you'll need to make a command.
+    In order to initially get a relative position for a global position and save it, you'll need to make a command to
+    call `:GetRelPos()` for whatever position, then show the offset and tile name to you in which then you can manually create and save
+    the relative position in your code (use `:CreateRelPos(tileName, offset)`).
 ]]
 ---@class NoirRelPosService: NoirService
 ---@field _TILE_SIZE number The size of a tile in meters
