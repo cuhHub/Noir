@@ -159,6 +159,27 @@ Returns this character's AI target (if character).
 ---
 
 ```lua
+Noir.Classes.Object:SetAITeam(team)
+```
+Sets the AI team of this character (if character).
+
+### Parameters
+- `team`: SWAITeamEnum
+
+---
+
+```lua
+Noir.Classes.Object:SetAITargetTeam(team, isTarget)
+```
+Sets whether or not a team should be targeted by this character (if character).
+
+### Parameters
+- `team`: SWAITeamEnum
+- `isTarget`: boolean
+
+---
+
+```lua
 Noir.Classes.Object:SetAICharacterTarget(target)
 ```
 Set this character's AI character target (if character).

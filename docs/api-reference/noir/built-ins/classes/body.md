@@ -642,6 +642,16 @@ Despawn the body.
 ---
 
 ```lua
+Noir.Classes.Body:SetAITeam(team)
+```
+Sets the AI team of this body. Useful for AI targeting different bodies depending on team.
+
+### Parameters
+- `team`: SWAITeamEnum
+
+---
+
+```lua
 Noir.Classes.Body:Exists()
 ```
 Returns whether or not the body exists.
