@@ -221,7 +221,7 @@ function Noir.Classes.MapObjectWidget:_Update(player)
     server.addMapObject(
         player.ID,
         self.ID,
-        0,
+        self._AttachmentMode,
         self.ObjectType,
         self.Position[13],
         self.Position[15],

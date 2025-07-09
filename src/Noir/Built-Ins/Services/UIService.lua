@@ -61,6 +61,8 @@ Noir.Services.UIService = Noir.Services:CreateService(
     {"Cuh4"}
 )
 
+Noir.Services.UIService.InitPriority = 6 -- after VehicleService. `:_LoadWidgets()` depends on it
+
 function Noir.Services.UIService:ServiceInit()
     self.Widgets = {}
     self:_LoadWidgets()

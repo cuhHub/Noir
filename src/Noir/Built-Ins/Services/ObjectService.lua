@@ -66,6 +66,8 @@ Noir.Services.ObjectService = Noir.Services:CreateService(
     {"Cuh4"}
 )
 
+Noir.Services.ObjectService.InitPriority = 4
+
 function Noir.Services.ObjectService:ServiceInit()
     self.Objects = {}
 

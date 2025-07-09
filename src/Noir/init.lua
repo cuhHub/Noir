@@ -67,6 +67,7 @@ require("Noir.Built-Ins.Classes.Widgets.MapObjectWidget")
 require("Noir.Built-Ins.Classes.Widgets.MapLineWidget")
 require("Noir.Built-Ins.Classes.Widgets.ScreenPopupWidget")
 require("Noir.Built-Ins.Classes.Widgets.PopupWidget")
+require("Noir.Built-Ins.Classes.RelPos")
 
 require("Noir.Libraries")
 
@@ -95,6 +96,7 @@ require("Noir.Built-Ins.Services.HTTPService")
 require("Noir.Built-Ins.Services.VehicleService")
 require("Noir.Built-Ins.Services.MessageService")
 require("Noir.Built-Ins.Services.UIService")
+require("Noir.Built-Ins.Services.RelPosService")
 
 require("Noir.Debugging")
 require("Noir.Callbacks")
