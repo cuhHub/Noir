@@ -199,7 +199,7 @@ end
 ---@param spawnPosition SWMatrix
 ---@param cost number
 ---@param fireEvent boolean
----@return NoirVehicle
+---@return NoirVehicle|nil
 function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition, cost, fireEvent)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "ID", ID, "number")
@@ -209,10 +209,12 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "fireEvent", fireEvent, "boolean")
 
     -- Get bodies
+    local vehicle = Noir.Classes.Vehicle:New(ID, player, spawnPosition, cost)
     local bodyIDs, success = server.getVehicleGroup(ID)
 
     if not success then
-        error("VehicleService:_RegisterVehicle()", "Failed to get bodies for a vehicle.")
+        self:_UnsaveVehicle(vehicle)
+        return -- vehicle likely doesn't exist anymore
     end
 
     -- Create bodies
@@ -231,7 +233,6 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
     end
 
     -- Create vehicle
-    local vehicle = Noir.Classes.Vehicle:New(ID, player, spawnPosition, cost)
     self.Vehicles[vehicle.ID] = vehicle
 
     -- Add bodies
@@ -333,6 +334,7 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, fireEvent)
 
     -- Check if the body even exists anymore
     if not body:Exists() then
+        self:_UnsaveBody(body)
         return
     end
 
