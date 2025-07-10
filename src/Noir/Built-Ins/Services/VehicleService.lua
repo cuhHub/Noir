@@ -519,7 +519,7 @@ end
 ---@param primaryVehicleID integer
 ---@param vehicleIDs table<integer, integer>
 ---@param position SWMatrix
----@return NoirVehicle
+---@return NoirVehicle|nil
 function Noir.Services.VehicleService:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SetupVehicle()", "primaryVehicleID", primaryVehicleID, "number")
@@ -582,7 +582,7 @@ function Noir.Services.VehicleService:SpawnVehicleFromMissionComponent(component
         error("VehicleService:SpawnVehicleFromMissionComponent()", "Failed to spawn a vehicle. Component is not a vehicle.")
     end
 
-    return self:_SetupVehicle(data.id, data.vehicle_ids, position)
+    return self:_SetupVehicle(data.id, data.vehicle_ids, position) ---@diagnostic disable-line: return-type-mismatch
 end
 
 --[[
@@ -604,7 +604,7 @@ function Noir.Services.VehicleService:SpawnVehicleByFileName(fileName, position)
         error("VehicleService:SpawnVehicleByFileName()", "Failed to spawn a vehicle. `server.spawnVehicle` returned unsuccessful.")
     end
 
-    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
+    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position) ---@diagnostic disable-line: return-type-mismatch
 end
 
 --[[
@@ -628,7 +628,7 @@ function Noir.Services.VehicleService:SpawnVehicle(componentID, position, addonI
         error("VehicleService:SpawnVehicle()", "Failed to spawn a vehicle. `server.spawnAddonVehicle` returned unsuccessful.")
     end
 
-    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
+    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position) ---@diagnostic disable-line: return-type-mismatch
 end
 
 --[[
