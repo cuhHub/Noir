@@ -292,7 +292,7 @@ function Noir.Services.VehicleService:_UnregisterVehicle(vehicle, fireEvent)
 
     -- Check if exists
     if not self:GetVehicle(vehicle.ID) then
-        error("VehicleService:_UnregisterVehicle()", "Failed to unregister a vehicle because it doesn't exist.")
+        return
     end
 
     -- Remove vehicle
@@ -333,7 +333,6 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, fireEvent)
 
     -- Check if the body even exists anymore
     if not body:Exists() then
-        self:_UnregisterBody(body, false, false)
         return
     end
 
@@ -396,7 +395,7 @@ function Noir.Services.VehicleService:_LoadBody(body, fireEvent)
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        error("VehicleService:_LoadBody()", "Failed to load a body because it doesn't exist.")
+        return
     end
 
     -- Load body
@@ -425,7 +424,7 @@ function Noir.Services.VehicleService:_UnloadBody(body, fireEvent)
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        error("VehicleService:_UnloadBody()", "Failed to unload a body because it doesn't exist.")
+        return
     end
 
     -- Unload body
@@ -478,7 +477,7 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        error("VehicleService:_UnregisterBody()", "Failed to unregister a body because it doesn't exist.")
+        return
     end
 
     -- Remove body from service
