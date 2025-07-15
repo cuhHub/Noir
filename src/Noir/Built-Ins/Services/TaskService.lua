@@ -58,7 +58,6 @@ Noir.Services.TaskService = Noir.Services:CreateService(
 )
 
 function Noir.Services.TaskService:ServiceInit()
-    -- Create attributes
     self.Ticks = 0
     self.DeltaTicks = 0
 
@@ -70,7 +69,6 @@ function Noir.Services.TaskService:ServiceInit()
 
     self._TaskTypeHandlers = {}
 
-    -- Create task handlers
     self._TaskTypeHandlers["Time"] = function(task)
         local time = self:GetTimeSeconds()
 
@@ -107,16 +105,11 @@ function Noir.Services.TaskService:ServiceInit()
 end
 
 function Noir.Services.TaskService:ServiceStart()
-    -- Connect to onTick
     self._OnTickConnection = Noir.Callbacks:Connect("onTick", function(ticks)
-        -- Increment ticks
         self.Ticks = self.Ticks + ticks
         self.DeltaTicks = ticks
 
-        -- Handle tick iteration processes
         self:_HandleTickIterationProcesses()
-
-        -- Check tasks
         self:_HandleTasks()
     end)
 end
