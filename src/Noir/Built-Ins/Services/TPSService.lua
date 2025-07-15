@@ -107,7 +107,7 @@ function Noir.Services.TPSService:_CalculateTPS(past, now, gameTicks)
     Noir.TypeChecking:Assert("Noir.Services.TPSService:CalculateTPS()", "gameTicks", gameTicks, "number")
 
     -- Calculate TPS
-    return 1000 / (now - past) * gameTicks
+    return Noir.Libraries.Number:Clamp(1000 / (now - past), 0, 64) * gameTicks
 end
 
 --[[
