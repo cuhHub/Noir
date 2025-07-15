@@ -39,7 +39,7 @@
 ---@field New fun(self: NoirScreenPopupWidget, ID: integer, visible: boolean, text: string, X: number, Y: number, player: NoirPlayer|nil): NoirScreenPopupWidget
 ---@field Text string The text shown in the popup
 ---@field X number The X position of the popup on the screen (-1 (left) to 1 (right))
----@field Y number The Y position of the popup on the screen (-1 (bottom) to 1 (top))
+---@field Y number The Y position of the popup on the screen (-1 (top) to 1 (bottom))
 Noir.Classes.ScreenPopupWidget = Noir.Class("ScreenPopupWidget", Noir.Classes.Widget)
 
 --[[
