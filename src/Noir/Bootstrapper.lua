@@ -89,42 +89,54 @@ function Noir.Bootstrapper:WrapServiceMethodsForAllServices()
 end
 
 --[[
+    Sort services by `xPriority`.<br>
+    Do not use this in your code. This is used internally.
+]]
+---@param priorityName string e.g: "Init"
+---@return table<integer, NoirService>
+function Noir.Bootstrapper:_SortServicesByPriority(priorityName)
+    local priorityAttribute = priorityName.."Priority"
+    local highestPriority = 0
+
+    ---@type table<integer, NoirService>
+    local services = Noir.Libraries.Table:Values(Noir.Services.CreatedServices)
+
+    -- Get highest (closest to 0) defined priority
+    for _, service in pairs(services) do
+        local priority = service[priorityAttribute] ---@type integer
+
+        if priority and priority <= highestPriority then
+            highestPriority = priority
+        end
+    end
+
+    -- Assign lowest priority to services that don't have one
+    for _, service in pairs(services) do
+        if not service[priorityAttribute] then
+            service[priorityAttribute] = highestPriority + 1
+            highestPriority = highestPriority + 1
+        end
+    end
+
+    -- Sort services
+    table.sort(services, function(serviceA, serviceB)
+        if serviceA.IsBuiltIn ~= serviceB.IsBuiltIn then
+            return serviceA.IsBuiltIn
+        end
+
+        return serviceA[priorityAttribute] < serviceB[priorityAttribute]
+    end)
+
+    return services
+end
+
+--[[
     Initialize all services.<br>
     This will order services by their `InitPriority` and then initialize them.<br>
     Do not use this in your code. This is used internally.
 ]]
 function Noir.Bootstrapper:InitializeServices()
-    -- Calculate order of service initialization
-    local servicesToInit = Noir.Libraries.Table:Values(Noir.Services.CreatedServices)
-    local lowestInitPriority = 0
-
-    for _, service in pairs(servicesToInit) do
-        local priority = service.InitPriority ~= nil and service.InitPriority or 0
-
-        if priority <= lowestInitPriority then
-            lowestInitPriority = priority
-        end
-    end
-
-    for _, service in pairs(servicesToInit) do
-        if not service.InitPriority then
-            service.InitPriority = lowestInitPriority + 1
-            lowestInitPriority = lowestInitPriority + 1
-        end
-    end
-
-    ---@param serviceA NoirService
-    ---@param serviceB NoirService
-    table.sort(servicesToInit, function(serviceA, serviceB)
-        if serviceA.IsBuiltIn ~= serviceB.IsBuiltIn then
-            return serviceA.IsBuiltIn
-        end
-
-        return serviceA.InitPriority < serviceB.InitPriority
-    end)
-
-    -- Initialize services
-    for _, service in pairs(servicesToInit) do
+    for _, service in pairs(self:_SortServicesByPriority("Init")) do
         Noir.Libraries.Logging:Info("Bootstrapper", "Initializing %s of priority %d.", Noir.Services:FormatService(service), service.InitPriority)
         service:_Initialize()
     end
@@ -136,37 +148,7 @@ end
     Do not use this in your code. This is used internally.
 ]]
 function Noir.Bootstrapper:StartServices()
-    -- Calculate order of service start
-    local servicesToStart = Noir.Libraries.Table:Values(Noir.Services.CreatedServices)
-    local lowestStartPriority = 0
-
-    for _, service in pairs(servicesToStart) do
-        local priority = service.StartPriority ~= nil and service.StartPriority or 0
-
-        if priority <= lowestStartPriority then
-            lowestStartPriority = priority
-        end
-    end
-
-    for _, service in pairs(servicesToStart) do
-        if not service.StartPriority then
-            service.StartPriority = lowestStartPriority + 1
-            lowestStartPriority = lowestStartPriority + 1
-        end
-    end
-
-    ---@param serviceA NoirService
-    ---@param serviceB NoirService
-    table.sort(servicesToStart, function(serviceA, serviceB)
-        if serviceA.IsBuiltIn ~= serviceB.IsBuiltIn then
-            return serviceA.IsBuiltIn
-        end
-
-        return serviceA.StartPriority < serviceB.StartPriority
-    end)
-
-    -- Start services
-    for _, service in pairs(servicesToStart) do
+    for _, service in pairs(self:_SortServicesByPriority("Start")) do
         Noir.Libraries.Logging:Info("Bootstrapper", "Starting %s of priority %d.", Noir.Services:FormatService(service), service.StartPriority)
         service:_Start()
     end
