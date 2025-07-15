@@ -101,7 +101,7 @@ function Noir.Bootstrapper:InitializeServices()
     for _, service in pairs(servicesToInit) do
         local priority = service.InitPriority ~= nil and service.InitPriority or 0
 
-        if priority >= lowestInitPriority then
+        if priority <= lowestInitPriority then
             lowestInitPriority = priority
         end
     end
@@ -143,7 +143,7 @@ function Noir.Bootstrapper:StartServices()
     for _, service in pairs(servicesToStart) do
         local priority = service.StartPriority ~= nil and service.StartPriority or 0
 
-        if priority >= lowestStartPriority then
+        if priority <= lowestStartPriority then
             lowestStartPriority = priority
         end
     end
