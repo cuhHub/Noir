@@ -40,11 +40,10 @@
 -------------------------------
 
 require("Noir.Definition")
-require("Noir.Class")
 require("Noir.TypeChecking")
 
 require("Noir.Classes")
-
+require("Noir.Class")
 require("Noir.Built-Ins.Classes.Connection")
 require("Noir.Built-Ins.Classes.Event")
 require("Noir.Built-Ins.Classes.Service")
@@ -68,9 +67,9 @@ require("Noir.Built-Ins.Classes.Widgets.MapLineWidget")
 require("Noir.Built-Ins.Classes.Widgets.ScreenPopupWidget")
 require("Noir.Built-Ins.Classes.Widgets.PopupWidget")
 require("Noir.Built-Ins.Classes.RelPos")
+require("Noir.Built-Ins.Classes.Hoardable")
 
 require("Noir.Libraries")
-
 require("Noir.Built-Ins.Libraries.Events")
 require("Noir.Built-Ins.Libraries.Logging")
 require("Noir.Built-Ins.Libraries.Table")
@@ -84,7 +83,6 @@ require("Noir.Built-Ins.Libraries.HTTP")
 require("Noir.Built-Ins.Libraries.Deprecation")
 
 require("Noir.Services")
-
 require("Noir.Built-Ins.Services.TaskService")
 require("Noir.Built-Ins.Services.PlayerService")
 require("Noir.Built-Ins.Services.ObjectService")
@@ -97,6 +95,7 @@ require("Noir.Built-Ins.Services.VehicleService")
 require("Noir.Built-Ins.Services.MessageService")
 require("Noir.Built-Ins.Services.UIService")
 require("Noir.Built-Ins.Services.RelPosService")
+require("Noir.Built-Ins.Services.HoarderService")
 
 require("Noir.Debugging")
 require("Noir.Callbacks")
