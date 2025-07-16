@@ -31,11 +31,6 @@ import os
 import json
 from textwrap import dedent
 from pathlib import Path as _Path
-import rich.align
-import rich.box
-import rich.color
-import rich.progress_bar
-import rich.text
 from werkzeug.utils import secure_filename
 import rich
 from rich import print
