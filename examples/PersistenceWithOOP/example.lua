@@ -58,6 +58,8 @@ function Fruits:ServiceInit()
             "Basket" -- into a savedata table called "Basket" (this is *NOT* `self.Basket`)
         )                     -- ^ specifically, `self:GetSaveData()["Basket"]` which is NOT `self.Basket`
 
+        Noir.Services.MessageService:SendMessage(nil, "[Fruits]", "Loaded fruit %s", fruit.Name)
+
         return true -- return true to let the fruit load. if false, it will be discarded and unhoarded (never seen again)
     end)
 
@@ -99,7 +101,7 @@ function Fruits:AddFruit(name)
     fruit:Hoard(self, "Basket") -- Save it on the savedata side
     self.Basket[name] = fruit -- Save it on the service side
 
-    print("Added new fruit: %s", name)
+    Noir.Services.MessageService:SendMessage(nil, "[Fruits]", "Added new fruit: %s", name)
 end
 
 -- Start Noir
