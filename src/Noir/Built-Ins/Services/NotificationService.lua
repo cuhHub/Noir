@@ -86,7 +86,7 @@ function Noir.Services.NotificationService:Notify(title, message, notificationTy
     if player == nil then
         players = Noir.Services.PlayerService:GetPlayers(true)
     else
-        players = (type(player) == "table" and not Noir.Classes.Player:IsClass(player)) and player or {player}
+        players = (type(player) == "table" and not Noir.IsClass(player)) and player or {player}
     end
 
     -- Format message
