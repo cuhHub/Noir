@@ -1,2 +1,2 @@
-py build-api-reference.py
+@ECHO OFF
 py publish.py
