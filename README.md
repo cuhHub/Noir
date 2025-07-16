@@ -25,10 +25,11 @@ Documentation can be found [here](https://cuhhub.gitbook.io/noir/).
 For learning how to install and use Noir in your addon, please check out the [documentation.](https://cuhhub.gitbook.io/noir/)
 
 ## ⚙️ Building Noir
-To build Noir (tool executables and bundled Noir `.lua` file), see below.
+To build Noir (tool executables and the bundled Noir `.lua` file), see below.
 
 ### Prerequisites
 - Ensure Python 3.13+ is installed (may work on earlier 3.x versions, only tested with 3.13).
+- Ensure your working directory is the folder containing this README (root).
 
 ### Steps
 1) Create a virtual environment (venv) by running `py -m venv venv` (you may need to use `pip install venv` if the command doesn't work).
