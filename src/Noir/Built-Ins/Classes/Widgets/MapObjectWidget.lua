@@ -189,7 +189,7 @@ function Noir.Classes.MapObjectWidget:Deserialize(serializedWidget)
     widget.AttachmentOffset = serializedWidget.AttachmentOffset
 
     if serializedWidget.AttachmentMode == 1 then
-        local body = Noir.Services.VehicleService:GetBody(serializedWidget.AttachmentBodyID)
+        local body = Noir.Services.VehicleService:GetBody(serializedWidget.AttachmentBodyID or -1)
 
         if not body then
             self:Detach()
@@ -198,7 +198,7 @@ function Noir.Classes.MapObjectWidget:Deserialize(serializedWidget)
 
         self.AttachmentBody = body
     elseif serializedWidget.AttachmentMode == 2 then
-        local object = Noir.Services.ObjectService:GetObject(serializedWidget.AttachmentObjectID)
+        local object = Noir.Services.ObjectService:GetObject(serializedWidget.AttachmentObjectID or -1)
 
         if not object or not object:Exists() then
             self:Detach()

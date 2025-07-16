@@ -199,7 +199,7 @@ end
 ---@param spawnPosition SWMatrix
 ---@param cost number
 ---@param fireEvent boolean
----@return NoirVehicle
+---@return NoirVehicle|nil
 function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition, cost, fireEvent)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "ID", ID, "number")
@@ -209,10 +209,12 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_RegisterVehicle()", "fireEvent", fireEvent, "boolean")
 
     -- Get bodies
+    local vehicle = Noir.Classes.Vehicle:New(ID, player, spawnPosition, cost)
     local bodyIDs, success = server.getVehicleGroup(ID)
 
     if not success then
-        error("VehicleService:_RegisterVehicle()", "Failed to get bodies for a vehicle.")
+        self:_UnsaveVehicle(vehicle)
+        return -- vehicle likely doesn't exist anymore
     end
 
     -- Create bodies
@@ -231,7 +233,6 @@ function Noir.Services.VehicleService:_RegisterVehicle(ID, player, spawnPosition
     end
 
     -- Create vehicle
-    local vehicle = Noir.Classes.Vehicle:New(ID, player, spawnPosition, cost)
     self.Vehicles[vehicle.ID] = vehicle
 
     -- Add bodies
@@ -292,7 +293,7 @@ function Noir.Services.VehicleService:_UnregisterVehicle(vehicle, fireEvent)
 
     -- Check if exists
     if not self:GetVehicle(vehicle.ID) then
-        error("VehicleService:_UnregisterVehicle()", "Failed to unregister a vehicle because it doesn't exist.")
+        return
     end
 
     -- Remove vehicle
@@ -333,7 +334,7 @@ function Noir.Services.VehicleService:_RegisterBody(ID, player, fireEvent)
 
     -- Check if the body even exists anymore
     if not body:Exists() then
-        self:_UnregisterBody(body, false, false)
+        self:_UnsaveBody(body)
         return
     end
 
@@ -396,7 +397,7 @@ function Noir.Services.VehicleService:_LoadBody(body, fireEvent)
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        error("VehicleService:_LoadBody()", "Failed to load a body because it doesn't exist.")
+        return
     end
 
     -- Load body
@@ -425,7 +426,7 @@ function Noir.Services.VehicleService:_UnloadBody(body, fireEvent)
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        error("VehicleService:_UnloadBody()", "Failed to unload a body because it doesn't exist.")
+        return
     end
 
     -- Unload body
@@ -478,7 +479,7 @@ function Noir.Services.VehicleService:_UnregisterBody(body, autoDespawnParentVeh
 
     -- Check if exists
     if not self:GetBody(body.ID) then
-        error("VehicleService:_UnregisterBody()", "Failed to unregister a body because it doesn't exist.")
+        return
     end
 
     -- Remove body from service
@@ -518,7 +519,7 @@ end
 ---@param primaryVehicleID integer
 ---@param vehicleIDs table<integer, integer>
 ---@param position SWMatrix
----@return NoirVehicle
+---@return NoirVehicle|nil
 function Noir.Services.VehicleService:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.VehicleService:_SetupVehicle()", "primaryVehicleID", primaryVehicleID, "number")
@@ -581,7 +582,7 @@ function Noir.Services.VehicleService:SpawnVehicleFromMissionComponent(component
         error("VehicleService:SpawnVehicleFromMissionComponent()", "Failed to spawn a vehicle. Component is not a vehicle.")
     end
 
-    return self:_SetupVehicle(data.id, data.vehicle_ids, position)
+    return self:_SetupVehicle(data.id, data.vehicle_ids, position) ---@diagnostic disable-line: return-type-mismatch
 end
 
 --[[
@@ -603,7 +604,7 @@ function Noir.Services.VehicleService:SpawnVehicleByFileName(fileName, position)
         error("VehicleService:SpawnVehicleByFileName()", "Failed to spawn a vehicle. `server.spawnVehicle` returned unsuccessful.")
     end
 
-    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
+    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position) ---@diagnostic disable-line: return-type-mismatch
 end
 
 --[[
@@ -627,7 +628,7 @@ function Noir.Services.VehicleService:SpawnVehicle(componentID, position, addonI
         error("VehicleService:SpawnVehicle()", "Failed to spawn a vehicle. `server.spawnAddonVehicle` returned unsuccessful.")
     end
 
-    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position)
+    return self:_SetupVehicle(primaryVehicleID, vehicleIDs, position) ---@diagnostic disable-line: return-type-mismatch
 end
 
 --[[

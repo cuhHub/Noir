@@ -62,12 +62,12 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
         end
 
         -- Value == Any Class
-        if typeToCheck == "class" and self._DummyClass:IsClass(value) then
+        if typeToCheck == "class" and Noir.IsClass(value) then
             return
         end
 
         -- Value == Exact Class
-        if self._DummyClass:IsClass(typeToCheck) and typeToCheck:IsSameType(value) then ---@diagnostic disable-line
+        if Noir.IsClass(typeToCheck) and typeToCheck:IsSameType(value) then ---@diagnostic disable-line param-type-mismatch
             return
         end
     end
@@ -78,7 +78,7 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
         "Expected %s for parameter '%s', but got '%s'.",
         self:_FormatTypes(types),
         parameterName,
-        self._DummyClass:IsClass(value) and value.ClassName.." (Class)" or valueType
+        Noir.IsClass(value) and value.ClassName.." (Class)" or valueType
     )
 end
 
@@ -90,8 +90,6 @@ end
 ---@param values table<integer, any>
 ---@param ... NoirTypeCheckingType
 function Noir.TypeChecking:AssertMany(origin, parameterName, values, ...)
-    -- TODO: look at TODO in Noir.TypeChecking:Assert()
-
     -- Perform type checking on the provided parameters
     self:Assert("Noir.TypeChecking:AssertMany()", "origin", origin, "string")
     self:Assert("Noir.TypeChecking:AssertMany()", "parameterName", parameterName, "string")
@@ -117,7 +115,7 @@ function Noir.TypeChecking:_FormatTypes(types)
     local formatted = ""
 
     for index, typeToFormat in pairs(types) do
-        if self._DummyClass:IsClass(typeToFormat) then
+        if Noir.IsClass(typeToFormat) then
             typeToFormat = typeToFormat.ClassName
         end
 
@@ -127,12 +125,6 @@ function Noir.TypeChecking:_FormatTypes(types)
 
     return formatted
 end
-
---[[
-    A dummy class for checking if a value is a class or not.<br>
-    Used internally.
-]]
-Noir.TypeChecking._DummyClass = Noir.Class("NoirTypeCheckingDummyClass")
 
 -------------------------------
 -- // Intellisense

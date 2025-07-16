@@ -83,14 +83,7 @@ function Noir.Class(name, ...)
         -- Create class object
         ---@type NoirClass
         local object = {} ---@diagnostic disable-line
-        self:_Descend(object, self._ClassMethods)
-
-        object._IsObject = true
-
-        -- Bring down methods from parent
-        for _, parent in ipairs(self._Parents) do
-            parent:_Descend(object, self._ClassMethods)
-        end
+        self:_SetupObject(object)
 
         -- Call init of object. This init function will provide the needed attributes to the object
         if self.Init then
@@ -101,6 +94,43 @@ function Noir.Class(name, ...)
 
         -- Return the object
         return object
+    end
+
+    --[[
+        Brings down all methods from the provided parent class into the provided object
+        and recursively calls this method on the parents of the provided parent until there are
+        no parents left.<br>
+        Used internally. Do not use in your code.
+    ]]
+    ---@param object NoirClass
+    ---@param parent NoirClass
+    function class:_DescendFromParent(object, parent)
+        parent:_Descend(object, self._ClassMethods)
+
+        for _, _parent in pairs(parent._Parents) do
+            self:_DescendFromParent(object, _parent)
+        end
+    end
+
+    --[[
+        Sets up a new class object. Used in `:New(...)`.<br>
+        Used internally. Do not use in your code.
+    ]]
+    ---@param object NoirClass
+    function class:_SetupObject(object)
+        -- can't do typechecking here because of circular dependency :-(
+
+        -- Check if this was called from an object
+        if self._IsObject then
+            error("Class", "Attempted to call :_SetupObject() when 'self' is a class object, not a class")
+        end
+
+        -- Setup object
+        object._IsObject = true
+        self:_Descend(object, self._ClassMethods)
+
+        -- Bring down methods from parent
+        self:_DescendFromParent(object, self)
     end
 
     --[[
@@ -139,6 +169,9 @@ function Noir.Class(name, ...)
     ]]
     ---@param parent NoirClass 
     function class:InitFrom(parent, ...)
+        -- Type checking
+        Noir.TypeChecking:Assert("Noir.Class().InitFrom()", "parent", parent, "class")
+
         -- Check if this was called from an object
         if not self._IsObject then
             error("Class", "Attempted to call :InitFrom() when 'self' is a class and not an object.")
@@ -155,25 +188,38 @@ function Noir.Class(name, ...)
         Returns if a class/object is the same type as another.<br>
         If `other` is not a class, it will return false.
     ]]
-    ---@param other any
+    ---@param other NoirClass
     ---@return boolean
     function class:IsSameType(other)
-        if not self:IsClass(other) then
+        -- Check if even class
+        if not Noir.IsClass(other) then
             return false
         end
 
+        -- Compare class names
         if self.ClassName == other.ClassName then
             return true
         end
 
+        -- Check parents
+        -- `self` as subject
         for _, parent in pairs(other._Parents) do
             if self.ClassName == parent.ClassName then
                 return true
             end
+
+            if parent:IsSameType(self) then
+                return true
+            end
         end
 
+        -- `other` as subject
         for _, parent in pairs(self._Parents) do
             if other.ClassName == parent.ClassName then
+                return true
+            end
+
+            if parent:IsSameType(other) then
                 return true
             end
         end
@@ -184,11 +230,20 @@ function Noir.Class(name, ...)
     --[[
         Returns if a table is a class or not.
     ]]
-    ---@param other NoirClass|any
+    ---@param other any
     ---@return boolean
     function class:IsClass(other)
-        return type(other) == "table" and other.ClassName ~= nil
+        return Noir.IsClass(other)
     end
 
     return class
+end
+
+--[[
+    Returns if the provided argument is a class or not.
+]]
+---@param object any
+---@return boolean
+function Noir.IsClass(object)
+    return type(object) == "table" and object.ClassName ~= nil
 end

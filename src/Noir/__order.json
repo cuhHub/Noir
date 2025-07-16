@@ -1,10 +1,10 @@
 {
     "order" : [
         "Definition.lua",
-        "Class.lua",
         "TypeChecking.lua",
 
         "Classes.lua",
+        "Class.lua",
         "Built-Ins/Classes",
 
         "Libraries.lua",

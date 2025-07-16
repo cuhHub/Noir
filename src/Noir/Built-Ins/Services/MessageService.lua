@@ -57,6 +57,9 @@ Noir.Services.MessageService = Noir.Services:CreateService(
     {"Cuh4"}
 )
 
+Noir.Services.MessageService.InitPriority = 2
+-- ^ just after playerservice. loading saved messages cannot be done if this is not initialized after playerservice
+
 function Noir.Services.MessageService:ServiceInit()
     self.Messages = {}
     self._SavedMessages = self:Load("Messages", {})
