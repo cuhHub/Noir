@@ -30,6 +30,20 @@ Do not use this in your code. This is used internally.
 ---
 
 ```lua
+Noir.Bootstrapper:_SortServicesByPriority(priorityName)
+```
+Sort services by `xPriority`.
+
+Do not use this in your code. This is used internally.
+
+### Parameters
+- `priorityName`: string - e.g: "Init"
+### Returns
+- `table<integer, NoirService>`
+
+---
+
+```lua
 Noir.Bootstrapper:InitializeServices()
 ```
 Initialize all services.

@@ -12,3 +12,15 @@ Note that classes can inherit from other classes.
 - `...`: NoirClass
 ### Returns
 - `NoirClass`
+
+---
+
+```lua
+Noir.IsClass(object)
+```
+Returns if the provided argument is a class or not.
+
+### Parameters
+- `object`: any
+### Returns
+- `boolean`

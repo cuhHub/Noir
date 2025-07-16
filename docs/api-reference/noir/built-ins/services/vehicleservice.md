@@ -40,7 +40,7 @@ Used internally.
 - `cost`: number
 - `fireEvent`: boolean
 ### Returns
-- `NoirVehicle`
+- `NoirVehicle|nil`
 
 ---
 
@@ -187,7 +187,7 @@ Setup data for a spawned vehicle.
 - `vehicleIDs`: table<integer, integer>
 - `position`: SWMatrix
 ### Returns
-- `NoirVehicle`
+- `NoirVehicle|nil`
 
 ---
 

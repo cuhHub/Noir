@@ -8,14 +8,6 @@ This normally would be a library, but libraries need to use this and libraries a
 
 ---
 
-**Noir.TypeChecking._DummyClass**: `NoirClass`
-
-A dummy class for checking if a value is a class or not.
-
-Used internally.
-
----
-
 ```lua
 Noir.TypeChecking:Assert(origin, parameterName, value, ...)
 ```
