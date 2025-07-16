@@ -95,6 +95,10 @@ end
 ---@param priorityName string e.g: "Init"
 ---@return table<integer, NoirService>
 function Noir.Bootstrapper:_SortServicesByPriority(priorityName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Bootstrapper:_SortServicesByPriority()", "priorityName", priorityName, "string")
+
+    -- For later
     local priorityAttribute = priorityName.."Priority"
     local highestPriority = 0
 
