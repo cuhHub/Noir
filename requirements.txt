@@ -1,0 +1,4 @@
+click==8.1.7
+Requests==2.32.4
+rich==14.0.0
+Werkzeug==3.1.3
