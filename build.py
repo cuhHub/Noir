@@ -23,13 +23,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# ---- // Imports
+# // Imports
 from pathlib import Path
 from tools.combine import Combiner
 import subprocess
 
-# ---- // Functions
-def buildNoir():
+# // Functions
+def build_noir():
     """
     Builds all of Noir into a singular file.
     """
@@ -44,7 +44,7 @@ def buildNoir():
     
     combiner.combine()
 
-def getVersion() -> tuple[int, int, int]:
+def get_version() -> tuple[int, int, int]:
     """
     Gets the version from the VERSION file.
 
@@ -54,21 +54,21 @@ def getVersion() -> tuple[int, int, int]:
 
     return tuple(Path("VERSION").read_text().split("."))
 
-def updateVersion():
+def update_version():
     """
     Updates the version in the Noir.lua build file.
     """
     
     # Update version in Noir
-    major, minor, patch = getVersion()
-    toReplace = "Noir.Version = \"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}\""
+    major, minor, patch = get_version()
+    to_replace = "Noir.Version = \"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}\""
 
     # Get contents
-    Noir = Path("_build/Noir.lua")
-    NoirContents = Noir.read_text()
+    noir_path = Path("_build/Noir.lua")
+    noir_contents = noir_path.read_text()
     
     # Replace version
-    Noir.write_text(NoirContents.replace(toReplace, toReplace.format(
+    noir_path.write_text(noir_contents.replace(to_replace, to_replace.format(
         VERSION_MAJOR = major,
         VERSION_MINOR = minor,
         VERSION_PATCH = patch
@@ -88,7 +88,6 @@ def build(name: str, path: Path, icon: Path|None = None):
     arguments = [
         "pyinstaller", str(path.absolute()),
         "--onefile",
-        "--clean",
         "--distpath", "_build",
         "--name", name,
         "--specpath", "specs"
@@ -102,7 +101,7 @@ def build(name: str, path: Path, icon: Path|None = None):
     
     subprocess.run(arguments, check = True)
 
-def buildTools():
+def build_tools():
     """
     Builds all of Noir's tools.
     """
@@ -120,10 +119,10 @@ def buildTools():
 # ---- // Main
 if __name__ == "__main__":
     print("Building Noir...")
-    buildNoir()
+    build_noir()
     
     print("Updating Noir version...")
-    updateVersion()
+    update_version()
     
     print("Building tools...")
-    buildTools()
+    build_tools()
