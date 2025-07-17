@@ -6,7 +6,7 @@
     ----------------------------
 
     CREDIT:
-        Author(s): @Cuh4 (GitHub)
+        Author(s): @Cuh4 (GitHub), @Avril112113 (GitHub)
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:

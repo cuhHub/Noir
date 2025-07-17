@@ -126,11 +126,7 @@ function Noir.Classes.Hoardable:Serialize()
         end
 
         if Noir.IsClass(value) then
-            if not Noir.Classes.Hoardable:IsSameType(value) then
-                error("Noir.Classes.Hoardable:Serialize()", "A class instance (%s) is stored within this class but it does not inherit from `Hoardable`.", value.ClassName)
-            end
-
-            serialized[key] = value:Serialize()
+            error("Noir.Classes.Hoardable:Serialize()", "A class instance (%s) is stored within this class and cannot be serialized. Consider inheritance over composition when using `HoardService`.", value.ClassName)
         elseif type(value) == "table" then
             serialized[key] = self:_Strip(value)
         else

@@ -34,48 +34,102 @@ from tools.combine import Combiner
 
 # ---- // Variables
 TEST_DIR = Path("tests")
+POLYFILL = (TEST_DIR / "_polyfill.lua").read_text()
 NOIR_PATH = Path("src/Noir")
 LUA_PATH = Path("lua")
 LUA_EXECUTABLE = LUA_PATH / "lua53.exe"
 
-# ---- // Functions
-def run_test(path: Path):
+# ---- // Main
+class NoirTest():
     """
-    Runs a Noir .lua test.
+    A Noir test.
+    """
+    
+    def __init__(self, path: Path):
+        """
+        Initializes new `NoirTest` instances.
+        
+        Args:
+            path (Path): The path to the test file.
+        """
+        
+        self.name = path.stem
+        self.path = path
 
-    Args:
-        path (Path): The path to the test file.
-    """
+        
+    def _create_temp_noir_build(self) -> Path:
+        """
+        Creates a temporary build of Noir to be packed with the test file.
+        
+        Returns:
+            Path: The path to the temporary build.
+        """
+        
+        # Create temp file
+        temp_file = self.path.parent / f"{self.name}_temp.lua"
+        
+        # Build Noir and dump to temp file
+        combiner = Combiner(
+            directory = NOIR_PATH,
+            destination = temp_file,
+            whitelisted_extensions = [".lua"],
+            blacklisted_extensions = [],
+            ignored = []
+        )
+        
+        combiner.combine()
+        
+        # Add polyfill
+        contents = temp_file.read_text()
+        contents = POLYFILL + "\n\n" + contents
+        temp_file.write_text(contents)
+        
+        # Return
+        return temp_file
     
-    # Create a temporary build of Noir to be packed with the test file
-    temp_file = LUA_PATH / "temp.lua"
-    
-    combiner = Combiner(
-        directory = NOIR_PATH,
-        destination = temp_file,
-        whitelisted_extensions = [".lua"],
-        blacklisted_extensions = [],
-        ignored = []
-    )
-    
-    combiner.combine()
-    
-    # Add test code to the temp file
-    test_content = path.read_text()
-    
-    with temp_file.open("a") as file:
-        file.write("\n\n" + test_content)
-    
-    # Run the temp file
-    try:
-        assert subprocess.run([LUA_EXECUTABLE, temp_file.absolute()], cwd = LUA_PATH).returncode == 0
-    except:
-        temp_file.unlink()
-        return False
-    
-    # Remove temp file
-    temp_file.unlink()
-    return True
+    def _get_error_message(self, stderr: bytes) -> str:
+        """
+        Gets the error message from test command stderr.
+        
+        Args:
+            stderr (bytes): The test command stderr.
+            
+        Returns:
+            str: The formatted error message.
+        """
+        
+        error = stderr.decode("utf-8")
+        no_path = "".join(error.split("_temp.lua:")[1:]) # removes long path at start of error message
+        no_traceback = no_path.split("\n")[0] # removes traceback at end of error message
+
+        return no_traceback 
+        
+    def run(self) -> tuple[bool, str]:
+        """
+        Runs the test.
+        
+        Returns:
+            tuple[bool, str]: Whether or not the test passed, and the reason why it failed (if it did)
+        """
+        
+        # Create a temporary build of Noir to be packed with the test file
+        temp_noir_build = self._create_temp_noir_build()
+        
+        # Add test code to the temp file
+        test_content = self.path.read_text()
+        
+        with temp_noir_build.open("a") as file:
+            file.write("\n\n" + test_content)
+        
+        # Run the temp file
+        result = subprocess.run([LUA_EXECUTABLE, temp_noir_build.absolute()], cwd = LUA_PATH, capture_output = True)
+        temp_noir_build.unlink()
+        
+        # Return
+        if result.returncode == 0:
+            return True, ""
+        else:
+            return False, self._get_error_message(result.stderr)
 
 def success(message: str):
     """
@@ -87,6 +141,16 @@ def success(message: str):
     
     print("[bold green](Success)[/bold green] " + message)
     
+def info(message: str):
+    """
+    Prints an info message.
+    
+    Args:
+        message (str): The message to print.
+    """    
+    
+    print("[bold blue](Info)[/bold blue] " + message)
+    
 def error(message: str):
     """
     Prints an error message.
@@ -97,34 +161,49 @@ def error(message: str):
     
     print("[bold red](Error)[/bold red] " + message)
 
-# ---- // Main
 @click.command()
-@click.option("--test", "-t", type = str, required = True, help = "The name of the Noir test .lua file.")
-def run(test: str):
+def run():
     print(Panel(
         title = "⚙️ | Noir Test Tool",
-        renderable = "A tool to run a Noir test.",
+        renderable = "A tool to run all Noir tests.",
         border_style = "green",
         width = 60
     ))
     
-    path = TEST_DIR / Path(test)
-    relative = path.relative_to(".")
+    # Run tests
+    results: list[tuple[NoirTest, bool, str]] = []
+    success_count, fail_count = 0, 0
     
-    if not path.exists():
-        error(f"Test does not exist ([bold]{relative}[/bold]).")
-        exit(0)
+    for test_path in TEST_DIR.iterdir():
+        if test_path.suffix != ".lua":
+            continue
         
-    if path.suffix != ".lua":
-        error("Test must be a [bold].lua[/bold] file.")
-        exit(0)
-    
-    test_success = run_test(path)
-    
-    if test_success:
-        success(f"[bold]{relative}[/bold] ran successfully.")
-    else:
-        error(f"[bold]{relative}[/bold] failed to run.")
+        if test_path.name.startswith("_"):
+            continue
+        
+        test = NoirTest(test_path)
+        successful, fail_reason = test.run()
+        results.append((test, successful, fail_reason))
+        
+        if successful:
+            success_count += 1
+        else:
+            fail_count += 1
+
+        info(f"Ran test: \"{test.name}\"")
+        
+    # Show results
+    info("----------------")
+    info("Results:")
+        
+    for test, successful, fail_reason in results:
+        if successful:
+            success(f"[:)] \"{test.name}\" passed.")
+        else:
+            error(f"[:(] \"{test.name}\" failed: {fail_reason}")
+            
+    test_count = len(results)
+    info(f"Out of {test_count} tests, {success_count} ({success_count / test_count * 100:.1f}%) passed and {fail_count} failed ({fail_count / test_count * 100:.1f}%).")
     
 if __name__ == "__main__":
     run()
