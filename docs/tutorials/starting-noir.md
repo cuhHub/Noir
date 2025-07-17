@@ -2,20 +2,6 @@
 description: A simple tutorial going over how to start Noir.
 cover: ../.gitbook/assets/19 (1).png
 coverY: 0
-layout:
-  cover:
-    visible: true
-    size: hero
-  title:
-    visible: true
-  description:
-    visible: true
-  tableOfContents:
-    visible: true
-  outline:
-    visible: true
-  pagination:
-    visible: true
 ---
 
 # 🎓 Starting Noir

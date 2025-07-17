@@ -1,6 +1,7 @@
 # Table of contents
 
 * [🚶‍♂️ Intro](README.md)
+* [🤝 Contributing](contributing.md)
 * [📁 Tutorials](tutorials/README.md)
   * [🎓 Starting Noir](tutorials/starting-noir.md)
   * [📖 Libraries](tutorials/libraries.md)
@@ -32,7 +33,7 @@
       * [TickIterationProcess](api-reference/noir/built-ins/classes/tickiterationprocess.md)
       * [Tracker](api-reference/noir/built-ins/classes/tracker.md)
       * [Vehicle](api-reference/noir/built-ins/classes/vehicle.md)
-      * [Widgets](api-reference/noir/built-ins/classes/widgets/README.md)
+      * [Widgets](api-reference/built-ins/classes/widgets/README.md)
         * [MapLabelWidget](api-reference/noir/built-ins/classes/widgets/maplabelwidget.md)
         * [MapLineWidget](api-reference/noir/built-ins/classes/widgets/maplinewidget.md)
         * [MapObjectWidget](api-reference/noir/built-ins/classes/widgets/mapobjectwidget.md)

@@ -4,20 +4,6 @@ description: >-
   differences. This page will go over the differences.
 cover: ../.gitbook/assets/13.png
 coverY: 0
-layout:
-  cover:
-    visible: true
-    size: hero
-  title:
-    visible: true
-  description:
-    visible: true
-  tableOfContents:
-    visible: true
-  outline:
-    visible: true
-  pagination:
-    visible: true
 ---
 
 # ❔ Libraries VS Services

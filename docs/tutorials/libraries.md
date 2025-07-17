@@ -2,20 +2,6 @@
 description: Libraries allows you to organize functions that perform similar actions.
 cover: ../.gitbook/assets/25.png
 coverY: 0
-layout:
-  cover:
-    visible: true
-    size: hero
-  title:
-    visible: true
-  description:
-    visible: true
-  tableOfContents:
-    visible: true
-  outline:
-    visible: true
-  pagination:
-    visible: true
 ---
 
 # 📖 Libraries
