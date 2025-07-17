@@ -24,6 +24,9 @@ Documentation can be found [here](https://cuhhub.gitbook.io/noir/).
 ## 🔨 Installation
 For learning how to install and use Noir in your addon, please check out the [documentation.](https://cuhhub.gitbook.io/noir/)
 
+## 🤝 Contributing
+If you would like to contribute to Noir, whether that is by creating an issue or by creating a PR, please review [this page in the Noir documentation](https://cuhhub.gitbook.io/noir/contributing) first.
+
 ## ⚙️ Building Noir
 To build Noir (tool executables and the bundled Noir `.lua` file), see below.
 
