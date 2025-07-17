@@ -1,7 +1,8 @@
 {
     "Lua.workspace.ignoreDir": [
         ".vscode",
-        "_build/Noir.lua",
+        "tests/_polyfill.lua",
+        "_build",
         "examples/Slo-Mo"
     ],
     "workbench.colorCustomizations": {
