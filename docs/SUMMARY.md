@@ -1,7 +1,7 @@
 # Table of contents
 
 * [🚶‍♂️ Intro](README.md)
-* [🤝 Contributing](starting-noir.md)
+* [🤝 Contributing](contributing.md)
 * [📁 Tutorials](tutorials/README.md)
   * [🎓 Starting Noir](tutorials/starting-noir.md)
   * [📖 Libraries](tutorials/libraries.md)

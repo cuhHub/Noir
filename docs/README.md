@@ -2,20 +2,6 @@
 description: This page will go over Noir, and teach you how to setup an addon with Noir.
 cover: .gitbook/assets/github.png
 coverY: 0
-layout:
-  cover:
-    visible: true
-    size: hero
-  title:
-    visible: true
-  description:
-    visible: true
-  tableOfContents:
-    visible: true
-  outline:
-    visible: true
-  pagination:
-    visible: true
 ---
 
 # 🚶‍♂️ Intro
@@ -33,21 +19,18 @@ Noir is a framework that helps Stormworks addon developers create addons with a 
 Noir also comes with built-in [services](tutorials/services.md) and [libraries](tutorials/libraries.md) to reduce the amount of code you have to write.
 
 ## Setting Up a Project With Noir
+
 Noir comes with a tool to help you set up a project with Noir in just a minute. This section will show you how to install and use it.
 
 Note that this tool has only been tested on Windows. MacOS and Linux are untested but should work.
 
-1) Head over to [here](https://github.com/cuhHub/Noir/releases/latest/download/project_manager.exe) to download the compiled Project Manager tool.
+1.  Head over to [here](https://github.com/cuhHub/Noir/releases/latest/download/project_manager.exe) to download the compiled Project Manager tool.
 
-      ⚠️ | If you don't trust the `.exe` and have Python installed, head to `/tools/project_manager` in the [Noir repo](https://github.com/cuhHub/Noir) to run from source instead.
-
-2) Run the downloaded `.exe` in a terminal. You'll see the tool description along with prompts below it. Simply follow what the prompts ask to set up your project.
-
-3) The first prompt asks for the project name. This is the name of your addon essentially. For example, you could put `AI Gunners` if your desired addon is based around AI gunners.
-
-4) The second prompt asks for the desired path to your addon. This path can be anywhere. I recommend somewhere in your `Documents` folder (if on Windows). For example: `C:/Users/JohnDoe/Documents/Addons/AIGunners`.
-
-5) The third prompt asks for the path to your Stormworks addons. On Windows, this is 1000% `%appdata%/Stormworks/data/missions`.
+    ⚠️ | If you don't trust the `.exe` and have Python installed, head to `/tools/project_manager` in the [Noir repo](https://github.com/cuhHub/Noir) to run from source instead.
+2. Run the downloaded `.exe` in a terminal. You'll see the tool description along with prompts below it. Simply follow what the prompts ask to set up your project.
+3. The first prompt asks for the project name. This is the name of your addon essentially. For example, you could put `AI Gunners` if your desired addon is based around AI gunners.
+4. The second prompt asks for the desired path to your addon. This path can be anywhere. I recommend somewhere in your `Documents` folder (if on Windows). For example: `C:/Users/JohnDoe/Documents/Addons/AIGunners`.
+5. The third prompt asks for the path to your Stormworks addons. On Windows, this is 1000% `%appdata%/Stormworks/data/missions`.
 
 ![The tool's prompts](.gitbook/assets/31.png)
 
@@ -63,10 +46,10 @@ If Noir receives an update, simply repeat the previous steps and type `update` i
 
 This assumes you have the [Stormworks Lua VSCode Extension.](https://marketplace.visualstudio.com/items?itemName=NameousChangey.lifeboatapi)
 
-1) Download [Noir.lua](https://github.com/cuhHub/Noir/releases/latest/download/Noir.lua).
-2) Move the downloaded file into your addon directory.
-3) Add `require("Noir")` into your addon's main file.
-4) Build your addon via the extension's build keybind or the build command in the command palette (`CTRL + SHIFT + P`)
+1. Download [Noir.lua](https://github.com/cuhHub/Noir/releases/latest/download/Noir.lua).
+2. Move the downloaded file into your addon directory.
+3. Add `require("Noir")` into your addon's main file.
+4. Build your addon via the extension's build keybind or the build command in the command palette (`CTRL + SHIFT + P`)
 
 ## Congratulations!
 
