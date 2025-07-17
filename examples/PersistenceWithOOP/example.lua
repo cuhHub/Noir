@@ -57,7 +57,7 @@ function Fruits:ServiceInit()
             self, -- in this service
             "Basket" -- into a savedata table called "Basket" (this is *NOT* `self.Basket`)
         )                     -- ^ specifically, `self:GetSaveData()["Basket"]` which is NOT `self.Basket`
-
+                              -- it is important that the savedata table name matches the table name in the service 
         Noir.Services.MessageService:SendMessage(nil, "[Fruits]", "Loaded fruit %s", fruit.Name)
 
         return true -- return true to let the fruit load. if false, it will be discarded and unhoarded (never seen again)
@@ -66,7 +66,7 @@ function Fruits:ServiceInit()
     Noir.Services.HoarderService:LoadAll( -- Load all
         Fruit, -- saved `Fruit` instances
         self, -- into this service
-        "Basket" -- specifically in the `Basket` table
+        "Basket" -- specifically from `Basket` table in savedata, then into the `Basket` table in the service itself
     )
 end
 
