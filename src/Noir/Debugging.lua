@@ -94,11 +94,13 @@ Noir.Debugging.Enabled = false
 --[[
     A table containing all created trackers for functions.
 ]]
+---@type table<integer, NoirTracker>
 Noir.Debugging.Trackers = {}
 
 --[[
     A table containing all functions and tables that should not be tracked.
 ]]
+---@type table<function|table, boolean>
 Noir.Debugging._TrackingExceptions = {
     [Noir] = true
 }
