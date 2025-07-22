@@ -4,22 +4,51 @@
 
 A service for easily saving/loading class instances within a service with minimal hassle.
 
-Example:
+Example (see `Hoardable` code sample for info on the class side of things):
 
 ---
 
 ```lua
-Noir.Services.HoarderService:_Deserialize(class, serialized)
+Noir.Services.HoarderService:_Serialize(tbl)
+```
+Serializes a table for saving by removing all functions.
+
+Used internally.
+
+### Parameters
+- `tbl`: table
+### Returns
+- `table`
+
+---
+
+```lua
+Noir.Services.HoarderService:_IndexClasses(classes)
+```
+Adds class names as indices to a table of classes.
+
+Used internally.
+
+### Parameters
+- `classes`: table<integer, NoirClass>
+### Returns
+- `table<string, NoirClass>`
+
+---
+
+```lua
+Noir.Services.HoarderService:_Deserialize(class, serialized, lookupClasses)
 ```
 Deserializes a serialized class instance.
 
 Used internally.
 
 ### Parameters
-- `class`: NoirHoardable
+- `class`: NoirHoardable|NoirClass
 - `serialized`: table
+- `lookupClasses`: table<string, NoirClass>
 ### Returns
-- `NoirHoardable`
+- `NoirClass`
 
 ---
 
@@ -37,34 +66,40 @@ Used internally.
 ---
 
 ```lua
-Noir.Services.HoarderService:_ShouldLoad(service, class, instance)
+Noir.Services.HoarderService:_HandleCheckpoint(service, class, instance)
 ```
-Returns whether a class instance about to be loaded should be loaded.
+Invokes the checkpoint for the provided service and class if any.
+
+It then returns the result which should be whether or not to load the instance and an optional overwritten location for the instance.
 
 Used internally.
 
 ### Parameters
 - `service`: NoirService
-- `class`: NoirHoardable
-- `instance`: NoirHoardable
+- `class`: NoirClass
+- `instance`: NoirClass
 ### Returns
-- `boolean`
+- `boolean,`: nil
 
 ---
 
 ```lua
 Noir.Services.HoarderService:AddCheckpoint(service, class, func)
 ```
-Adds a checkpoint function for a service. It must return a boolean.
+Adds a checkpoint function for a service and class. It must return a boolean and an optional location for the instance.
 
 if `true` is returned, the passed instance will be loaded.
 
 if `false` is returned, the passed instance will not be loaded.
 
+
+
+Example Checkpoint:
+
 ### Parameters
 - `service`: NoirService
 - `class`: NoirHoardable
-- `func`: fun(instance: - NoirHoardable): boolean
+- `func`: fun(instance: - NoirHoardable): boolean, table|nil
 
 ---
 
@@ -75,7 +110,7 @@ Saves the provided class instance within a service.
 
 ### Parameters
 - `service`: NoirService
-- `tblName`: string
+- `tblName`: string - The name of the sub-table in the provided service's savedata to save the serialized instance to
 - `instance`: NoirHoardable
 
 ---
@@ -93,11 +128,13 @@ Unhoards the provided class instance within a service.
 ---
 
 ```lua
-Noir.Services.HoarderService:LoadAll(class, service, tblName)
+Noir.Services.HoarderService:LoadAll(service, from, to, class, lookupClasses)
 ```
 Loads all serialized class instances into a table in the provided service.
 
 ### Parameters
-- `class`: NoirHoardable
 - `service`: NoirService
-- `tblName`: string
+- `from`: string - The name of the sub-table in the provided service's savedata to load the serialized instances from
+- `to`: table - The table to load the class instances into
+- `class`: NoirHoardable - The class the serialized instances are of
+- `lookupClasses`: table<integer, NoirClass> - A table of classes that the provided class may contain instances of. This is used to deserialize instances of classes that are not the provided class but may be contained within it.
