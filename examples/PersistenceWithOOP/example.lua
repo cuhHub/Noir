@@ -1,108 +1,112 @@
---[[
-    A class representing Fruit.
-]]
----@class Fruit: NoirHoardable
----@field New fun(self: Fruit, name: string, value: number): Fruit
+---@diagnostic disable
+
+ItemInfo = Noir.Class(
+    "ItemInfo",
+    Noir.Classes.Hoardable -- only required for `:OnSerialize()` etc
+)
+
+function ItemInfo:Init()
+    self:InitFrom(Noir.Classes.Hoardable)
+
+    self.MadeBy = "Cuh4"
+    self.Foo = 1
+
+    self.Bar = Noir.Libraries.Events:Create()
+end
+
+function ItemInfo:ToString()
+    return string.format("ItemInfo: %s", self.MadeBy)
+end
+
+function ItemInfo:OnSerialize(serialized)
+    serialized.Bar = nil -- unneeded but this is just an example to show you can mess with serialization logic
+end
+
+function ItemInfo:OnDeserialize(serialized, lookupClasses)
+    self.Bar = Noir.Libraries.Events:Create() -- event functions would be removed during serialization, 
+                                                -- but attributes that "track" the functions (eg: function count) 
+                                                -- would not be reset which could cause problems so we just
+                                                -- completely overwrite the event with a fresh one
+end
+
 Fruit = Noir.Class(
     "Fruit",
     Noir.Classes.Hoardable
 )
 
---[[
-    Initializes Fruit instances.
-]]
----@param name string
----@param value integer
 function Fruit:Init(name, value)
     self:InitFrom(
         Noir.Classes.Hoardable,
-        name -- <-- the Hoardable ID. good rule of thumb is to use the same indexing system as your service
-    )        -- e.g: this fruit is saved in the `Basket` table in the `Fruits` service below, indexed by name.
-             -- therefore, we use the name as the hoardable ID too so the `HoarderService` will load the fruit
-             -- and save it in the `Basket` table using the name as the key too
-             --
-             -- omitting the id (passing it as nil or just avoiding the argument entirely) will just make the
-             -- `HoarderService` assume the `Basket` table is sequential (1, 2, 3, etc) and append it to the end
+        name -- the Hoardable ID. this ID will be used as an index for this class instance in save data. omitting this will just append the class instance to the end of the save data
+    )
 
-    --[[
-        The name of the fruit
-    ]]
     self.Name = name
-
-    --[[
-        The value of the fruit
-    ]]
     self.Value = value
+    self.ItemInfo = ItemInfo:New()
+    self.Functions = {
+        iShouldGetDiscarded = function() end -- functions not of a class cannot be serialized, so this will automatically be removed during serialization
+    }
 end
 
---[[
-    A service that stores Fruit instances.
-]]
----@class Fruits: NoirService
 Fruits = Noir.Services:CreateService("Fruits")
 
 function Fruits:ServiceInit()
-    ---@type table<string, Fruit>
     self.Basket = {}
+    self.Bin = {}
 
-    -- Before a fruit is loaded, the below is called.
-    -- This is useful for modifying the fruit before it is loaded, or for deciding whether or not to load any fruit.
-    ---@param fruit Fruit
+    -- Before a fruit is loaded, the below is called
     Noir.Services.HoarderService:AddCheckpoint(self, Fruit, function(fruit)
+        -- Decrease the value of the fruit by 0.1. This is to show you can manipulate the fruit before it is loaded.
         fruit.Value = fruit.Value - 0.1
 
-        -- We modified the fruit, so we need to save it again
-        -- Line-by-line explanation:
-        fruit:Hoard( -- "Hoard" (save) the fruit instance
-            self, -- in this service
-            "Basket" -- into a savedata table called "Basket" (this is *NOT* `self.Basket`)
-        )                     -- ^ specifically, `self:GetSaveData()["Basket"]` which is NOT `self.Basket`
-                              -- it is important that the savedata table name matches the table name in the service 
-        Noir.Services.MessageService:SendMessage(nil, "[Fruits]", "Loaded fruit %s", fruit.Name)
+        -- We need to save the changes hence this line
+        fruit:Hoard(self, "Basket")
 
-        return true -- return true to let the fruit load. if false, it will be discarded and unhoarded (never seen again)
+        -- Return `true` to 100% load the fruit (`false` would skip loading it and remove it forever).
+        -- We also return a second value which is where the fruit should be stored upon loading.
+        -- Returning `nil` for the second value would just move the fruit to its original destination
+        -- provided by `:LoadAll()`, which in this case, is `self.Basket`.
+        return true, math.random(0, 1) == 1 and self.Bin or nil
     end)
 
-    Noir.Services.HoarderService:LoadAll( -- Load all
-        Fruit, -- saved `Fruit` instances
-        self, -- into this service
-        "Basket" -- specifically from `Basket` table in savedata, then into the `Basket` table in the service itself
+    -- Load all saved fruits
+    Noir.Services.HoarderService:LoadAll(
+        self, -- the service holding the save data that the fruits are stored in
+        "Basket", -- the name of the table in the save data the fruits are stored in
+        self.Basket, -- where to store the loaded fruits (can be overwritten by a checkpoint, see `:AddCheckpoint()` above)
+        Fruit, -- the class the saved fruits are instances of
+        {ItemInfo, Noir.Classes.Event} -- any classes that may be in `Fruit`. they do not have to inherit from NoirHoardable
     )
+
+    -- Show the loaded fruits
+    print("Fruits have been loaded!")
+    print("Basket:")
+    for _, fruit in pairs(self.Basket) do
+        print("   \\____ %s ($%s)", fruit.Name, fruit.Value)
+    end
+
+    print("Bin:")
+    for _, fruit in pairs(self.Bin) do
+        print("   \\____ %s ($%s)", fruit.Name, fruit.Value)
+    end
+
+    if Noir.AddonReason == "SaveCreate" then
+        -- Create some fruits
+        self:AddFruit("Apple")
+        self:AddFruit("Banana")
+        self:AddFruit("Cherry")
+        self:AddFruit("Watermelon")
+        self:AddFruit("Pineapple")
+        self:AddFruit("Grapes")
+        self:AddFruit("Strawberry")
+        self:AddFruit("Orange")
+    end
 end
 
-function Fruits:ServiceStart()
-    -- Create a command to create fruit at any time.
-    -- The created fruit will stick around forever as it is easily saved thanks to
-    -- the HoarderService
-    Noir.Services.CommandService:CreateCommand(
-        "fruit",
-        {},
-        {},
-        false,
-        false,
-        false,
-        "",
-        function(player, message, args, hasPermission)
-            if not hasPermission then
-                return
-            end
-
-            self:AddFruit(args[1] or "Banana")
-        end
-    )
-end
-
---[[
-    Adds a new fruit.
-]]
----@param name string
 function Fruits:AddFruit(name)
-    local fruit = Fruit:New(name, 1) -- Create a fruit with the provided name
-    fruit:Hoard(self, "Basket") -- Save it on the savedata side
-    self.Basket[name] = fruit -- Save it on the service side
+    local fruit = Fruit:New(name, 1)
+    fruit:Hoard(self, "Basket")
+    self.Basket[name] = fruit
 
-    Noir.Services.MessageService:SendMessage(nil, "[Fruits]", "Added new fruit: %s", name)
+    print("Added new fruit: %s", name)
 end
-
--- Start Noir
-Noir:Start()
