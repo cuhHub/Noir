@@ -81,9 +81,7 @@ function Noir.Services.PlayerService:ServiceInit()
     self:GetSaveData().RecognizedIDs = self:GetSaveData().RecognizedIDs or {}
 
     -- Load players in game
-    if Noir.AddonReason == "AddonReload" then -- Only load players in-game if the addon was reloaded, otherwise onPlayerJoin will be called for the players that join when the save is loaded/created and we can just listen for that
-        self:_LoadPlayers()
-    end
+    self:_LoadPlayers()
 end
 
 function Noir.Services.PlayerService:ServiceStart()
@@ -245,11 +243,6 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
         return
     end
 
-    -- Check if player already exists
-    if self:GetPlayer(peer_id) then
-        error("PlayerService:_GivePlayerData()", "Attempted to give data to a player that already exists.")
-    end
-
     -- Create player
     local player = Noir.Classes.Player:New(
         name,
@@ -278,11 +271,6 @@ end
 function Noir.Services.PlayerService:_RemovePlayerData(player)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemovePlayerData()", "player", player, Noir.Classes.Player)
-
-    -- Check if player exists in this service
-    if not self:GetPlayer(player.ID) then
-        error("PlayerService:_RemovePlayerData()", "Attempted to remove a player from the service that isn't in the service.")
-    end
 
     -- Remove player
     player.InGame = false
