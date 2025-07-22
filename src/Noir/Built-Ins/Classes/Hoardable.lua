@@ -36,39 +36,63 @@
     Check out the aforementioned service for more info.<br>
     Example:
 
-    -- A class representing Fruit.
-    ---@class Fruit: NoirHoardable
-    ---@field New fun(self: Fruit, name: string, value: number): Fruit
+    ItemInfo = Noir.Class(
+        "ItemInfo",
+        Noir.Classes.Hoardable
+    )
+
+    function ItemInfo:Init()
+        self:InitFrom(Noir.Classes.Hoardable)
+
+        self.MadeBy = "Cuh4"
+        self.Foo = 1
+
+        self.Bar = Noir.Libraries.Events:Create()
+    end
+
+    function ItemInfo:ToString()
+        return string.format("ItemInfo: %s", self.MadeBy)
+    end
+
+    function ItemInfo:OnSerialize(serialized)
+        serialized.Bar = nil -- unneeded but this is just an example to show you can mess with serialization logic
+    end
+
+    function ItemInfo:OnDeserialize(serialized, lookupClasses)
+        self.Bar = Noir.Libraries.Events:Create() -- event functions would be removed during serialization, 
+                                                  -- but attributes that "track" the functions (eg: function count) 
+                                                  -- would not be reset which could cause problems so we just
+                                                  -- completely overwrite the event with a fresh one
+    end
+
     Fruit = Noir.Class(
         "Fruit",
         Noir.Classes.Hoardable
     )
 
-    -- Initializes Fruit instances.
-    ---@param name string
-    ---@param value integer
     function Fruit:Init(name, value)
         self:InitFrom(
             Noir.Classes.Hoardable,
             name -- the Hoardable ID
         )
 
-        -- The name of the fruit
         self.Name = name
-
-        -- The value of the fruit
         self.Value = value
+        self.ItemInfo = ItemInfo:New()
+        self.Functions = {
+            iShouldGetDiscarded = function() end -- functions not of a class cannot be serialized, so this will automatically be removed during serialization
+        }
     end
 ]]
 ---@class NoirHoardable: NoirClass
----@field New fun(self: NoirHoardable, ID: any): NoirHoardable
----@field _HoardableID any The ID of this class instance (optional. used as key in tables. omitting will just append to the end of the table)
+---@field New fun(self: NoirHoardable, ID: any|nil): NoirHoardable
+---@field _HoardableID any|nil The ID of this class instance (optional. used as key in tables. omitting will just append to the end of the table)
 Noir.Classes.Hoardable = Noir.Class("Hoardable")
 
 --[[
     Initializes `Hoardable` class instances.
 ]]
----@param ID any
+---@param ID any|nil
 function Noir.Classes.Hoardable:Init(ID)
     self._HoardableID = ID
 end
@@ -82,76 +106,14 @@ function Noir.Classes.Hoardable:GetHoardableID()
 end
 
 --[[
-    Returns the provided table but stripped of non-serializable values.
-]]
----@param tbl table
----@return table
-function Noir.Classes.Hoardable:_Strip(tbl)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.Hoardable:_Strip()", "tbl", tbl, "table")
-
-    -- Strip the table
-    local stripped = {}
-
-    for key, value in pairs(tbl) do
-        if type(value) == "function" then
-            goto continue
-        end
-
-        if type(value) == "table" then
-            stripped[key] = self:_Strip(value)
-        else
-            stripped[key] = value
-        end
-
-        ::continue::
-    end
-
-    -- Return the stripped table
-    return stripped
-end
-
---[[
-    Serializes this class instance.
-]]
----@return table
-function Noir.Classes.Hoardable:Serialize()
-    local serialized = {}
-
-    ---@param key string
-    ---@param value NoirHoardable|any
-    for key, value in pairs(self) do
-        if type(value) == "function" then
-            goto continue
-        end
-
-        if Noir.IsClass(value) then
-            error("Noir.Classes.Hoardable:Serialize()", "A class instance (%s) is stored within this class and cannot be serialized. Consider inheritance over composition when using `HoardService`.", value.ClassName)
-        elseif type(value) == "table" then
-            serialized[key] = self:_Strip(value)
-        else
-            serialized[key] = value
-        end
-
-        ::continue::
-    end
-
-    return serialized
-end
-
---[[
     Hoards this instance.
 ]]
 ---@param service NoirService
 ---@param tblName string
 function Noir.Classes.Hoardable:Hoard(service, tblName)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.Hoardable:Hoard()", "service", service, "class")
+    Noir.TypeChecking:Assert("Noir.Classes.Hoardable:Hoard()", "service", service, Noir.Classes.Service)
     Noir.TypeChecking:Assert("Noir.Classes.Hoardable:Hoard()", "tblName", tblName, "string")
-
-    if not Noir.Classes.Service:IsSameType(service) then
-        error("Noir.Classes.Hoardable:Hoard()", "`service` argument must be a `NoirService` class instance.")
-    end
 
     -- Hoard
     Noir.Services.HoarderService:Hoard(service, tblName, self)
@@ -164,13 +126,30 @@ end
 ---@param tblName string
 function Noir.Classes.Hoardable:Unhoard(service, tblName)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.Hoardable:Unhoard()", "service", service, "class")
+    Noir.TypeChecking:Assert("Noir.Classes.Hoardable:Unhoard()", "service", service, Noir.Classes.Service)
     Noir.TypeChecking:Assert("Noir.Classes.Hoardable:Unhoard()", "tblName", tblName, "string")
-
-    if not Noir.Classes.Service:IsSameType(service) then
-        error("Noir.Classes.Hoardable:Unhoard()", "`service` argument must be a `NoirService` class instance.")
-    end
 
     -- Unhoard
     Noir.Services.HoarderService:Unhoard(service, tblName, self)
 end
+
+--[[
+    Called during serialization.<br>
+    `self` is the class instance being serialized.<br>
+    `serialized` is the serialized data of the class instance.<br>
+    This is an `abstractmethod` and should be overridden in subclasses (optional).
+]]
+---@param serialized table
+function Noir.Classes.Hoardable:OnSerialize(serialized) end
+
+--[[
+    Called during deserialization.<br>
+    `self` is the deserialized class instance.<br>
+    `serialized` is the serialized data of the class instance.<br>
+    `lookupClasses` is a table of classes that can be used to deserialize the class instance.<br>
+    This is a useful place to apply corrections if the `HoarderService` didn't deserialize the class instance to your expectation.<br>
+    This is an `abstractmethod` and should be overridden in subclasses (optional).
+]]
+---@param serialized table
+---@param lookupClasses table<string, NoirClass>
+function Noir.Classes.Hoardable:OnDeserialize(serialized, lookupClasses) end
