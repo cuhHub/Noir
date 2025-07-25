@@ -286,7 +286,7 @@ end
     Returns the item this character is holding in the specified slot (if character).
 ]]
 ---@param slot SWSlotNumberEnum
----@return integer
+---@return SWEquipmentTypeEnum
 function Noir.Classes.Object:GetItem(slot)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Classes.Object:GetItem()", "slot", slot, "number")
