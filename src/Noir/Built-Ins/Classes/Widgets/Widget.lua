@@ -100,20 +100,10 @@ end
 function Noir.Classes.Widget:Update()
     if self.Player then
         self:_Destroy(self.Player) -- destroy old version. prevents duplication
-
-        if not self.Visible then
-            return
-        end
-
         self:_Update(self.Player)
     else
         for _, player in pairs(Noir.Services.PlayerService:GetPlayers(true)) do
             self:_Destroy(player)
-
-            if not self.Visible then
-                return
-            end
-
             self:_Update(player)
         end
     end

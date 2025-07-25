@@ -218,6 +218,10 @@ end
 function Noir.Classes.MapObjectWidget:_Update(player)
     Noir.TypeChecking:Assert("Noir.Classes.MapObjectWidget:_Update()", "player", player, Noir.Classes.Player)
 
+    if not self.Visible then
+        return
+    end
+
     server.addMapObject(
         player.ID,
         self.ID,

@@ -107,6 +107,10 @@ end
 function Noir.Classes.MapLabelWidget:_Update(player)
     Noir.TypeChecking:Assert("Noir.Classes.MapLabelWidget:_Update()", "player", player, Noir.Classes.Player)
 
+    if not self.Visible then
+        return
+    end
+
     server.addMapLabel(
         player.ID,
         self.ID,

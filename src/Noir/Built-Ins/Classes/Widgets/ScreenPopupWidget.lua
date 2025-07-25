@@ -108,6 +108,10 @@ end
 function Noir.Classes.ScreenPopupWidget:_Update(player)
     Noir.TypeChecking:Assert("Noir.Classes.ScreenPopupWidget:_Update()", "player", player, Noir.Classes.Player)
 
+    if not self.Visible then
+        return
+    end
+
     server.setPopupScreen(
         player.ID,
         self.ID,
