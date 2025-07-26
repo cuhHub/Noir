@@ -91,7 +91,7 @@ function Noir.Services.PlayerService:ServiceStart()
         local player = self:_GivePlayerData(steam_id, name, peer_id, admin, auth)
 
         if not player then
-            return
+            return -- likely the host. in multiplayer, `onPlayerJoin` gets called for the host but `:_LoadPlayers()` in `:ServiceInit()` beats it to the punch. in singleplayer though, `onPlayerJoin` doesn't get called. bummy
         end
 
         -- Call join event
@@ -193,10 +193,11 @@ function Noir.Services.PlayerService:_LoadPlayers()
         end
 
         -- Give data
+        local recognized = self:_IsRecognized(player.id)
         local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
 
         if not createdPlayer then
-            error("PlayerService:_LoadPlayers()", "Player data creation failed.")
+            goto continue
         end
 
         -- Load saved properties (eg: permissions)
@@ -210,14 +211,12 @@ function Noir.Services.PlayerService:_LoadPlayers()
 
         -- Call onJoin if unrecognized in this session
         -- This is here in case a player joined while the addon was not running (eg: if the addon errored and needed a reload)
-        if not self:_IsRecognized(createdPlayer) then
+        if not recognized then
             self.OnJoin:Fire(createdPlayer)
         end
 
         ::continue::
     end
-
-    self:_ClearRecognized() -- prevent table getting massive over time, especially on popular saves
 end
 
 --[[
@@ -240,6 +239,11 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
 
     -- Check if the player is the server itself (applies to dedicated servers)
     if self:_IsHost(peer_id) then
+        return
+    end
+
+    -- Check if player already exists
+    if self:GetPlayer(peer_id) then
         return
     end
 
@@ -314,14 +318,14 @@ end
     Returns whether or not a player is recognized.<br>
     Used internally.
 ]]
----@param player NoirPlayer
+---@param peerID integer
 ---@return boolean
-function Noir.Services.PlayerService:_IsRecognized(player)
+function Noir.Services.PlayerService:_IsRecognized(peerID)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_IsRecognized()", "player", player, Noir.Classes.Player)
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_IsRecognized()", "peerID", peerID, "number")
 
     -- Return true if recognized
-    return self:GetSaveData().RecognizedIDs[player.ID] ~= nil
+    return self:GetSaveData().RecognizedIDs[peerID] ~= nil
 end
 
 --[[
