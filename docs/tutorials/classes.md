@@ -22,15 +22,20 @@ This is an example of a class. The `---@` bits are for intellisense.
 ```lua
 ---@class Person: NoirClass <-- For intellisense
 ---@field New fun(self: Person, name: string, occupation: string): Person <-- so the Lua extension thinks Person:New() returns a Person and not a NoirClass
----@field name string The name of this person
----@field occupation string The occupation of this person
 local Person = Noir.Class("Person")
 
 ---@param name string
 ---@param occupation string
 function Person:Init(name, occupation)
+    -- The name of this person
     self.name = name
+    
+    -- The occupation of this person
     self.occupation = occupation
+    
+    -- The comments within this function get picked up by intellisense
+    -- and are used as descriptions for the attributes above.
+    -- You can use `---@field` instead though.
 end
 
 function Person:PrintInfo()
@@ -39,9 +44,14 @@ end
 
 -- Creating an object/instance from the class above
 local JohnDoe = Person:New("John Doe", "Unoccupied")
-JohnDoe:PrintInfo()
+JohnDoe:PrintInfo() -- "I am John doe, my occupation is Unoccupied."
+
+local Bob = Person:New("Bob", "Unoccupied")
+Bob:PrintInfo() -- "I am Bob, my occupation is Unoccupied."
 ```
 {% endcode %}
+
+`Bob` and `JohnDoe` are both instances of `Person` but are completely separate from each other. Modifying `Bob` will not modify `JohnDoe` and vice versa. It will not modify `Person` either.
 
 ## Creating A Class
 
@@ -127,3 +137,7 @@ print(cuh4:MyName()) -- "Cuh4"
 Intellisense is relatively easy to setup with classes. Check out the example at the start of this page.
 
 Consider reading up on [this](https://luals.github.io/wiki/annotations/#class) for more information on using intellisense with classes.
+
+## Final Note
+
+Classes, design-wise, are allowed to interact with libraries and services.

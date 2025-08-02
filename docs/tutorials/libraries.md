@@ -14,6 +14,8 @@ Libraries are simply tables containing helper functions that perform similar act
 Libraries should not interact with services nor the game itself! Libraries can interact with each other though.
 
 If your library needs to interact with the game or with services, you may want to consider making your library a service instead. See [this page](services.md).
+
+Libraries **can** interact with classes too.
 {% endhint %}
 
 ## Built-In Libraries

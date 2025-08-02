@@ -10,7 +10,11 @@ coverY: 0
 
 Services, when simplified, are simply tables containing methods you can use throughout your code.
 
-Unlike libraries, services tend to interact with the game and store data within itself or through `g_savedata`. Services can utilize one another as well as libraries.
+Unlike libraries, services tend to interact with the game and store data within itself or through `g_savedata`.&#x20;
+
+{% hint style="info" %}
+Services can utilize one another as well as libraries and classes.
+{% endhint %}
 
 Example:
 
@@ -111,7 +115,7 @@ end
 
 ## Adding Credit
 
-This is not necessary, but if you would like to add credit to your service for whatever reason. You can add a few extra parameters to `:CreateService()`.
+This is not necessary, but if you would like to add credit to your service for whatever reason, you can add a few extra parameters to `:CreateService()`.
 
 <pre class="language-lua"><code class="lang-lua">Noir.Services:CreateService(
 <strong>    "Name", -- The name of your service

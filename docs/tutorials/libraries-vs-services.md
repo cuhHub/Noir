@@ -14,13 +14,13 @@ Libraries and Services are used for organizational purposes within Noir. They se
 
 See [What Are Libraries](libraries.md#what-are-libraries) and [What Are Services](services.md#what-are-services).
 
-## What Are Services?
+## Services
 
 Services **manage and store data** and **act upon game events** (although not always).
 
 Services may interact with each other in various ways or utilize libraries. However, a library should be considered if the code could be reused and doesn't affect the game directly.
 
-## What Are Libraries?
+## Libraries
 
 Libraries contain code that can be used elsewhere, which is useful for **separation, organization, ease of use and reduced repeated code**.
 

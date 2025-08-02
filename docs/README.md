@@ -14,9 +14,9 @@ coverY: 0
 
 ## What Is Noir?
 
-Noir is a framework that helps Stormworks addon developers create addons with a neat, modular structure.
+Noir is a framework for Stormworks: Build and Rescue designed to hold your hand in some areas with addon development. Noir also introduces structured development through a clean architecture based on [services.md](tutorials/services.md "mention"), [libraries.md](tutorials/libraries.md "mention") and [classes.md](tutorials/classes.md "mention") (Noir adds class support!). It also reduces boilerplate as Noir comes with built-in services (eg:  [playerservice.md](api-reference/noir/built-ins/services/playerservice.md "mention")), libraries and classes out of the box.
 
-Noir also comes with built-in [services](tutorials/services.md) and [libraries](tutorials/libraries.md) to reduce the amount of code you have to write.
+In Noir, your addon is divided into "services" - self-contained logic units that can interact with libraries, classes and other services alike. Libraries are purely for reusable logic that do not interact with the game but provide utilities instead (like math utilities, etc). Classes, on the other hand, purely define structured data and behaviour and is a big portion of the OOP nature of Noir.
 
 ## Setting Up a Project With Noir
 

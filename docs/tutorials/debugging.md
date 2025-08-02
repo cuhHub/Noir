@@ -11,7 +11,7 @@ coverY: 0
 
 ## Enabling Debug
 
-Debug is disabled by default, so to enable debug, set `Noir.Debugging.Enabled`to `true`.
+Debug is disabled by default, so to enable debug, set `Noir.Debugging.Enabled` to `true`.
 
 {% code title="main.lua" lineNumbers="true" %}
 ```lua
