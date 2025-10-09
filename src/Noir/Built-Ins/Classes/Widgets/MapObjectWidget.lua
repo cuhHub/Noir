@@ -196,7 +196,7 @@ function Noir.Classes.MapObjectWidget:Deserialize(serializedWidget)
             return widget
         end
 
-        self.AttachmentBody = body
+        widget.AttachmentBody = body
     elseif serializedWidget.AttachmentMode == 2 then
         local object = Noir.Services.ObjectService:GetObject(serializedWidget.AttachmentObjectID or -1)
 
@@ -205,7 +205,7 @@ function Noir.Classes.MapObjectWidget:Deserialize(serializedWidget)
             return widget
         end
 
-        self.AttachmentObject = object
+        widget.AttachmentObject = object
     end
 
     return widget
