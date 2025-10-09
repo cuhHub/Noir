@@ -46,17 +46,20 @@
 ---@class NoirPlayerService: NoirService
 ---@field OnJoin NoirEvent Arguments: player (NoirPlayer) | Fired when a player joins the server
 ---@field OnLeave NoirEvent Arguments: player (NoirPlayer) | Fired when a player leaves the server
+---@field OnCharacterLoad NoirEvent Arguments: player (NoirPlayer), character (NoirObject) | Fired when a player's character is loaded
 ---@field OnDie NoirEvent Arguments: player (NoirPlayer) | Fired when a player dies
 ---@field OnSit NoirEvent Arguments: player (NoirPlayer), body (NoirBody|nil), seatName (string) | Fired when a player sits in a seat (body can be nil if the player sat on a map object, etc)
 ---@field OnUnsit NoirEvent Arguments: player (NoirPlayer), body (NoirBody|nil), seatName (string) | Fired when a player unsits in a seat (body can be nil if the player sat on a map object, etc)
 ---@field OnRespawn NoirEvent Arguments: player (NoirPlayer) | Fired when a player respawns
 ---@field Players table<integer, NoirPlayer> The players in the server
+---@field _LoadedUnrecognizedPlayers table<integer, NoirPlayer> Players to fire `OnJoin` for after loading. Used internally
 ---@field _JoinCallback NoirConnection A connection to the onPlayerDie event
 ---@field _LeaveCallback NoirConnection A connection to the onPlayerLeave event
 ---@field _DieCallback NoirConnection A connection to the onPlayerDie event
 ---@field _RespawnCallback NoirConnection A connection to the onPlayerRespawn event
 ---@field _SitCallback NoirConnection A connection to the onPlayerSit event
 ---@field _UnsitCallback NoirConnection A connection to the onPlayerUnsit event
+---@field _OnObjectLoadCallback NoirConnection A connection to ObjectService's `OnLoad` event
 Noir.Services.PlayerService = Noir.Services:CreateService(
     "PlayerService",
     true,
@@ -70,6 +73,7 @@ Noir.Services.PlayerService.InitPriority = 1
 function Noir.Services.PlayerService:ServiceInit()
     self.OnJoin = Noir.Libraries.Events:Create()
     self.OnLeave = Noir.Libraries.Events:Create()
+    self.OnCharacterLoad = Noir.Libraries.Events:Create()
     self.OnDie = Noir.Libraries.Events:Create()
     self.OnRespawn = Noir.Libraries.Events:Create()
     self.OnSit = Noir.Libraries.Events:Create()
@@ -77,25 +81,33 @@ function Noir.Services.PlayerService:ServiceInit()
 
     self.Players = {}
 
-    self:GetSaveData().PlayerProperties = self:_GetSavedProperties() or {}
     self:GetSaveData().RecognizedIDs = self:GetSaveData().RecognizedIDs or {}
 
-    -- Load players in game
-    self:_LoadPlayers()
+    self._LoadedUnrecognizedPlayers = self:_LoadPlayers()
 end
 
 function Noir.Services.PlayerService:ServiceStart()
+    -- Fire `OnJoin`
+    -- the task is so other services can connect to `OnJoin` in `:ServiceStart()` and not get missed
+    -- feels very hacky and flawed though and this single thing alone has made me rethink the entire architecture of Noir
+    -- all because of a single bug i encountered
+    Noir.Services.TaskService:AddTickTask(function()
+        for _, player in pairs(self._LoadedUnrecognizedPlayers) do
+            self:_RegisterPlayer(player, true)
+        end
+    end, 1)
+
     -- Create callbacks
     self._JoinCallback = Noir.Callbacks:Connect("onPlayerJoin", function(steam_id, name, peer_id, admin, auth)
         -- Give data
-        local player = self:_GivePlayerData(steam_id, name, peer_id, admin, auth)
+        local player = self:_ConstructPlayer(steam_id, name, peer_id, admin, auth)
 
         if not player then
             return -- likely the host. in multiplayer, `onPlayerJoin` gets called for the host but `:_LoadPlayers()` in `:ServiceInit()` beats it to the punch. in singleplayer though, `onPlayerJoin` doesn't get called. bummy
         end
 
-        -- Call join event
-        self.OnJoin:Fire(player)
+        -- Register player
+        self:_RegisterPlayer(player, true)
     end)
 
     self._LeaveCallback = Noir.Callbacks:Connect("onPlayerLeave", function(steam_id, name, peer_id, admin, auth)
@@ -166,15 +178,31 @@ function Noir.Services.PlayerService:ServiceStart()
         -- Call unsit event
         self.OnUnsit:Fire(player, body, seat_name)
     end)
+
+    ---@param object NoirObject
+    self._OnObjectLoadCallback = Noir.Services.ObjectService.OnLoad:Connect(function(object)
+        local player = self:GetPlayerByCharacter(object)
+
+        if not player then
+            return
+        end
+
+        player:_CharacterLoad(object)
+    end)
 end
 
 --[[
-    Load players current in-game.
+    Load players current in-game and returns a table of players to register later.<br>
+    Used internally.
 ]]
+---@return table<integer, NoirPlayer>
 function Noir.Services.PlayerService:_LoadPlayers()
     if Noir.AddonReason == "SaveLoad" then
         self:_ClearRecognized() -- clear recognized players on save load, otherwise players that were recognized before the save was loaded will be recognized again
     end
+
+    ---@type table<integer, NoirPlayer>
+    local players = {}
 
     for _, player in pairs(server.getPlayers()) do
         -- Check if server
@@ -184,7 +212,7 @@ function Noir.Services.PlayerService:_LoadPlayers()
 
         -- Check if unnamed client
         if player.name == "unnamed client" and not player.object_id then -- i don't like this. what if a player actually has their name as unnamed client? i'm also not entirely sure if actual players have an object_id when loading in
-            return
+            goto continue
         end
 
         -- Check if already loaded
@@ -194,33 +222,40 @@ function Noir.Services.PlayerService:_LoadPlayers()
 
         -- Give data
         local recognized = self:_IsRecognized(player.id)
-        local createdPlayer = self:_GivePlayerData(player.steam_id, player.name, player.id, player.admin, player.auth)
+        local createdPlayer = self:_ConstructPlayer(player.steam_id, player.name, player.id, player.admin, player.auth)
 
         if not createdPlayer then
             goto continue
         end
 
-        -- Load saved properties (eg: permissions)
-        local savedProperties = self:_GetSavedPropertiesForPlayer(createdPlayer)
-
-        if savedProperties then
-            for property, value in pairs(savedProperties) do
-                createdPlayer[property] = value
-            end
-        end
-
-        -- Call onJoin if unrecognized in this session
-        -- This is here in case a player joined while the addon was not running (eg: if the addon errored and needed a reload)
         if not recognized then
-            self.OnJoin:Fire(createdPlayer)
+            -- Fire OnJoin if unrecognized in this session)
+            -- This could be the host in singleplayer since `onPlayerJoin` is not called for the host in singleplayer (or is called before Noir starts)
+            -- As a result, we artifically trigger `OnJoin` later in `:ServiceStart()`, and also register them before so
+            table.insert(players, createdPlayer)
+        else
+            -- Register
+            self:_RegisterPlayer(createdPlayer, false)
         end
 
         ::continue::
     end
+
+    return players
 end
 
 --[[
-    Gives data to a player.<br>
+    To be called when a player's character is loaded.
+]]
+---@param player NoirPlayer
+---@param character NoirObject
+function Noir.Services.PlayerService:_CharacterLoad(player, character)
+    self.OnCharacterLoad:Fire(player, character)
+    player:_CharacterLoad(character)
+end
+
+--[[
+    Makes data for a player. Returns nil if player is invalid (e.g.: unnamed client).<br>
     Used internally.
 ]]
 ---@param steam_id integer|string
@@ -229,13 +264,13 @@ end
 ---@param admin boolean
 ---@param auth boolean
 ---@return NoirPlayer|nil
-function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, admin, auth)
+function Noir.Services.PlayerService:_ConstructPlayer(steam_id, name, peer_id, admin, auth)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "steam_id", steam_id, "number", "string")
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "name", name, "string")
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "peer_id", peer_id, "number")
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "admin", admin, "boolean")
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GivePlayerData()", "auth", auth, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_ConstructPlayer()", "steam_id", steam_id, "number", "string")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_ConstructPlayer()", "name", name, "string")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_ConstructPlayer()", "peer_id", peer_id, "number")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_ConstructPlayer()", "admin", admin, "boolean")
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_ConstructPlayer()", "auth", auth, "boolean")
 
     -- Check if the player is the server itself (applies to dedicated servers)
     if self:_IsHost(peer_id) then
@@ -253,15 +288,33 @@ function Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, ad
         peer_id,
         tostring(steam_id),
         admin,
-        auth,
-        {}
+        auth
     )
 
+    -- Return player
+    return player
+end
+
+--[[
+    Registers a player.<br>
+    Used internally.
+]]
+---@param player NoirPlayer
+---@param triggerEvent boolean
+function Noir.Services.PlayerService:_RegisterPlayer(player, triggerEvent)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RegisterPlayer()", "player", player, Noir.Classes.Player)
+
     -- Save player
-    self.Players[peer_id] = player
+    self.Players[player.ID] = player
 
     -- Save peer ID so we know if we can call onJoin for this player or not if the addon reloads
     self:_MarkRecognized(player)
+
+    -- Trigger event
+    if triggerEvent then
+        self.OnJoin:Fire(player)
+    end
 
     -- Return
     return player
@@ -279,9 +332,6 @@ function Noir.Services.PlayerService:_RemovePlayerData(player)
     -- Remove player
     player.InGame = false
     self.Players[player.ID] = nil
-
-    -- Remove saved properties
-    self:_RemoveSavedProperties(player)
 
     -- Unmark as recognized
     self:_UnmarkRecognized(player)
@@ -347,64 +397,6 @@ function Noir.Services.PlayerService:_UnmarkRecognized(player)
 
     -- Remove from recognized
     self:GetSaveData().RecognizedIDs[player.ID] = nil
-end
-
---[[
-    Returns all saved player properties saved in g_savedata.<br>
-    Used internally. Do not use in your code.
-]]
----@return NoirSavedPlayerProperties
-function Noir.Services.PlayerService:_GetSavedProperties()
-    return self:GetSaveData().PlayerProperties
-end
-
---[[
-    Save a player's property to g_savedata.<br>
-    Used internally. Do not use in your code.
-]]
----@param player NoirPlayer
----@param property string
-function Noir.Services.PlayerService:_SaveProperty(player, property)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "player", player, Noir.Classes.Player)
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_SaveProperty()", "property", property, "string")
-
-    -- Property saving
-    local properties = self:_GetSavedProperties()
-
-    if not properties[player.Steam] then
-        properties[player.Steam] = {}
-    end
-
-    properties[player.Steam][property] = player[property]
-end
-
---[[
-    Get a player's saved properties.<br>
-    Used internally. Do not use in your code.
-]]
----@param player NoirPlayer
----@return table<string, boolean>|nil
-function Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_GetSavedPropertiesForPlayer()", "player", player, Noir.Classes.Player)
-
-    -- Return saved properties for player
-    return self:_GetSavedProperties()[player.Steam]
-end
-
---[[
-    Removes a player's saved properties from g_savedata.<br>
-    Used internally. Do not use in your code.
-]]
----@param player NoirPlayer
-function Noir.Services.PlayerService:_RemoveSavedProperties(player)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.PlayerService:_RemoveSavedProperties()", "player", player, Noir.Classes.Player)
-
-    -- Remove saved properties
-    local properties = self:_GetSavedProperties()
-    properties[player.Steam] = nil
 end
 
 --[[
@@ -519,9 +511,3 @@ function Noir.Services.PlayerService:IsSamePlayer(playerA, playerB)
     -- Return if both players are the same
     return playerA.ID == playerB.ID
 end
-
--------------------------------
--- // Intellisense
--------------------------------
-
----@alias NoirSavedPlayerProperties table<integer, table<string, any>>
