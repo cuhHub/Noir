@@ -71,17 +71,42 @@ end
 function Noir.Services.UIService:ServiceStart()
     ---@param player NoirPlayer
     self._OnJoinConnection = Noir.Services.PlayerService.OnJoin:Connect(function(player)
-        for _, widget in pairs(self:GetWidgetsShownToPlayer(player)) do
-            widget:_Update(player)
+        if player:GetCharacter() then
+            self:_ShowWidgetsToPlayer(player)
+        else
+            player.OnCharacterLoad:Once(function()
+                self:_ShowWidgetsToPlayer(player)
+            end)
         end
     end)
 
     ---@param player NoirPlayer
-    self._OnLeaveConnection = Noir.Services.PlayerService.OnJoin:Connect(function(player)
-        for _, widget in pairs(self:GetWidgetsBelongingToPlayer(player)) do
-            self:RemoveWidget(widget.ID)
-        end
+    self._OnLeaveConnection = Noir.Services.PlayerService.OnLeave:Connect(function(player)
+        self:_RemoveWidgetsFromPlayer(player)
     end)
+end
+
+
+--[[
+    Shows all widgets to a new player.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+function Noir.Services.UIService:_ShowWidgetsToPlayer(player)
+    for _, widget in pairs(self:GetWidgetsShownToPlayer(player)) do
+        widget:Update()
+    end
+end
+
+--[[
+    Removes all widgets from a player who left.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+function Noir.Services.UIService:_RemoveWidgetsFromPlayer(player)
+    for _, widget in pairs(self:GetWidgetsBelongingToPlayer(player)) do
+        self:RemoveWidget(widget.ID)
+    end
 end
 
 --[[
