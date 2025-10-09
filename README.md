@@ -46,7 +46,7 @@ To build Noir (tool executables and the bundled Noir `.lua` file), see below.
 1) Create a virtual environment (venv) by running `py -m venv venv` (you may need to use `pip install venv` if the command doesn't work).
 2) Activate the venv using `venv\scripts\activate.bat` (Linux/MacOS: `source venv/bin/activate`). Use `deactivate` instead of `activate` to exit the venv at any time.
 3) Run `pip install -r requirements.txt` to install necessary Python packages.
-4) With the venv activated and necessary packages installed, simply run `build.bat`. This will bundle Noir into one `.lua` file and build all tools in `/tools` into executables by running `py main.py`. The API reference will also get updated (`py build-api-reference.py`). All of the files are then placed into `_build` while the API reference docs will simply be updated in the `docs` folder.
+4) With the venv activated and necessary packages installed, simply run `build.bat`. This will bundle Noir into one `.lua` file and build all tools in `/tools` into executables by running `py build.py`. The API reference will also get updated (`py build-api-reference.py`). All of the files are then placed into `_build` while the API reference docs will simply be updated in the `docs` folder.
 
 ### Warnings
 - ⚠️ | If `py` in the commands above doesn't work, try `python` or `python3` instead.
