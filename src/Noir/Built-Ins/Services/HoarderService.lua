@@ -241,14 +241,14 @@ end
 ]]
 ---@param service NoirService
 ---@param class NoirClass
----@param instance NoirClass
+---@param instance NoirHoardable
 ---@return boolean
 ---@return table|nil
 function Noir.Services.HoarderService:_HandleCheckpoint(service, class, instance)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:_ShouldLoad()", "service", service, Noir.Classes.Service)
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:_ShouldLoad()", "class", class, "class")
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_ShouldLoad()", "instance", instance, "class")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_ShouldLoad()", "instance", instance, Noir.Classes.Hoardable)
 
     -- Run checkpoint if it exists
     if self.Checkpoints[service] and self.Checkpoints[service][class] then
