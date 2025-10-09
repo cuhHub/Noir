@@ -31,6 +31,8 @@
 -- // Main
 -------------------------------
 
+---@alias NoirHoarderCheckpoint fun(instance: NoirHoardable): boolean, table|nil
+
 --[[
     A service for easily saving/loading class instances within a service with minimal hassle.<br>
     Example (see `Hoardable` code sample for info on the class side of things):
@@ -99,7 +101,7 @@
     end
 ]]
 ---@class NoirHoarderService: NoirService
----@field Checkpoints table<NoirService, table<NoirClass, table<integer, fun(instance: NoirClass)>>> The checkpoint functions for each service and class that dictate whether or not to load a serialized class instance
+---@field Checkpoints table<NoirService, table<NoirClass, NoirHoarderCheckpoint>> The checkpoint functions for each service and class that dictate whether or not to load a serialized class instance
 Noir.Services.HoarderService = Noir.Services:CreateService(
     "HoarderService",
     true,
@@ -240,7 +242,8 @@ end
 ---@param service NoirService
 ---@param class NoirClass
 ---@param instance NoirClass
----@return boolean, nil
+---@return boolean
+---@return table|nil
 function Noir.Services.HoarderService:_HandleCheckpoint(service, class, instance)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:_ShouldLoad()", "service", service, Noir.Classes.Service)
@@ -276,7 +279,7 @@ end
 ]]
 ---@param service NoirService
 ---@param class NoirHoardable
----@param func fun(instance: NoirHoardable): boolean, table|nil
+---@param func NoirHoarderCheckpoint
 function Noir.Services.HoarderService:AddCheckpoint(service, class, func)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:AddCheckpoint()", "service", service, Noir.Classes.Service)
