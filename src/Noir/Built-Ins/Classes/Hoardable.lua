@@ -32,6 +32,11 @@
 -------------------------------
 
 --[[
+    The ID of a hoardable class.
+]]
+---@alias NoirHoardableID string|number|boolean|nil
+
+--[[
     A class that hoardable classes should inherit from to be able to be used with the `Noir.Services.HoarderService`.<br>
     Check out the aforementioned service for more info.<br>
     Example:
@@ -54,11 +59,11 @@
         return string.format("ItemInfo: %s", self.MadeBy)
     end
 
-    function ItemInfo:OnSerialize(serialized)
+    function ItemInfo:OnPreSerialize(serialized)
         serialized.Bar = nil -- unneeded but this is just an example to show you can mess with serialization logic
     end
 
-    function ItemInfo:OnDeserialize(serialized, lookupClasses)
+    function ItemInfo:OnPostDeserialize(serialized, lookupClasses)
         self.Bar = Noir.Libraries.Events:Create() -- event functions would be removed during serialization, 
                                                   -- but attributes that "track" the functions (eg: function count) 
                                                   -- would not be reset which could cause problems so we just
@@ -85,24 +90,33 @@
     end
 ]]
 ---@class NoirHoardable: NoirClass
----@field New fun(self: NoirHoardable, ID: any|nil): NoirHoardable
----@field _HoardableID any|nil The ID of this class instance (optional. used as key in tables. omitting will just append to the end of the table)
+---@field New fun(self: NoirHoardable, ID: NoirHoardableID): NoirHoardable
+---@field _HoardableID NoirHoardableID The ID of this class instance (optional. used as key in tables. omitting will just append to the end of the table)
 Noir.Classes.Hoardable = Noir.Class("Hoardable")
 
 --[[
     Initializes `Hoardable` class instances.
 ]]
----@param ID any|nil
+---@param ID NoirHoardableID
 function Noir.Classes.Hoardable:Init(ID)
+    Noir.TypeChecking:Assert("Noir.Classes.Hoardable:Init()", "ID", ID, "string", "number", "boolean", "nil")
     self._HoardableID = ID
 end
 
 --[[
     Returns the ID of this class instance.
 ]]
----@return any|nil
+---@return NoirHoardableID
 function Noir.Classes.Hoardable:GetHoardableID()
     return self._HoardableID
+end
+
+--[[
+    Returns if this class instance has a hoardable ID.
+]]
+---@return boolean
+function Noir.Classes.Hoardable:HasHoardableID()
+    return self:GetHoardableID() ~= nil
 end
 
 --[[
@@ -134,16 +148,37 @@ function Noir.Classes.Hoardable:Unhoard(service, tblName)
 end
 
 --[[
-    Called during serialization.<br>
+    Called before serialization.<br>
+    You can use this to replace unserializable values like cyclic tables with something else.<br>
+    These can then be converted back via `OnDeserialize`.<br>
     `self` is the class instance being serialized.<br>
-    `serialized` is the serialized data of the class instance.<br>
+    This is an `abstractmethod` and should be overridden in subclasses (optional).
+]]
+function Noir.Classes.Hoardable:OnPreSerialize() end
+
+--[[
+    Called after serialization.<br>
+    `self` is the class instance being serialized.<br>
+    `serialized` is the now serialized data of the class instance.<br>
     This is an `abstractmethod` and should be overridden in subclasses (optional).
 ]]
 ---@param serialized table
-function Noir.Classes.Hoardable:OnSerialize(serialized) end
+function Noir.Classes.Hoardable:OnPostSerialize(serialized) end
 
 --[[
-    Called during deserialization.<br>
+    Called before deserialization.<br>
+    Can be used to replace serialized values with something else, e.g. converting older data to newer data.<br>
+    `self` is the class instance being deserialized.<br>
+    `serialized` is the serialized data of the class instance.<br>
+    `lookupClasses` is a table of classes that can be used to deserialize the class instance.<br>
+    This is an `abstractmethod` and should be overridden in subclasses (optional).
+]]
+---@param serialized table
+---@param lookupClasses table<string, NoirClass>
+function Noir.Classes.Hoardable:OnPreDeserialize(serialized, lookupClasses) end
+
+--[[
+    Called after deserialization.<br>
     `self` is the deserialized class instance.<br>
     `serialized` is the serialized data of the class instance.<br>
     `lookupClasses` is a table of classes that can be used to deserialize the class instance.<br>
@@ -152,4 +187,4 @@ function Noir.Classes.Hoardable:OnSerialize(serialized) end
 ]]
 ---@param serialized table
 ---@param lookupClasses table<string, NoirClass>
-function Noir.Classes.Hoardable:OnDeserialize(serialized, lookupClasses) end
+function Noir.Classes.Hoardable:OnPostDeserialize(serialized, lookupClasses) end
