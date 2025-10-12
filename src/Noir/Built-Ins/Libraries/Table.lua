@@ -180,44 +180,44 @@ end
 ]]
 ---@param tbl table
 ---@param indent integer|nil
+---@param _journey table<table, boolean>|nil
 ---@return string
-function Noir.Libraries.Table:ToString(tbl, indent)
+function Noir.Libraries.Table:ToString(tbl, indent, _journey)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "tbl", tbl, "table")
     Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "indent", indent, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "_journey", _journey, "table", "nil")
 
-    -- Set default indent
+    -- Convert table to string
     if not indent then
         indent = 0
     end
 
-    -- Create a table for later
+    _journey = _journey or {}
+
+    if _journey[tbl] then
+        return "{<circular reference!>}"
+    end
+
+    _journey[tbl] = true
+
     local toConcatenate = {}
 
-    -- Convert the table to a string
     for index, value in pairs(tbl) do
-        -- Get value type
         local valueType = type(value)
-
-        -- Format the index for later
         local formattedIndex = ("[%s]:"):format(type(index) == "string" and "\""..index.."\"" or tostring(index):gsub("\n", "\\n"))
-
-        -- Format the value
         local toAdd = formattedIndex
 
         if valueType == "table" then
-            -- Format table
             local nextIndent = indent + 2
             local formattedValue = Noir.Libraries.Table:ToString(value, nextIndent)
 
-            -- Check if empty table
             if formattedValue == "" then
                 formattedValue = "{}"
             else
                 formattedValue = "\n"..formattedValue
             end
 
-            -- Add to string
             toAdd = toAdd..(" %s"):format(formattedValue)
         elseif valueType == "number" or valueType == "boolean" then
             toAdd = toAdd..(" %s"):format(tostring(value))
@@ -225,11 +225,9 @@ function Noir.Libraries.Table:ToString(tbl, indent)
             toAdd = toAdd..(" \"%s\""):format(tostring(value):gsub("\n", "\\n"))
         end
 
-        -- Add to table
         table.insert(toConcatenate, ("  "):rep(indent)..toAdd)
     end
 
-    -- Return the table as a formatted string
     return table.concat(toConcatenate, "\n")
 end
 
@@ -256,6 +254,7 @@ function Noir.Libraries.Table:Copy(tbl)
 
     return new
 end
+
 --[[
     Copy a table (deep).
 
@@ -265,17 +264,30 @@ end
 ]]
 ---@generic tbl: table
 ---@param tbl tbl
+---@param _journey table|nil
 ---@return tbl
-function Noir.Libraries.Table:DeepCopy(tbl)
+function Noir.Libraries.Table:DeepCopy(tbl, _journey)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Libraries.Table:DeepCopy()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:DeepCopy()", "_journey", _journey, "table", "nil")
 
     -- Perform a deep copy
+    _journey = _journey or {}
+
+    if _journey[tbl] then
+        return _journey[tbl]
+    end
+
     local new = {}
+    _journey[tbl] = new
 
     for index, value in pairs(tbl) do
+        if type(index) == "table" then
+            index = self:DeepCopy(index, _journey)
+        end
+
         if type(value) == "table" then
-            new[index] = self:DeepCopy(value)
+            new[index] = self:DeepCopy(value, _journey)
         else
             new[index] = value
         end
