@@ -115,34 +115,65 @@ function Noir.Services.HoarderService:ServiceInit()
 end
 
 --[[
+    Returns if a value is serializable.
+]]
+---@param value any
+---@return boolean
+function Noir.Services.HoarderService:_IsSerializable(value)
+    local allowed = {
+        ["number"] = true,
+        ["string"] = true,
+        ["boolean"] = true
+    }
+
+    return allowed[type(value)] ~= nil
+end
+
+--[[
     Serializes a table for saving by removing all functions.<br>
     Used internally.
 ]]
 ---@param tbl table
+---@param _active table<any, boolean>|nil
 ---@return table
-function Noir.Services.HoarderService:_Serialize(tbl)
+function Noir.Services.HoarderService:_Serialize(tbl, _active)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:_Serialize()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_Serialize()", "_active", _active, "table", "nil")
+
+    -- Check for cyclic tables/shared references
+    _active = _active or {}
+
+    if _active[tbl] then
+        error("Noir.Services.HoarderService:_Serialize()", "Cyclic table detected during serialization. Cyclic tables cannot be saved! Consider replacing this value via `:OnPreSerialize()` and recreating the original manually via `:OnPostDeserialize()`.")
+    end
+
+    _active[tbl] = true
 
     -- Serialize
     local serialized = {}
 
     for key, value in pairs(tbl) do
-        -- Disallow functions
-        if type(value) == "function" then
+        if not self:_IsSerializable(key) then
             goto continue
         end
 
         if type(value) == "table" then
             -- Recursively serialize
-            serialized[key] = self:_Serialize(value)
+            serialized[key] = self:_Serialize(value, _active)
         else
+            if not self:_IsSerializable(value) then
+                goto continue
+            end
+
             -- Add value (it's allowed)
             serialized[key] = value
         end
 
         ::continue::
     end
+
+    _active[tbl] = nil
 
     -- Return
     return serialized
@@ -190,6 +221,12 @@ function Noir.Services.HoarderService:_Deserialize(class, serialized, lookupClas
     local instance = {}
     class:_SetupObject(instance)
 
+    -- Call `OnPreDeserialize`
+    if Noir.Classes.Hoardable:IsSameType(instance)  and instance.OnPreDeserialize then
+        ---@diagnostic disable-next-line: param-type-mismatch
+        instance:OnPreDeserialize(serialized, lookupClasses)
+    end
+
     -- Set attributes
     for key, value in pairs(serialized) do
         if Noir.IsClass(value) then -- .IsClass(), at least for 3.0.0, checks for a `ClassName` attribute. so even if serialized, it'll work here 
@@ -209,10 +246,10 @@ function Noir.Services.HoarderService:_Deserialize(class, serialized, lookupClas
     -- Re-add parents
     instance._Parents = class._Parents
 
-    -- Call `OnDeserialize`
-    if Noir.Classes.Hoardable:IsSameType(instance)  and instance.OnDeserialize then
+    -- Call `OnPostDeserialize`
+    if Noir.Classes.Hoardable:IsSameType(instance)  and instance.OnPostDeserialize then
         ---@diagnostic disable-next-line: param-type-mismatch
-        instance:OnDeserialize(serialized, lookupClasses)
+        instance:OnPostDeserialize(serialized, lookupClasses)
     end
 
     -- Return
@@ -311,18 +348,24 @@ function Noir.Services.HoarderService:Hoard(service, tblName, instance)
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:Hoard()", "instance", instance, Noir.Classes.Hoardable)
 
     -- Serialize
+    instance = Noir.Libraries.Table:DeepCopy(instance)
+
+    if instance.OnPreSerialize then
+        instance:OnPreSerialize()
+    end
+
     local serialized = self:_Serialize(instance)
 
-    if instance.OnSerialize then
-        instance:OnSerialize(serialized)
+    if instance.OnPostSerialize then
+        instance:OnPostSerialize(serialized)
     end
 
     -- Save serialized instance
-    local saveData = service:GetSaveData()
-
     self:_InitSaveData(service, tblName)
 
-    if instance:GetHoardableID() then
+    local saveData = service:GetSaveData()
+
+    if instance:HasHoardableID() then
         saveData[tblName][instance:GetHoardableID()] = serialized
     else
         table.insert(saveData[tblName], serialized)
@@ -347,7 +390,7 @@ function Noir.Services.HoarderService:Unhoard(service, tblName, instance)
     -- Unhoard
     local saveData = service:GetSaveData()
 
-    if instance:GetHoardableID() then
+    if instance:HasHoardableID() then
         saveData[tblName][instance:GetHoardableID()] = nil
     else
         local index = Noir.Libraries.Table:Find(saveData[tblName], instance)
@@ -394,11 +437,10 @@ function Noir.Services.HoarderService:LoadAll(service, from, to, class, lookupCl
             goto continue
         end
 
-        local ID = instance:GetHoardableID()
         local location = overwrittenLocation or to
 
-        if ID then
-            location[ID] = instance
+        if instance:HasHoardableID() then
+            location[instance:GetHoardableID()] = instance
         else
             table.insert(location, instance)
         end
