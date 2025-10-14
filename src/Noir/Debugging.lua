@@ -140,7 +140,7 @@ function Noir.Debugging:_PresentTrackers(category, trackers)
     Noir.Libraries.Logging:Success("Debugging", "--- "..category.." functions:")
 
     for index, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Success("Debugging", "Tracker #%d: %s", index, tracker:ToFormattedString())
+        Noir.Libraries.Logging:Info("Debugging", "Tracker #%d: %s", index, tracker:ToFormattedString())
     end
 end
 
