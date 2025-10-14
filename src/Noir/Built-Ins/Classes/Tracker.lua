@@ -103,7 +103,7 @@ end
 ]]
 ---@return string
 function Noir.Classes.Tracker:ToFormattedString()
-    return ("%s() | Avg. Exc. Time: %.4f ms, Last Exc. Time: %.4fms, Call Count: %d"):format(
+    return ("%s() | Avg. Exc. Time: %.8f ms, Last Exc. Time: %.8fms, Call Count: %d"):format(
         self:GetName(),
         self:GetAverageExecutionTime(),
         self:GetLastExecutionTime(),
