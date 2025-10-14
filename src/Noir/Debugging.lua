@@ -140,7 +140,7 @@ function Noir.Debugging:_PresentTrackers(category, trackers)
     Noir.Libraries.Logging:Success("Debugging", "--- "..category.." functions:")
 
     for _, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Success("Debugging", tracker.FunctionName..": "..tracker:GetAverageExecutionTime().." ms")
+        Noir.Libraries.Logging:Success("Debugging", "%s: %s", tracker.FunctionName, tracker:ToFormattedString())
     end
 end
 
@@ -326,7 +326,7 @@ function Noir.Debugging:TrackAll(name, tbl, _journey)
             goto continue
         end
 
-        local tracker = self:TrackFunction(("%s:%s"):format(name, index), value)
+        local tracker = self:TrackFunction(("%s.%s()"):format(name, index), value)
 
         if not tracker then
             goto continue
