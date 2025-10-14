@@ -131,6 +131,20 @@ function error(source, message, ...)
 end
 
 --[[
+    Presents trackers in a category.<br>
+    Used internally.
+]]
+---@param category string
+---@param trackers table<integer, NoirTracker>
+function Noir.Debugging:_PresentTrackers(category, trackers)
+    Noir.Libraries.Logging:Success("Debugging", "--- "..category.." functions:")
+
+    for _, tracker in ipairs(trackers) do
+        Noir.Libraries.Logging:Success("Debugging", tracker.FunctionName..": "..tracker:GetAverageExecutionTime().." ms")
+    end
+end
+
+--[[
     Returns all tracked functions with the option to copy.
 ]]
 ---@param copy boolean|nil
@@ -159,12 +173,7 @@ end
 ]]
 function Noir.Debugging:ShowLastCalledTracked()
     local trackers = self:GetLastCalledTracked()
-
-    Noir.Libraries.Logging:Success("Debugging", "--- *Last* called functions:")
-
-    for index, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Info("Debugging", "#%d: %s", index, tracker:ToFormattedString())
-    end
+    self:_PresentTrackers("*Last* called", trackers)
 end
 
 --[[
@@ -186,12 +195,7 @@ end
 ]]
 function Noir.Debugging:ShowLeastPerformantTracked()
     local trackers = self:GetLeastPerformantTracked()
-
-    Noir.Libraries.Logging:Success("Debugging", "--- *Least* performant functions:")
-
-    for index, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Info("Debugging", "#%d: %s", index, tracker:ToFormattedString())
-    end
+    self:_PresentTrackers("*Least* performant", trackers)
 end
 
 --[[
@@ -213,12 +217,29 @@ end
 ]]
 function Noir.Debugging:ShowMostPerformantTracked()
     local trackers = self:GetMostPerformantTracked()
+    self:_PresentTrackers("*Most* performant", trackers)
+end
 
-    Noir.Libraries.Logging:Success("Debugging", "--- *Most* performant functions:")
+--[[
+    Returns the tracked functions with the most calls.
+]]
+---@return table<integer, NoirTracker>
+function Noir.Debugging:GetMostCalledTracked()
+    local trackers = self:GetTrackedFunctions(true)
 
-    for index, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Info("Debugging", "#%d: %s", index, tracker:ToFormattedString())
-    end
+    table.sort(trackers, function(a, b)
+        return a:GetCallCount() > b:GetCallCount()
+    end)
+
+    return trackers
+end
+
+--[[
+    Shows the tracked functions with the most calls.
+]]
+function Noir.Debugging:ShowMostCalledTracked()
+    local trackers = self:GetMostCalledTracked()
+    self:_PresentTrackers("*Most* called", trackers)
 end
 
 --[[
