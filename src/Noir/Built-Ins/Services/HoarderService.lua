@@ -404,6 +404,23 @@ function Noir.Services.HoarderService:Unhoard(service, tblName, instance)
 end
 
 --[[
+    Clears out saved instances for the provided service.
+]]
+---@param service NoirService
+---@param tblName string
+function Noir.Services.HoarderService:Clear(service, tblName)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Clear()", "service", service, Noir.Classes.Service)
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Clear()", "tblName", tblName, "string")
+
+    -- Init savedata
+    self:_InitSaveData(service, tblName)
+
+    -- Clear
+    service:GetSaveData()[tblName] = {}
+end
+
+--[[
     Loads all serialized class instances into a table in the provided service.
 ]]
 ---@param service NoirService
