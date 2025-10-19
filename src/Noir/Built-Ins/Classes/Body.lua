@@ -567,8 +567,17 @@ end
 ]]
 ---@return SWVehicleData|nil
 function Noir.Classes.Body:GetData()
-    -- Get data
-    return (server.getVehicleData(self.ID))
+    local data, success = server.getVehicleData(self.ID)
+
+    if not data or not success then
+        return
+    end
+
+    if type(data) ~= "table" then -- data can sometimes be a number?
+        return
+    end
+
+    return data
 end
 
 --[[
