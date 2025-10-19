@@ -143,14 +143,21 @@ end
 ---@param voxelX integer|nil
 ---@param voxelY integer|nil
 ---@param voxelZ integer|nil
+---@return SWMatrix
 function Noir.Classes.Body:GetPosition(voxelX, voxelY, voxelZ)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetPosition()", "voxelX", voxelX, "number", "nil")
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetPosition()", "voxelY", voxelY, "number", "nil")
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetPosition()", "voxelZ", voxelZ, "number", "nil")
 
-    -- Get and return position
-    return (server.getVehiclePos(self.ID))
+    -- Get position
+    local position, success = server.getVehiclePos(self.ID, voxelX, voxelY, voxelZ)
+
+    if not position or not success then
+        error("Noir.Classes.Body:GetPosition()", "Failed to get position for body.")
+    end
+
+    return position
 end
 
 --[[
@@ -503,7 +510,13 @@ function Noir.Classes.Body:GetBattery(batteryName)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetBattery()", "batteryName", batteryName, "string")
 
     -- Get battery
-    return (server.getVehicleBattery(self.ID, batteryName))
+    local battery, success = server.getVehicleBattery(self.ID, batteryName)
+
+    if not success then
+        return
+    end
+
+    return battery
 end
 
 --[[
@@ -520,7 +533,13 @@ function Noir.Classes.Body:GetBatteryByVoxel(voxelX, voxelY, voxelZ)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetBatteryByVoxel()", "voxelZ", voxelZ, "number")
 
     -- Get battery
-    return (server.getVehicleBattery(self.ID, voxelX, voxelY, voxelZ))
+    local battery, success = server.getVehicleBattery(self.ID, voxelX, voxelY, voxelZ)
+
+    if not success then
+        return
+    end
+
+    return battery
 end
 
 --[[
@@ -533,7 +552,13 @@ function Noir.Classes.Body:GetButton(buttonName)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetButton()", "buttonName", buttonName, "string")
 
     -- Get button
-    return (server.getVehicleButton(self.ID, buttonName))
+    local button, success = server.getVehicleButton(self.ID, buttonName)
+
+    if not success then
+        return
+    end
+
+    return button
 end
 
 --[[
@@ -550,7 +575,13 @@ function Noir.Classes.Body:GetButtonByVoxel(voxelX, voxelY, voxelZ)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetButtonByVoxel()", "voxelZ", voxelZ, "number")
 
     -- Get button
-    return (server.getVehicleButton(self.ID, voxelX, voxelY, voxelZ))
+    local button, success = server.getVehicleButton(self.ID, voxelX, voxelY, voxelZ)
+
+    if not success then
+        return
+    end
+
+    return button
 end
 
 --[[
@@ -559,7 +590,13 @@ end
 ---@return SWLoadedVehicleData|nil
 function Noir.Classes.Body:GetComponents()
     -- Get components
-    return (server.getVehicleComponents(self.ID))
+    local components, success = server.getVehicleComponents(self.ID)
+
+    if not success then
+        return
+    end
+
+    return components
 end
 
 --[[
@@ -569,11 +606,7 @@ end
 function Noir.Classes.Body:GetData()
     local data, success = server.getVehicleData(self.ID)
 
-    if not data or not success then
-        return
-    end
-
-    if type(data) ~= "table" then -- data can sometimes be a number?
+    if not success then
         return
     end
 
@@ -590,7 +623,13 @@ function Noir.Classes.Body:GetDial(dialName)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetDial()", "dialName", dialName, "string")
 
     -- Get dial
-    return (server.getVehicleDial(self.ID, dialName))
+    local dial, success = server.getVehicleDial(self.ID, dialName)
+
+    if not success then
+        return
+    end
+
+    return dial
 end
 
 --[[
@@ -607,7 +646,13 @@ function Noir.Classes.Body:GetDialByVoxel(voxelX, voxelY, voxelZ)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetDialByVoxel()", "voxelZ", voxelZ, "number")
 
     -- Get dial
-    return (server.getVehicleDial(self.ID, voxelX, voxelY, voxelZ))
+    local dial, success = server.getVehicleDial(self.ID, voxelX, voxelY, voxelZ)
+
+    if not success then
+        return
+    end
+
+    return dial
 end
 
 --[[
@@ -616,7 +661,13 @@ end
 ---@return integer|nil
 function Noir.Classes.Body:GetFireCount()
     -- Get fire count
-    return (server.getVehicleFireCount(self.ID))
+    local count, success = server.getVehicleFireCount(self.ID)
+
+    if not success then
+        return
+    end
+
+    return count
 end
 
 --[[
@@ -629,7 +680,13 @@ function Noir.Classes.Body:GetHopper(hopperName)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetHopper()", "hopperName", hopperName, "string")
 
     -- Get hopper
-    return (server.getVehicleHopper(self.ID, hopperName))
+    local hopper, success = server.getVehicleHopper(self.ID, hopperName)
+
+    if not success then
+        return
+    end
+
+    return hopper
 end
 
 --[[
@@ -646,7 +703,13 @@ function Noir.Classes.Body:GetHopperByVoxel(voxelX, voxelY, voxelZ)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetHopperByVoxel()", "voxelZ", voxelZ, "number")
 
     -- Get hopper
-    return (server.getVehicleHopper(self.ID, voxelX, voxelY, voxelZ))
+    local hopper, success = server.getVehicleHopper(self.ID, voxelX, voxelY, voxelZ)
+
+    if not success then
+        return
+    end
+
+    return hopper
 end
 
 --[[
@@ -659,7 +722,13 @@ function Noir.Classes.Body:GetRopeHook(hookName)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetRopeHook()", "hookName", hookName, "string")
 
     -- Get rope hook
-    return (server.getVehicleRopeHook(self.ID, hookName))
+    local hook, success = server.getVehicleRopeHook(self.ID, hookName)
+
+    if not success then
+        return
+    end
+
+    return hook
 end
 
 --[[
@@ -676,7 +745,13 @@ function Noir.Classes.Body:GetRopeHookByVoxel(voxelX, voxelY, voxelZ)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetRopeHookByVoxel()", "voxelZ", voxelZ, "number")
 
     -- Get rope hook
-    return (server.getVehicleRopeHook(self.ID, voxelX, voxelY, voxelZ))
+    local hook, success = server.getVehicleRopeHook(self.ID, voxelX, voxelY, voxelZ)
+
+    if not success then
+        return
+    end
+
+    return hook
 end
 
 --[[
@@ -689,7 +764,13 @@ function Noir.Classes.Body:GetSeat(seatName)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetSeat()", "seatName", seatName, "string")
 
     -- Get seat
-    return (server.getVehicleSeat(self.ID, seatName))
+    local seat, success = server.getVehicleSeat(self.ID, seatName)
+
+    if not success then
+        return
+    end
+
+    return seat
 end
 
 --[[
@@ -706,7 +787,13 @@ function Noir.Classes.Body:GetSeatByVoxel(voxelX, voxelY, voxelZ)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetSeatByVoxel()", "voxelZ", voxelZ, "number")
 
     -- Get seat
-    return (server.getVehicleSeat(self.ID, voxelX, voxelY, voxelZ))
+    local seat, success = server.getVehicleSeat(self.ID, voxelX, voxelY, voxelZ)
+
+    if not success then
+        return
+    end
+
+    return seat
 end
 
 --[[
@@ -719,7 +806,13 @@ function Noir.Classes.Body:GetSign(signName)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetSign()", "signName", signName, "string")
 
     -- Get sign
-    return (server.getVehicleSign(self.ID, signName))
+    local sign, success = server.getVehicleSign(self.ID, signName)
+
+    if not success then
+        return
+    end
+
+    return sign
 end
 
 --[[
@@ -736,7 +829,13 @@ function Noir.Classes.Body:GetSignByVoxel(voxelX, voxelY, voxelZ)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetSignByVoxel()", "voxelZ", voxelZ, "number")
 
     -- Get sign
-    return (server.getVehicleSign(self.ID, voxelX, voxelY, voxelZ))
+    local sign, success = server.getVehicleSign(self.ID, voxelX, voxelY, voxelZ)
+
+    if not success then
+        return
+    end
+
+    return sign
 end
 
 --[[
@@ -749,7 +848,13 @@ function Noir.Classes.Body:GetTank(tankName)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetTank()", "tankName", tankName, "string")
 
     -- Get tank
-    return (server.getVehicleTank(self.ID, tankName))
+    local tank, success = server.getVehicleTank(self.ID, tankName)
+
+    if not success then
+        return
+    end
+
+    return tank
 end
 
 --[[
@@ -766,7 +871,13 @@ function Noir.Classes.Body:GetTankByVoxel(voxelX, voxelY, voxelZ)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetTankByVoxel()", "voxelZ", voxelZ, "number")
 
     -- Get tank
-    return (server.getVehicleTank(self.ID, voxelX, voxelY, voxelZ))
+    local tank, success = server.getVehicleTank(self.ID, voxelX, voxelY, voxelZ)
+
+    if not success then
+        return
+    end
+
+    return tank
 end
 
 --[[
@@ -779,7 +890,13 @@ function Noir.Classes.Body:GetWeapon(weaponName)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetWeapon()", "weaponName", weaponName, "string")
 
     -- Get weapon
-    return (server.getVehicleWeapon(self.ID, weaponName))
+    local weapon, success = server.getVehicleWeapon(self.ID, weaponName)
+
+    if not success then
+        return
+    end
+
+    return weapon
 end
 
 --[[
@@ -796,7 +913,13 @@ function Noir.Classes.Body:GetWeaponByVoxel(voxelX, voxelY, voxelZ)
     Noir.TypeChecking:Assert("Noir.Classes.Body:GetWeaponByVoxel()", "voxelZ", voxelZ, "number")
 
     -- Get weapon
-    return (server.getVehicleWeapon(self.ID, voxelX, voxelY, voxelZ))
+    local weapon, success = server.getVehicleWeapon(self.ID, voxelX, voxelY, voxelZ)
+
+    if not success then
+        return
+    end
+
+    return weapon
 end
 
 --[[
