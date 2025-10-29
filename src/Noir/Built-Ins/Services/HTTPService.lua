@@ -92,7 +92,8 @@ end
 ]]
 ---@param URL string
 ---@param port integer
----@return NoirHTTPRequest|nil, integer|nil
+---@return NoirHTTPRequest|nil
+---@return integer|nil
 function Noir.Services.HTTPService:_FindRequest(URL, port)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.HTTPService:_FindRequest()", "URL", URL, "string")
