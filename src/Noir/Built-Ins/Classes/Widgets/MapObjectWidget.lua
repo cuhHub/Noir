@@ -214,16 +214,13 @@ end
 --[[
     Handles updating this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.MapObjectWidget:_Update(player)
-    Noir.TypeChecking:Assert("Noir.Classes.MapObjectWidget:_Update()", "player", player, Noir.Classes.Player)
-
+function Noir.Classes.MapObjectWidget:_Update()
     if not self.Visible then
         return
     end
 
     server.addMapObject(
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         self._AttachmentMode,
         self.ObjectType,
@@ -246,10 +243,8 @@ end
 --[[
     Handles destroying this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.MapObjectWidget:_Destroy(player)
-    Noir.TypeChecking:Assert("Noir.Classes.MapObjectWidget:_Destroy()", "player", player, Noir.Classes.Player)
-    server.removeMapObject(player.ID, self.ID)
+function Noir.Classes.MapObjectWidget:_Destroy()
+    server.removeMapObject(self:_GetPeerID(), self.ID)
 end
 
 -------------------------------

@@ -98,15 +98,8 @@ end
     Updates this widget.
 ]]
 function Noir.Classes.Widget:Update()
-    if self.Player then
-        self:_Destroy(self.Player) -- destroy old version. prevents duplication
-        self:_Update(self.Player)
-    else
-        for _, player in pairs(Noir.Services.PlayerService:GetPlayers(true)) do
-            self:_Destroy(player)
-            self:_Update(player)
-        end
-    end
+    self:_Destroy() -- destroy old version. prevents duplication
+    self:_Update()
 
     if self:Exists() then
         Noir.Services.UIService:_SaveWidget(self)
@@ -117,8 +110,7 @@ end
     Updates this widget.<br>
     *abstract method*
 ]]
----@param player NoirPlayer
-function Noir.Classes.Widget:_Update(player)
+function Noir.Classes.Widget:_Update()
     error("Noir.Classes.Widget:Update()", "This method is abstract and must be overridden.")
 end
 
@@ -126,22 +118,23 @@ end
     Destroys this widget.
 ]]
 function Noir.Classes.Widget:Destroy()
-    if self.Player then
-        self:_Destroy(self.Player)
-    else
-        for _, player in pairs(Noir.Services.PlayerService:GetPlayers(true)) do
-            self:_Destroy(player)
-        end
-    end
+    self:_Destroy()
 end
 
 --[[
     Destroys this widget.<br>
     *abstract method*
 ]]
----@param player NoirPlayer
-function Noir.Classes.Widget:_Destroy(player)
+function Noir.Classes.Widget:_Destroy()
     error("Noir.Classes.Widget:_Destroy()", "This method is abstract and must be overridden.")
+end
+
+--[[
+    Returns the peer ID for the player this widget is attached to, or -1 if for everyone.
+]]
+---@return integer
+function Noir.Classes.Widget:_GetPeerID()
+    return self.Player and self.Player.ID or -1
 end
 
 --[[

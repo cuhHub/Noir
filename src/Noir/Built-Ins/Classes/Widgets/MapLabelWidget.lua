@@ -103,16 +103,13 @@ end
 --[[
     Handles updating this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.MapLabelWidget:_Update(player)
-    Noir.TypeChecking:Assert("Noir.Classes.MapLabelWidget:_Update()", "player", player, Noir.Classes.Player)
-
+function Noir.Classes.MapLabelWidget:_Update()
     if not self.Visible then
         return
     end
 
     server.addMapLabel(
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         self.LabelType,
         self.Text,
@@ -124,10 +121,8 @@ end
 --[[
     Handles destroying this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.MapLabelWidget:_Destroy(player)
-    Noir.TypeChecking:Assert("Noir.Classes.MapLabelWidget:_Destroy()", "player", player, Noir.Classes.Player)
-    server.removeMapLabel(player.ID, self.ID)
+function Noir.Classes.MapLabelWidget:_Destroy()
+    server.removeMapLabel(self:_GetPeerID(), self.ID)
 end
 
 -------------------------------

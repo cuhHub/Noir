@@ -128,16 +128,13 @@ end
 --[[
     Handles updating this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.MapLineWidget:_Update(player)
-    Noir.TypeChecking:Assert("Noir.Classes.MapLineWidget:_Update()", "player", player, Noir.Classes.Player)
-
+function Noir.Classes.MapLineWidget:_Update()
     if not self.Visible then
         return
     end
 
     server.addMapLine(
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         self.StartPosition,
         self.EndPosition,
@@ -152,10 +149,8 @@ end
 --[[
     Handles destroying this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.MapLineWidget:_Destroy(player)
-    Noir.TypeChecking:Assert("Noir.Classes.MapLineWidget:_Destroy()", "player", player, Noir.Classes.Player)
-    server.removeMapLine(player.ID, self.ID)
+function Noir.Classes.MapLineWidget:_Destroy()
+    server.removeMapLine(self:_GetPeerID(), self.ID)
 end
 
 -------------------------------

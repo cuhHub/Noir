@@ -104,16 +104,13 @@ end
 --[[
     Handles updating this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.ScreenPopupWidget:_Update(player)
-    Noir.TypeChecking:Assert("Noir.Classes.ScreenPopupWidget:_Update()", "player", player, Noir.Classes.Player)
-
+function Noir.Classes.ScreenPopupWidget:_Update()
     if not self.Visible then
         return
     end
 
     server.setPopupScreen(
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         "",
         self.Visible,
@@ -126,12 +123,9 @@ end
 --[[
     Handles destroying this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.ScreenPopupWidget:_Destroy(player)
-    Noir.TypeChecking:Assert("Noir.Classes.ScreenPopupWidget:_Destroy()", "player", player, Noir.Classes.Player)
-
+function Noir.Classes.ScreenPopupWidget:_Destroy()
     server.setPopupScreen( -- `server.removePopup` shows a tutorial popup for a brief moment, so we aren't using it
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         "",
         false,

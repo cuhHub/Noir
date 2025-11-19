@@ -176,16 +176,13 @@ end
 --[[
     Handles updating this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.PopupWidget:_Update(player)
-    Noir.TypeChecking:Assert("Noir.Classes.PopupWidget:_Update()", "player", player, Noir.Classes.Player)
-
+function Noir.Classes.PopupWidget:_Update()
     if not self.Visible then
         return
     end
 
     server.setPopup(
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         "",
         self.Visible,
@@ -202,12 +199,9 @@ end
 --[[
     Handles destroying this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.PopupWidget:_Destroy(player)
-    Noir.TypeChecking:Assert("Noir.Classes.PopupWidget:_Destroy()", "player", player, Noir.Classes.Player)
-
+function Noir.Classes.PopupWidget:_Destroy()
     server.setPopup(
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         "",
         false,
