@@ -106,6 +106,11 @@ Noir.Debugging._TrackingExceptions = {
 }
 
 --[[
+    Fired whenever an error is raised.
+]]
+Noir.Debugging.OnError = Noir.Libraries.Events:Create()
+
+--[[
     Raises an error.<br>
     This method can still be called regardless of if debugging is enabled or not.<br>
     `error()` is aliased to this method.
@@ -115,6 +120,8 @@ Noir.Debugging._TrackingExceptions = {
 ---@param ... any
 function Noir.Debugging:RaiseError(source, message, ...)
     Noir.Libraries.Logging:Error("Error", source..": "..message, ...)
+    self.OnError:Fire(source, ... and message:format(...) or message)
+
     _ENV["Noir: An error was raised. See logs for details."]()
 end
 
@@ -137,6 +144,9 @@ end
 ---@param category string
 ---@param trackers table<integer, NoirTracker>
 function Noir.Debugging:_PresentTrackers(category, trackers)
+    Noir.TypeChecking:Assert("Noir.Debugging:_PresentTrackers()", "category", category, "string")
+    Noir.TypeChecking:Assert("Noir.Debugging:_PresentTrackers()", "trackers", trackers, "table")
+
     Noir.Libraries.Logging:Success("Debugging", "--- "..category.." functions:")
 
     for index, tracker in ipairs(trackers) do
