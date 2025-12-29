@@ -474,7 +474,8 @@ function Noir.Services.UIService:RemoveWidget(ID)
     local widget = self:GetWidget(ID)
 
     if not widget then
-        error("Noir.Services.UIService:RemoveWidget()", "No widget with ID %d exists.", ID)
+        -- error("Noir.Services.UIService:RemoveWidget()", "No widget with ID %d exists.", ID)
+        return
     end
 
     widget:Destroy()
