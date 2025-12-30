@@ -92,13 +92,13 @@ end
 --[[
     Returns the data of this object.
 ]]
----@return SWObjectData
+---@return SWObjectData|nil
 function Noir.Classes.Object:GetData()
     -- Get the data
     local data = server.getObjectData(self.ID)
 
     if not data then
-        error("Noir.Classes.Object:GetData()", ":GetData() failed for object %d. Data is nil", self.ID)
+        return
     end
 
     -- Return the data
@@ -176,7 +176,13 @@ end
 ]]
 ---@return number
 function Noir.Classes.Object:GetHealth()
-    return self:GetData().hp
+    local data = self:GetData()
+
+    if not data then
+        return 0
+    end
+
+    return data.hp
 end
 
 --[[
@@ -283,10 +289,11 @@ function Noir.Classes.Object:GetVehicle()
 end
 
 --[[
-    Returns the item this character is holding in the specified slot (if character).
+    Returns the item this character is holding in the specified slot (if character).<br>
+    Returns nil if unsuccessful.
 ]]
 ---@param slot SWSlotNumberEnum
----@return SWEquipmentTypeEnum
+---@return SWEquipmentTypeEnum|nil
 function Noir.Classes.Object:GetItem(slot)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Classes.Object:GetItem()", "slot", slot, "number")
@@ -295,7 +302,7 @@ function Noir.Classes.Object:GetItem(slot)
     local item, success = server.getCharacterItem(self.ID, slot)
 
     if not success then
-        error("Noir.Classes.Object:GetItem()", "server.getCharacterItem(...) was unsuccessful. Is the slot out of range? Is this object a character?")
+        return
     end
 
     -- Return it
@@ -328,6 +335,11 @@ end
 ---@return boolean
 function Noir.Classes.Object:IsDowned()
     local data = self:GetData()
+
+    if not data then
+        return false
+    end
+
     return data.dead or data.incapacitated or data.hp <= 0
 end
 
@@ -406,15 +418,8 @@ end
 ]]
 ---@return boolean
 function Noir.Classes.Object:IsLit()
-    -- Get fire data
     local isLit, success = server.getFireData(self.ID)
-
-    if not success then
-        error("Noir.Classes.Object:IsLit()", "server.getFireData() was unsuccessful.")
-    end
-
-    -- Return
-    return isLit
+    return isLit and success
 end
 
 --[[
