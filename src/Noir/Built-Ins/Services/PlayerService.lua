@@ -211,7 +211,12 @@ function Noir.Services.PlayerService:_LoadPlayers()
         end
 
         -- Check if unnamed client
-        if player.name == "unnamed client" and not player.object_id then -- i don't like this. what if a player actually has their name as unnamed client? i'm also not entirely sure if actual players have an object_id when loading in
+        if player.name == "unnamed client" then -- i don't like this. what if a player actually has their name as unnamed client? i'm also not entirely sure if actual players have an object_id when loading in
+            goto continue
+        end
+
+        -- Check if fully loaded into server
+        if not player.object_id then
             goto continue
         end
 
