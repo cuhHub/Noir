@@ -128,9 +128,6 @@ function Noir.Class(name, ...)
         -- Setup object
         object._IsObject = true
         self:_Descend(object, self._ClassMethods)
-
-        -- Bring down methods from parent
-        self:_DescendFromParent(object, self)
     end
 
     --[[
@@ -235,6 +232,9 @@ function Noir.Class(name, ...)
     function class:IsClass(other)
         return Noir.IsClass(other)
     end
+
+    -- Bring down methods from parents to this class
+    class:_DescendFromParent(class, class)
 
     return class
 end
