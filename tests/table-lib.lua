@@ -86,3 +86,23 @@ local foundIndex, foundTbl = Noir.Libraries.Table:FindDeep(findDeepTbl, 1)
 assert(foundIndex == "foo", ":FindDeep() returned incorrect index")
 assert(foundTbl == hidingPlace, ":FindDeep() returned incorrect table")
 assert(Noir.Libraries.Table:FindDeep(findDeepTbl, "bar") == nil, ":FindDeep() returned incorrect value (expected nil)")
+
+local mapTbl1 = {1, 2, 3}
+
+local mappedTbl1 = Noir.Libraries.Table:Map(mapTbl1, function(index, value)
+    return index + value
+end)
+
+assert(mappedTbl1[1] == 2, ":Map() returned incorrect values (expected [1] to be '2')")
+assert(mappedTbl1[2] == 4, ":Map() returned incorrect values (expected [2] to be '4')")
+assert(mappedTbl1[3] == 6, ":Map() returned incorrect values (expected [3] to be '6')")
+
+local mapTbl2 = {1, foo = 5, bar = 2}
+
+local mappedTbl2 = Noir.Libraries.Table:Map(mapTbl2, function(index, value)
+    return value * 2
+end)
+
+assert(mappedTbl2[1] == 2, ":Map() returned incorrect values (expected [1] to be '2')")
+assert(mappedTbl2.foo == 10, ":Map() returned incorrect values (expected [foo] to be '10')")
+assert(mappedTbl2.bar == 4, ":Map() returned incorrect values (expected [bar] to be '4')")

@@ -400,3 +400,32 @@ function Noir.Libraries.Table:FindDeep(tbl, value)
         end
     end
 end
+
+--[[
+    Calls the function for every value in a table, and returns a new table with the results.
+    
+    local myTbl = {1, 2, 3}
+
+    local myChangedTbl = Noir.Libraries.Table:Map(myTbl, function(index, value)
+        return value * 2
+    end)
+
+    print(myChangedTbl) -- {2, 4, 6}
+]]
+---@param tbl table
+---@param callback fun(index: any, value: any): any
+---@return table
+function Noir.Libraries.Table:Map(tbl, callback)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Map()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Map()", "callback", callback, "function")
+
+    -- Map the table
+    local new = {}
+
+    for index, value in pairs(tbl) do
+        new[index] = callback(index, value)
+    end
+
+    return new
+end
