@@ -149,7 +149,7 @@ function Noir.Class(name, ...)
                 goto continue
             end
 
-            if object[index] then
+            if object[index] ~= nil then
                 goto continue
             end
 
@@ -160,11 +160,10 @@ function Noir.Class(name, ...)
     end
 
     --[[
-        Creates an object from the parent class and copies it to this object.<br>
-        Use this in the :Init() method of a class that inherits from a parent class.<br>
-        Any args provided will be passed to the :Init()
+        Calls the parent's `:Init()` method on this instance.<br>
+        Used internally. Do not use in your code.
     ]]
-    ---@param parent NoirClass 
+    ---@param parent NoirClass
     function class:InitFrom(parent, ...)
         -- Type checking
         Noir.TypeChecking:Assert("Noir.Class().InitFrom()", "parent", parent, "class")
@@ -174,11 +173,8 @@ function Noir.Class(name, ...)
             error("Class", "Attempted to call :InitFrom() when 'self' is a class and not an object.")
         end
 
-        -- Create an object from the parent class
-        local object = parent:New(...)
-
-        -- Copy and bring new attributes and methods down from the new parent object to this object
-        self._Descend(object, self, self._ClassMethods)
+        -- Init
+        parent.Init(self, ...)
     end
 
     --[[
@@ -224,17 +220,10 @@ function Noir.Class(name, ...)
         return false
     end
 
-    --[[
-        Returns if a table is a class or not.
-    ]]
-    ---@param other any
-    ---@return boolean
-    function class:IsClass(other)
-        return Noir.IsClass(other)
-    end
-
     -- Bring down methods from parents to this class
-    class:_DescendFromParent(class, class)
+    for _, parent in pairs(class._Parents) do
+        class:_DescendFromParent(class, parent)
+    end
 
     return class
 end
