@@ -177,7 +177,7 @@ end
     Handles updating this widget.
 ]]
 function Noir.Classes.PopupWidget:_Update()
-    if not self.Visible then
+    if not self:IsVisible() then
         return
     end
 
@@ -185,7 +185,7 @@ function Noir.Classes.PopupWidget:_Update()
         self:_GetPeerID(),
         self.ID,
         "",
-        self.Visible,
+        self:IsVisible(),
         self.Text,
         self._AttachmentMode == 0 and self.Position[13] or self.AttachmentOffset[13],
         self._AttachmentMode == 0 and self.Position[14] or self.AttachmentOffset[14],

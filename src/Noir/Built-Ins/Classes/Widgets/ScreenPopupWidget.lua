@@ -105,7 +105,7 @@ end
     Handles updating this widget.
 ]]
 function Noir.Classes.ScreenPopupWidget:_Update()
-    if not self.Visible then
+    if not self:IsVisible() then
         return
     end
 
@@ -113,7 +113,7 @@ function Noir.Classes.ScreenPopupWidget:_Update()
         self:_GetPeerID(),
         self.ID,
         "",
-        self.Visible,
+        self:IsVisible(),
         self.Text,
         self.X,
         self.Y

@@ -104,7 +104,7 @@ end
     Handles updating this widget.
 ]]
 function Noir.Classes.MapLabelWidget:_Update()
-    if not self.Visible then
+    if not self:IsVisible() then
         return
     end
 
