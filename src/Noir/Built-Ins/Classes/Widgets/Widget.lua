@@ -40,6 +40,7 @@
 ---@field Visible boolean Whether or not this widget is visible
 ---@field WidgetType NoirWidgetType The type of this widget (eg: "MapObject")
 ---@field Player NoirPlayer|nil The player that this widget is attached to. If nil, all players can see this UI
+---@field ForceHidden boolean Whether or not this widget is forcefully hidden
 Noir.Classes.Widget = Noir.Class("Widget")
 
 --[[
@@ -59,6 +60,7 @@ function Noir.Classes.Widget:Init(ID, visible, widgetType, player)
     self.Visible = visible
     self.WidgetType = widgetType
     self.Player = player
+    self.ForceHidden = false
 end
 
 --[[
@@ -70,7 +72,8 @@ function Noir.Classes.Widget:Serialize()
         ID = self.ID,
         Visible = self.Visible,
         WidgetType = self.WidgetType,
-        Player = self.Player and self.Player.ID or -1
+        Player = self.Player and self.Player.ID or -1,
+        ForceHidden = self.ForceHidden
     }, self:_Serialize())
 end
 
@@ -92,6 +95,14 @@ end
 ---@return NoirWidget|nil
 function Noir.Classes.Widget:Deserialize(serializedWidget)
     error("Noir.Classes.Widget:Deserialize()", "This method is abstract and must be overridden.")
+end
+
+--[[
+    Returns if this widget is visible.
+]]
+---@return boolean
+function Noir.Classes.Widget:IsVisible()
+    return self.Visible and not self.ForceHidden
 end
 
 --[[
@@ -164,6 +175,7 @@ end
 ---@field Visible boolean Whether or not this widget is visible
 ---@field WidgetType NoirWidgetType The type of this widget (eg: "MapObject")
 ---@field Player integer The peer ID of the player that this widget is attached to, or -1 if for everyone
+---@field ForceHidden boolean Whether or not the widget is force-hidden
 
 --[[
     Represents a widget type.
