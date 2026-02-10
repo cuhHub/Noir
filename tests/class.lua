@@ -68,7 +68,7 @@ end
 
 ---@class Person: AnimatedEntity, Networked
 ---@field New fun(self: Person, name: string): Person
-Person = Noir.Class("Person", Entity, Networked)
+Person = Noir.Class("Person", AnimatedEntity, Networked)
 
 ---@param name string
 function Person:Init(name)
