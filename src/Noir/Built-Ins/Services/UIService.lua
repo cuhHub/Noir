@@ -72,7 +72,9 @@ function Noir.Services.UIService:ServiceStart()
     ---@param player NoirPlayer
     self._OnJoinConnection = Noir.Services.PlayerService.OnJoin:Connect(function(player)
         if player:GetCharacter() then
-            self:_ShowWidgetsToPlayer(player)
+            Noir.Services.TaskService:AddTimeTask(function() -- hacky fix for a bug where widgets don't show up for players who join
+                self:_ShowWidgetsToPlayer(player)                       -- not sure why this happens, guessing its a stormworks issue
+            end, 1)
         else
             player.OnCharacterLoad:Once(function()
                 self:_ShowWidgetsToPlayer(player)
