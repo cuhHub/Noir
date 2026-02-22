@@ -119,12 +119,17 @@ end
     Used internally.
 ]]
 function Noir.Services.TaskService:_HandleTickIterationProcesses()
-    for _, tickIterationProcess in pairs(self:GetTickIterationProcesses(true)) do
-        if tickIterationProcess.Completed then
-            self:RemoveTickIterationProcess(tickIterationProcess)
-        else
-            tickIterationProcess:Iterate()
+    ---@type table<integer, NoirTickIterationProcess>
+    local toRemove = {}
+
+    for _, tickIterationProcess in pairs(self:GetTickIterationProcesses()) do
+        if tickIterationProcess:Iterate() then
+            table.insert(toRemove, tickIterationProcess)
         end
+    end
+
+    for _, tickIterationProcess in pairs(toRemove) do
+        self:RemoveTickIterationProcess(tickIterationProcess)
     end
 end
 
@@ -352,9 +357,9 @@ end
         print(value)
     end)
 ]]
----@param tbl table<integer, any>
+---@param tbl table
 ---@param chunkSize integer How many values to iterate per tick
----@param callback fun(index: any, value: any, currentTick: integer|nil, completed: boolean|nil) `currentTick` and `completed` are never nil. this is just to mark the paramters as optional
+---@param callback fun(index: any, value: any, currentTick: integer, completed: boolean)
 ---@return NoirTickIterationProcess
 function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
     -- Type checking
