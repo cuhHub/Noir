@@ -37,7 +37,7 @@
 ---@class NoirTickIterationProcess: NoirClass
 ---@field New fun(self: NoirTickIterationProcess, ID: number, tbl: table, chunkSize: integer): NoirTickIterationProcess
 ---@field ID integer The ID of this process
----@field IterationEvent NoirEvent Arguments: value (any), tick (integer), completed (boolean) | Fired when an iteration during a tick is occuring
+---@field IterationEvent NoirEvent Arguments: index (any), value (any), tick (integer), completed (boolean) | Fired when an iteration during a tick is occuring
 ---@field ChunkSize integer The number of values to iterate through per tick
 ---@field TableToIterate table The table to iterate through across ticks
 ---@field CurrentTick integer Represents the current tick the iteration is at
