@@ -95,7 +95,8 @@ function Noir.Classes.Command:_Use(player, message, args)
         player,
         args,
         message,
-        self:CanUse(player)
+        self:CanUse(player),
+        self
     ))
 end
 

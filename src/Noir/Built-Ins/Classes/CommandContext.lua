@@ -35,11 +35,12 @@
     Represents the context for a command callback.
 ]]
 ---@class NoirCommandContext: NoirClass
----@field New fun(self: NoirCommandContext, player: NoirPlayer, args: table<integer, string>, message: string, hasPermission: boolean): NoirCommandContext
+---@field New fun(self: NoirCommandContext, player: NoirPlayer, args: table<integer, string>, message: string, hasPermission: boolean, command: NoirCommand): NoirCommandContext
 ---@field Player NoirPlayer The player who triggered the command
 ---@field Args table<integer, string> The arguments of the command
 ---@field Message string The full message the player provided
 ---@field HasPermission boolean Whether the player has permission to run this command
+---@field Command NoirCommand The command that was used
 Noir.Classes.CommandContext = Noir.Class("CommandContext")
 
 --[[
@@ -49,7 +50,8 @@ Noir.Classes.CommandContext = Noir.Class("CommandContext")
 ---@param args table<integer, string>
 ---@param message string
 ---@param hasPermission boolean
-function Noir.Classes.CommandContext:Init(player, args, message, hasPermission)
+---@param command NoirCommand
+function Noir.Classes.CommandContext:Init(player, args, message, hasPermission, command)
     Noir.TypeChecking:Assert("Noir.Classes.CommandContext:Init()", "player", player, Noir.Classes.Player)
     Noir.TypeChecking:Assert("Noir.Classes.CommandContext:Init()", "args", args, "table")
     Noir.TypeChecking:Assert("Noir.Classes.CommandContext:Init()", "message", message, "string")
@@ -59,4 +61,5 @@ function Noir.Classes.CommandContext:Init(player, args, message, hasPermission)
     self.Args = args
     self.Message = message
     self.HasPermission = hasPermission
+    self.Command = command
 end
