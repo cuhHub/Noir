@@ -105,14 +105,14 @@ end
     Create a new command.
 
     -- `true` = requires auth
-    Noir.Services.CommandService:CreateCommand("help", {"h"}, true, false, false, "My Command Description", function(player, message, args, hasPermission)
-        if not hasPermission then
-            player:Notify("Lacking Permissions", "Sorry, you don't have permission to run this command. Try again.", 3)
-            player:SetAuth(true)
+    Noir.Services.CommandService:CreateCommand("help", {"h"}, true, false, false, "My Command Description", function(context)
+        if not context.HasPermission then
+            context.Player:Notify("Lacking Permissions", "Sorry, you don't have permission to run this command. Try again.", 3)
+            context.Player:SetAuth(true)
             return
         end
 
-        player:Notify("Help", "TODO: Add a help message", 4)
+        context.Player:Notify("Help", "TODO: Add a help message", 4)
     end)
 ]]
 ---@param name string The name of the command (eg: if you provided "help", the player would need to type "?help" in chat)
