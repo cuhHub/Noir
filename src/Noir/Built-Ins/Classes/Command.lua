@@ -32,6 +32,11 @@
 -------------------------------
 
 --[[
+    Represents a command trigger callback.
+]]
+---@alias NoirCommandCallback fun(context: NoirCommandContext)
+
+--[[
     Represents a command.
 ]]
 ---@class NoirCommand: NoirClass
@@ -42,7 +47,7 @@
 ---@field RequiresAdmin boolean Whether or not this command requires admin
 ---@field CapsSensitive boolean Whether or not this command is case-sensitive
 ---@field Description string The description of this command
----@field OnUse NoirEvent Arguments: player (NoirPlayer), message (string), args (table<integer, string>), hasPermission (boolean) | Fired when this command is used
+---@field OnUse NoirEvent Arguments: context (NoirCommandContext) | Fired when this command is used
 Noir.Classes.Command = Noir.Class("Command")
 
 --[[
@@ -86,7 +91,12 @@ function Noir.Classes.Command:_Use(player, message, args)
     Noir.TypeChecking:Assert("Noir.Classes.Command:_Use()", "args", args, "table")
 
     -- Fire event
-    self.OnUse:Fire(player, message, args, self:CanUse(player))
+    self.OnUse:Fire(Noir.Classes.CommandContext:New(
+        player,
+        args,
+        message,
+        self:CanUse(player)
+    ))
 end
 
 --[[

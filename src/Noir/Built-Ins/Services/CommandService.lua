@@ -121,7 +121,7 @@ end
 ---@param requiresAdmin boolean|nil Whether or not this command requires admin
 ---@param capsSensitive boolean|nil Whether or not this command is case-sensitive
 ---@param description string|nil The description of this command
----@param callback fun(player: NoirPlayer, message: string, args: table<integer, string>, hasPermission: boolean)
+---@param callback NoirCommandCallback
 ---@return NoirCommand
 function Noir.Services.CommandService:CreateCommand(name, aliases, requiresAuth, requiresAdmin, capsSensitive, description, callback)
     -- Type checking
