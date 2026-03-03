@@ -79,12 +79,11 @@ function Noir.Services.TaskService:ServiceInit()
         if task.IsRepeating then
             task.StartedAt = time
             task.StopsAt = time + task.Duration
-
-            task.OnCompletion:Fire(table.unpack(task.Arguments))
         else
             self:RemoveTask(task)
-            task.OnCompletion:Fire(table.unpack(task.Arguments))
         end
+
+        task.OnCompletion:Fire(table.unpack(task.Arguments))
     end
 
     self._TaskTypeHandlers["Ticks"] = function(task)
@@ -95,18 +94,17 @@ function Noir.Services.TaskService:ServiceInit()
         if task.IsRepeating then
             task.StartedAt = self.Ticks
             task.StopsAt = self.Ticks + task.Duration
-
-            task.OnCompletion:Fire(table.unpack(task.Arguments))
         else
             self:RemoveTask(task)
-            task.OnCompletion:Fire(table.unpack(task.Arguments))
         end
+
+        task.OnCompletion:Fire(table.unpack(task.Arguments))
     end
 end
 
 function Noir.Services.TaskService:ServiceStart()
     self._OnTickConnection = Noir.Callbacks:Connect("onTick", function(ticks)
-        self.Ticks = self.Ticks + ticks
+        self.Ticks = self.Ticks + 1
         self.DeltaTicks = ticks
 
         self:_HandleTickIterationProcesses()
