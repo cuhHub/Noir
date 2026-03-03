@@ -253,6 +253,28 @@ function Noir.Debugging:ShowMostCalledTracked()
 end
 
 --[[
+    Returns the tracked functions with the most calls per tick.
+]]
+---@return table<integer, NoirTracker>
+function Noir.Debugging:GetMostCalledPerTickTracked()
+    local trackers = self:GetTrackedFunctions(true)
+
+    table.sort(trackers, function(a, b)
+        return a:GetCallsPerTick() > b:GetCallsPerTick()
+    end)
+
+    return trackers
+end
+
+--[[
+    Shows the tracked functions with the most calls per tick.
+]]
+function Noir.Debugging:ShowMostCalledPerTickTracked()
+    local trackers = self:GetMostCalledPerTickTracked()
+    self:_PresentTrackers("*Most* calls/tick", trackers)
+end
+
+--[[
     Track a function. This returns a tracker which will track the performance of the function among other things.<br>
     Returns `nil` if the provided function isn't allowed to be tracked or if debugging isn't enabled.
     
