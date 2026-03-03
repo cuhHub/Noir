@@ -111,6 +111,18 @@ Noir.Debugging._TrackingExceptions = {
 Noir.Debugging.OnError = Noir.Libraries.Events:Create()
 
 --[[
+    Fired before any tracked function is called.<br>
+    Arguments: tracker (NoirTracker), ... (any)
+]]
+Noir.Debugging.OnBeforeCall = Noir.Libraries.Events:Create()
+
+--[[
+    Fired after any tracked function is called.<br>
+    Arguments: tracker (NoirTracker), ... (any)
+]]
+Noir.Debugging.OnAfterCall = Noir.Libraries.Events:Create()
+
+--[[
     Raises an error.<br>
     This method can still be called regardless of if debugging is enabled or not.<br>
     `error()` is aliased to this method.
@@ -305,6 +317,15 @@ function Noir.Debugging:TrackFunction(name, func)
     -- Track
     local tracker = Noir.Classes.Tracker:New(name, func)
     table.insert(self.Trackers, tracker)
+
+    -- Handle events
+    tracker.OnBeforeCall:Connect(function(...)
+        self.OnBeforeCall:Fire(tracker, ...)
+    end)
+
+    tracker.OnAfterCall:Connect(function(...)
+        self.OnAfterCall:Fire(tracker, ...)
+    end)
 
     -- Return
     return tracker

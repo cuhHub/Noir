@@ -36,6 +36,8 @@
 ]]
 ---@class NoirTracker: NoirClass
 ---@field New fun(self: NoirTracker, name: string, func: function): NoirTracker
+---@field OnBeforeCall NoirEvent Fired before the function is called | Arguments: ... (any)
+---@field OnAfterCall NoirEvent Fired after the function is called | Arguments: ... (any)
 ---@field FunctionName string The name of the function provided
 ---@field Function function The original unmodified function
 ---@field CallCount integer The number of times the function has been called
@@ -57,6 +59,9 @@ Noir.Classes.Tracker = Noir.Class("Tracker")
 function Noir.Classes.Tracker:Init(name, func)
     Noir.TypeChecking:Assert("Noir.Classes.Tracker:Init()", "name", name, "string")
     Noir.TypeChecking:Assert("Noir.Classes.Tracker:Init()", "func", func, "function")
+
+    self.OnBeforeCall = Noir.Libraries.Events:Create()
+    self.OnAfterCall = Noir.Libraries.Events:Create()
 
     self.FunctionName = name
     self.Function = func
@@ -87,6 +92,7 @@ end
 ]]
 function Noir.Classes.Tracker:_BeforeCall(...)
     self._TimeBeforeCall = server.getTimeMillisec()
+    self.OnBeforeCall:Fire(...)
 end
 
 --[[
@@ -124,6 +130,9 @@ function Noir.Classes.Tracker:_AfterCall(...)
 
     -- Calculate average execution time
     self.AverageExecutionTime = Noir.Libraries.Number:Average(self.ExecutionTimes)
+
+    -- Fire events
+    self.OnAfterCall:Fire(...)
 end
 
 --[[
