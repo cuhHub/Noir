@@ -260,7 +260,7 @@ function Noir.Debugging:GetMostCalledPerTickTracked()
     local trackers = self:GetTrackedFunctions(true)
 
     table.sort(trackers, function(a, b)
-        return a:GetCallsPerTick() > b:GetCallsPerTick()
+        return a:GetAverageCallsPerTick() > b:GetAverageCallsPerTick()
     end)
 
     return trackers
