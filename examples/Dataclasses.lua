@@ -45,8 +45,8 @@ local Item = Noir.Libraries.Dataclasses:New("Item", {
 
 -- Create a sword (item)
 local sword = Item:New("Sword", 5, true)
-Noir.Libraries.Logging:Info("Sword", "Name: %s | Weight: %s | Stackable: %s", sword.Name, sword.Weight, sword.Stackable)
+Noir.Logger:Info("Sword - Name: %s | Weight: %s | Stackable: %s", sword.Name, sword.Weight, sword.Stackable)
 
 -- Create a shield (item)
 local shield = Item:New("Shield", 10, false)
-Noir.Libraries.Logging:Info("Shield", "Name: %s | Weight: %s | Stackable: %s", shield.Name, shield.Weight, shield.Stackable)
+Noir.Logger:Info("Shield - Name: %s | Weight: %s | Stackable: %s", shield.Name, shield.Weight, shield.Stackable)

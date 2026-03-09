@@ -141,7 +141,7 @@ end
 ]]
 function Noir.Bootstrapper:InitializeServices()
     for _, service in pairs(self:_SortServicesByPriority("Init")) do
-        Noir.Libraries.Logging:Info("Bootstrapper", "Initializing %s of priority %d.", Noir.Services:FormatService(service), service.InitPriority)
+        Noir.Logger:Info("Initializing %s of priority %d.", Noir.Services:FormatService(service), service.InitPriority)
         service:_Initialize()
     end
 end
@@ -153,7 +153,7 @@ end
 ]]
 function Noir.Bootstrapper:StartServices()
     for _, service in pairs(self:_SortServicesByPriority("Start")) do
-        Noir.Libraries.Logging:Info("Bootstrapper", "Starting %s of priority %d.", Noir.Services:FormatService(service), service.StartPriority)
+        Noir.Logger:Info("Starting %s of priority %d.", Noir.Services:FormatService(service), service.StartPriority)
         service:_Start()
     end
 end

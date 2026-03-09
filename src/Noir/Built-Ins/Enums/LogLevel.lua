@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Libraries - Logging
+-- [Noir] Enums - Log Level
 --------------------------------------------------------
 
 --[[
@@ -32,22 +32,41 @@
 -------------------------------
 
 --[[
-    A library providing standard logging functionality.
+    Represents a log level, with higher levels being more severe.
 ]]
----@class NoirLoggingLib: NoirLibrary
-Noir.Libraries.Logging = Noir.Libraries:Create(
-    "Logging",
-    "A library providing standard logging functionality.",
-    nil,
-    {"Cuh4"}
-)
+Noir.Enums.LogLevel = {
+    --[[
+        The log level for debug messages.
+    ]]
+    DEBUG = 0,
+
+    --[[
+        The log level for info messages.
+    ]]
+    INFO = 5,
+
+    --[[
+        The log level for success messages.
+    ]]
+    SUCCESS = 10,
+
+    --[[
+        The log level for warning messages.
+    ]]
+    WARNING = 15,
+
+    --[[
+        The log level for error messages.
+    ]]
+    ERROR = 20
+}
 
 --[[
-    Creates a logger.
+    Represents a log level, with higher levels being more severe.
 ]]
----@param name string
----@return NoirLogger
-function Noir.Libraries.Logging:CreateLogger(name)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:CreateLogger()", "name", name, "string")
-    return Noir.Classes.Logger:New(name)
-end
+---@alias NoirLogLevel
+---| 0 # The log level for debug messages.
+---| 5 # The log level for info messages.
+---| 10 # The log level for success messages.
+---| 15 # The log level for warning messages.
+---| 20 # The log level for error messages.

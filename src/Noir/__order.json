@@ -3,6 +3,9 @@
         "Definition.lua",
         "TypeChecking.lua",
 
+        "Enums.lua",
+        "Built-Ins/Enums",
+
         "Classes.lua",
         "Class.lua",
         "Built-Ins/Classes",

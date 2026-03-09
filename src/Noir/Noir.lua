@@ -86,7 +86,14 @@ Noir.IsDedicatedServer = false
     - Started via a save load<br>
     - Started via a save creation
 ]]
-Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
+Noir.AddonReason = Noir.Enums.AddonReason.ADDON_RELOAD ---@type NoirAddonReason
+
+--[[
+    The main logger for Noir.<br>
+    This should only be used by Noir. It is recommended to create your own logger for your addon.
+]]
+Noir.Logger = Noir.Libraries.Logging:CreateLogger("Noir")
+Noir.Logger:AttachMiddleware(Noir.Classes.DebugLogLoggerMiddleware:New())
 
 --[[
     Starts the framework.<br>
@@ -102,12 +109,12 @@ Noir.AddonReason = "AddonReload" ---@type NoirAddonReason
 function Noir:Start()
     -- Checks
     if self.IsStarting then
-        self.Debugging:RaiseError("Start", "The addon attempted to start Noir when it is in the process of starting.")
+        self.Debugging:RaiseError("Noir:Start()", "The addon attempted to start Noir when it is in the process of starting.")
         return
     end
 
     if self.HasStarted then
-        self.Debugging:RaiseError("Start", "The addon attempted to start Noir more than once.")
+        self.Debugging:RaiseError("Noir:Start()", "The addon attempted to start Noir more than once.")
         return
     end
 
@@ -119,7 +126,7 @@ function Noir:Start()
         self.Callbacks:Once("onTick", function()
             -- Determine the addon reason
             local took = server.getTimeMillisec() - startTime
-            self.AddonReason = isSaveCreate and "SaveCreate" or (took < 1000 and "AddonReload" or "SaveLoad")
+            self.AddonReason = isSaveCreate and Noir.Enums.AddonReason.SAVE_CREATE or (took < 1000 and Noir.Enums.AddonReason.ADDON_RELOAD or Noir.Enums.AddonReason.SAVE_LOAD)
 
             self.IsStarting = false
             self.HasStarted = true
@@ -138,12 +145,11 @@ function Noir:Start()
             self.Bootstrapper:StartServices()
 
             -- Send log
-            self.Libraries.Logging:Success("Start", "Noir v%s has started. Bootstrapper has initialized and started all services.\nTook: %sms | Addon Reason: %s", self.Version, took, Noir.AddonReason)
+            self.Logger:Success("Noir v%s has started. Bootstrapper has initialized and started all services.\nTook: %sms | Addon Reason: %s", self.Version, took, Noir.AddonReason)
 
             -- Send log on addon stop
             self.Callbacks:Once("onDestroy", function()
-                local addonData = server.getAddonData((server.getAddonIndex()))
-                self.Libraries.Logging:Info("Stop", "%s, using Noir v%s, has stopped.", addonData.name, self.Version)
+                self.Logger:Warning("%s, using Noir v%s, has stopped.", self.AddonName, Noir.Version)
             end)
         end, true)
     end
@@ -158,12 +164,3 @@ end
 
 -- Prevent user-created methods in services from being called before the service has been initialized
 Noir.Bootstrapper:WrapServiceMethodsForAllServices()
-
--------------------------------
--- // Intellisense
--------------------------------
-
----@alias NoirAddonReason
----| "AddonReload" The addon was reloaded
----| "SaveCreate" A save was created with the addon enabled
----| "SaveLoad" A save with loaded into with the addon enabled

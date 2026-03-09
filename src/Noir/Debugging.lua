@@ -131,7 +131,7 @@ Noir.Debugging.OnAfterCall = Noir.Libraries.Events:Create()
 ---@param message string
 ---@param ... any
 function Noir.Debugging:RaiseError(source, message, ...)
-    Noir.Libraries.Logging:Error("Error", source..": "..message, ...)
+    Noir.Logger:Error(source..": "..message, ...)
     self.OnError:Fire(source, ... and message:format(...) or message)
 
     _ENV["Noir: An error was raised. See logs for details."]()
@@ -159,10 +159,10 @@ function Noir.Debugging:_PresentTrackers(category, trackers)
     Noir.TypeChecking:Assert("Noir.Debugging:_PresentTrackers()", "category", category, "string")
     Noir.TypeChecking:Assert("Noir.Debugging:_PresentTrackers()", "trackers", trackers, "table")
 
-    Noir.Libraries.Logging:Success("Debugging", "--- "..category.." functions:")
+    Noir.Logger:Success("--- "..category.." functions:")
 
     for index, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Info("Debugging", "Tracker #%d: %s", index, tracker:ToFormattedString())
+        Noir.Logger:Info("Tracker #%d: %s", index, tracker:ToFormattedString())
     end
 end
 

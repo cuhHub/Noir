@@ -36,7 +36,7 @@
 
     ---@param message NoirMessage
     Noir.Services.MessageService.OnMessage:Connect(function(message)
-        Noir.Libraries.Logging:Info("Message", "(%s) > %s (%s)", message.Title, message.Content, message.IsAddon and "Sent by addon" or "Sent by player")
+        Noir.Logger:Info("(%s) > %s (%s)", message.Title, message.Content, message.IsAddon and "Sent by addon" or "Sent by player")
     end)
 
     Noir.Services.MessageService:SendMessage(nil, "[Server]", "Hello world!")

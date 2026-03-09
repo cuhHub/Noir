@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Libraries - Logging
+-- [Noir] Classes - Debug Log Logger Middleware
 --------------------------------------------------------
 
 --[[
@@ -32,22 +32,26 @@
 -------------------------------
 
 --[[
-    A library providing standard logging functionality.
+    Logger middleware to send logs via `debug.log`.
 ]]
----@class NoirLoggingLib: NoirLibrary
-Noir.Libraries.Logging = Noir.Libraries:Create(
-    "Logging",
-    "A library providing standard logging functionality.",
-    nil,
-    {"Cuh4"}
-)
+---@class NoirDebugLogLoggerMiddleware: NoirLoggerMiddleware
+---@field New fun(self: NoirDebugLogLoggerMiddleware): NoirDebugLogLoggerMiddleware
+Noir.Classes.DebugLogLoggerMiddleware = Noir.Class("DebugLogLoggerMiddleware", Noir.Classes.LoggerMiddleware)
 
 --[[
-    Creates a logger.
+    Initializes DebugLogLoggerMiddleware class objects.
 ]]
----@param name string
----@return NoirLogger
-function Noir.Libraries.Logging:CreateLogger(name)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:CreateLogger()", "name", name, "string")
-    return Noir.Classes.Logger:New(name)
+function Noir.Classes.DebugLogLoggerMiddleware:Init()
+    self:InitFrom(
+        Noir.Classes.LoggerMiddleware,
+        "DebugLogLoggerMiddleware"
+    )
+end
+
+--[[
+    Called when a log from the attached logger is received.
+]]
+---@param record NoirLogRecord
+function Noir.Classes.DebugLogLoggerMiddleware:OnLog(record)
+    debug.log(record:Format())
 end

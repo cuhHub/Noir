@@ -80,5 +80,5 @@ function Noir.Libraries.Deprecation:Deprecated(name, replacement, note)
     end
 
     -- Send message
-    Noir.Libraries.Logging:Warning("Deprecated", "'%s' is deprecated.".._replacement.._note, name)
+    Noir.Logger:Warning("'%s' is deprecated.".._replacement.._note, name)
 end

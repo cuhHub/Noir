@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Libraries - Logging
+-- [Noir] Classes - Chat Logger Middleware
 --------------------------------------------------------
 
 --[[
@@ -32,22 +32,26 @@
 -------------------------------
 
 --[[
-    A library providing standard logging functionality.
+    Logger middleware to send logs to chat.
 ]]
----@class NoirLoggingLib: NoirLibrary
-Noir.Libraries.Logging = Noir.Libraries:Create(
-    "Logging",
-    "A library providing standard logging functionality.",
-    nil,
-    {"Cuh4"}
-)
+---@class NoirChatLoggerMiddleware: NoirLoggerMiddleware
+---@field New fun(self: NoirChatLoggerMiddleware): NoirChatLoggerMiddleware
+Noir.Classes.ChatLoggerMiddleware = Noir.Class("ChatLoggerMiddleware", Noir.Classes.LoggerMiddleware)
 
 --[[
-    Creates a logger.
+    Initializes ChatLoggerMiddleware class objects.
 ]]
----@param name string
----@return NoirLogger
-function Noir.Libraries.Logging:CreateLogger(name)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:CreateLogger()", "name", name, "string")
-    return Noir.Classes.Logger:New(name)
+function Noir.Classes.ChatLoggerMiddleware:Init()
+    self:InitFrom(
+        Noir.Classes.LoggerMiddleware,
+        "ChatLoggerMiddleware"
+    )
+end
+
+--[[
+    Called when a log from the attached logger is received.
+]]
+---@param record NoirLogRecord
+function Noir.Classes.ChatLoggerMiddleware:OnLog(record)
+    server.announce(record.Logger.Name, record:Format())
 end

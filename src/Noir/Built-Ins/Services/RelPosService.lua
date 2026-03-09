@@ -109,7 +109,7 @@ function Noir.Services.RelPosService:_FillTileCache()
     end
 
     local took = (server.getTimeMillisec() - start) / 1000 -- seconds
-    Noir.Libraries.Logging:Info("RelPosService", "Took %.5f seconds to fill tile cache. Got positions for %d tiles.", took, count)
+    Noir.Logger:Info("Took %.5f seconds to fill tile cache. Got positions for %d tiles.", took, count)
 end
 
 --[[
