@@ -41,7 +41,7 @@
         end
 
         local item = response:JSON()
-        Noir.Libraries.Logging:Info("Item", item.Name)
+        Noir.Logger:Info("Item: "..item.Name)
     end)
 ]]
 ---@class NoirHTTPService: NoirService
@@ -130,7 +130,7 @@ end
         end
 
         local item = response:JSON()
-        Noir.Libraries.Logging:Info("Item", item.Name)
+        Noir.Logger:Info("Item: "..item.Name)
     end)
 ]]
 ---@param URL string
