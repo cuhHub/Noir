@@ -197,7 +197,7 @@ end
 ]]
 ---@return table<integer, NoirPlayer>
 function Noir.Services.PlayerService:_LoadPlayers()
-    if Noir.AddonReason == "SaveLoad" then
+    if Noir.AddonReason == Noir.Enums.AddonReason.SAVE_LOAD then
         self:_ClearRecognized() -- clear recognized players on save load, otherwise players that were recognized before the save was loaded will be recognized again
     end
 

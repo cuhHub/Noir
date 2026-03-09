@@ -62,7 +62,7 @@ function Noir.Classes.ScreenPopupWidget:Init(ID, visible, text, X, Y, player)
         Noir.Classes.Widget,
         ID,
         visible,
-        "ScreenPopup",
+        Noir.Enums.WidgetType.SCREEN_POPUP,
         player
     )
 

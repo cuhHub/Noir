@@ -74,7 +74,7 @@ function Noir.Classes.MapLineWidget:Init(ID, visible, startPosition, endPosition
         Noir.Classes.Widget,
         ID,
         visible,
-        "MapLine",
+        Noir.Enums.WidgetType.MAP_LINE,
         player
     )
 

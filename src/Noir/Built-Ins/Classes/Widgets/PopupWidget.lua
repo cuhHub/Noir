@@ -63,7 +63,7 @@ function Noir.Classes.PopupWidget:Init(ID, visible, text, position, renderDistan
         Noir.Classes.Widget,
         ID,
         visible,
-        "Popup",
+        Noir.Enums.WidgetType.POPUP,
         player
     )
 

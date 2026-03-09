@@ -69,7 +69,8 @@ function Noir.Services.TaskService:ServiceInit()
 
     self._TaskTypeHandlers = {}
 
-    self._TaskTypeHandlers["Time"] = function(task)
+    ---@param task NoirTask
+    self._TaskTypeHandlers[Noir.Enums.TaskType.TIME] = function(task)
         local time = self:GetTimeSeconds()
 
         if time < task.StopsAt then
@@ -86,7 +87,8 @@ function Noir.Services.TaskService:ServiceInit()
         task.OnCompletion:Fire(table.unpack(task.Arguments))
     end
 
-    self._TaskTypeHandlers["Ticks"] = function(task)
+    ---@param task NoirTask
+    self._TaskTypeHandlers[Noir.Enums.TaskType.TICKS] = function(task)
         if self.Ticks < task.StopsAt then
             return
         end
@@ -190,7 +192,7 @@ end
     Returns whether or not a task type is valid.<br>
     Used internally.
 ]]
----@param taskType string
+---@param taskType NoirTaskType
 ---@return boolean
 function Noir.Services.TaskService:_IsValidTaskType(taskType)
     return self._TaskTypeHandlers[taskType] ~= nil
@@ -229,7 +231,7 @@ function Noir.Services.TaskService:AddTimeTask(callback, duration, arguments, is
     Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTimeTask()", "isRepeating", isRepeating, "boolean", "nil")
 
     -- Create task
-    local task = self:_AddTask(callback, duration, arguments or {}, isRepeating or false, "Time", self:GetTimeSeconds())
+    local task = self:_AddTask(callback, duration, arguments or {}, isRepeating or false, Noir.Enums.TaskType.TIME, self:GetTimeSeconds())
     return task
 end
 
@@ -285,7 +287,7 @@ function Noir.Services.TaskService:AddTickTask(callback, duration, arguments, is
     Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTickTask()", "isRepeating", isRepeating, "boolean", "nil")
 
     -- Create task
-    local task = self:_AddTask(callback, duration, arguments or {}, isRepeating or false, "Ticks", self.Ticks)
+    local task = self:_AddTask(callback, duration, arguments or {}, isRepeating or false, Noir.Enums.TaskType.TICKS, self.Ticks)
     return task
 end
 

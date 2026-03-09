@@ -134,29 +134,29 @@ function Noir.Services.UIService:_LoadWidgets()
 
         ---@type table<NoirWidgetType, function>
         local deserializers = {
-            ["MapObject"] = function(serializedWidget)
+            [Noir.Enums.WidgetType.MAP_OBJECT] = function(serializedWidget)
                 return Noir.Classes.MapObjectWidget:Deserialize(serializedWidget)
             end,
 
-            ["MapLabel"] = function(serializedWidget)
+            [Noir.Enums.WidgetType.MAP_LABEL] = function(serializedWidget)
                 return Noir.Classes.MapLabelWidget:Deserialize(serializedWidget)
             end,
 
-            ["Popup"] = function(serializedWidget)
+            [Noir.Enums.WidgetType.POPUP] = function(serializedWidget)
                 return Noir.Classes.PopupWidget:Deserialize(serializedWidget)
             end,
 
-            ["ScreenPopup"] = function(serializedWidget)
+            [Noir.Enums.WidgetType.SCREEN_POPUP] = function(serializedWidget)
                 return Noir.Classes.ScreenPopupWidget:Deserialize(serializedWidget)
             end,
 
-            ["MapLine"] = function(serializedWidget)
+            [Noir.Enums.WidgetType.MAP_LINE] = function(serializedWidget)
                 return Noir.Classes.MapLineWidget:Deserialize(serializedWidget)
             end
         }
 
         if not deserializers[savedWidget.WidgetType] then
-            Noir.Libraries.Logging:Warning("UIService", "Got unknown saved widget of type: %s", savedWidget.WidgetType)
+            Noir.Logger:Warning("Got unknown saved widget of type: %s", savedWidget.WidgetType)
             goto continue
         end
 

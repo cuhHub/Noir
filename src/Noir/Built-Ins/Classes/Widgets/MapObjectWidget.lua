@@ -84,7 +84,7 @@ function Noir.Classes.MapObjectWidget:Init(ID, visible, title, text, objectType,
         Noir.Classes.Widget,
         ID,
         visible,
-        "MapObject",
+        Noir.Enums.WidgetType.MAP_OBJECT,
         player
     )
 

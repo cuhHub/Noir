@@ -61,7 +61,7 @@ function Noir.Classes.MapLabelWidget:Init(ID, visible, text, labelType, position
         Noir.Classes.Widget,
         ID,
         visible,
-        "MapLabel",
+        Noir.Enums.WidgetType.MAP_LABEL,
         player
     )
 
