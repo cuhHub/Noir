@@ -465,6 +465,14 @@ end
 --[[
     Calls the function for every value in the provided table, keeping the value in a new table if the
     function returns false. Unlike `:Filter()`, the indices are not maintained and `table.insert` is used instead.
+
+    local myTbl = {1, 2, 3, 1}
+
+    local myFilteredTbl = Noir.Libraries.Table:FilterSequential(myTbl, function(index, value)
+        return value == 1
+    end)
+
+    print(myFilteredTbl) -- {[1] = 1, [2] = 1}
 ]]
 ---@param tbl table
 ---@param callback fun(index: any, value: any): boolean
