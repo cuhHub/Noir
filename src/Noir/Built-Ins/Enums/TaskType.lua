@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Example - Vehicle Management Addon
+-- [Noir] Enums - Task Type
 --------------------------------------------------------
 
 --[[
@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -31,5 +31,24 @@
 -- // Main
 -------------------------------
 
--- Start the Noir framework
-Noir:Start()
+--[[
+    Represents the type of a task.
+]]
+Noir.Enums.TaskType = {
+    --[[
+        The task type uses time for determining when to run the task.
+    ]]
+    TIME = "Time",
+
+    --[[
+        The task type uses ticks for determining when to run the task.
+    ]]
+    TICKS = "Ticks"
+}
+
+--[[
+    Represents the type of a task.
+]]
+---@alias NoirTaskType
+---| "Time" The task type uses time for determining when to run the task.
+---| "Ticks" The task type uses ticks for determining when to run the task.

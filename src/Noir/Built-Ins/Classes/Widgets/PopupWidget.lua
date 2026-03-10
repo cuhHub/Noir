@@ -8,7 +8,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ function Noir.Classes.PopupWidget:Init(ID, visible, text, position, renderDistan
         Noir.Classes.Widget,
         ID,
         visible,
-        "Popup",
+        Noir.Enums.WidgetType.POPUP,
         player
     )
 
@@ -150,20 +150,20 @@ function Noir.Classes.PopupWidget:Deserialize(serializedWidget)
     widget._AttachmentMode = serializedWidget.AttachmentMode
     widget.AttachmentOffset = serializedWidget.AttachmentOffset
 
-    if serializedWidget.AttachmentMode == 1 then
+    if widget._AttachmentMode == 1 then
         local body = Noir.Services.VehicleService:GetBody(serializedWidget.AttachmentBodyID or -1)
 
         if not body then
-            self:Detach()
+            widget:Detach()
             return widget
         end
 
         widget.AttachmentBody = body
-    elseif serializedWidget.AttachmentMode == 2 then
+    elseif widget._AttachmentMode == 2 then
         local object = Noir.Services.ObjectService:GetObject(serializedWidget.AttachmentObjectID or -1)
 
         if not object or not object:Exists() then
-            self:Detach()
+            widget:Detach()
             return widget
         end
 
@@ -176,15 +176,16 @@ end
 --[[
     Handles updating this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.PopupWidget:_Update(player)
-    Noir.TypeChecking:Assert("Noir.Classes.PopupWidget:_Update()", "player", player, Noir.Classes.Player)
+function Noir.Classes.PopupWidget:_Update()
+    if not self:IsVisible() then
+        return
+    end
 
     server.setPopup(
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         "",
-        self.Visible,
+        self:IsVisible(),
         self.Text,
         self._AttachmentMode == 0 and self.Position[13] or self.AttachmentOffset[13],
         self._AttachmentMode == 0 and self.Position[14] or self.AttachmentOffset[14],
@@ -198,12 +199,9 @@ end
 --[[
     Handles destroying this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.PopupWidget:_Destroy(player)
-    Noir.TypeChecking:Assert("Noir.Classes.PopupWidget:_Destroy()", "player", player, Noir.Classes.Player)
-
+function Noir.Classes.PopupWidget:_Destroy()
     server.setPopup(
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         "",
         false,

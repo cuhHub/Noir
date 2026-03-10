@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@
         end
 
         local item = response:JSON()
-        Noir.Libraries.Logging:Info("Item", item.Name)
+        Noir.Logger:Info("Item: "..item.Name)
     end)
 ]]
 ---@class NoirHTTPService: NoirService
@@ -92,7 +92,8 @@ end
 ]]
 ---@param URL string
 ---@param port integer
----@return NoirHTTPRequest|nil, integer|nil
+---@return NoirHTTPRequest|nil
+---@return integer|nil
 function Noir.Services.HTTPService:_FindRequest(URL, port)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.HTTPService:_FindRequest()", "URL", URL, "string")
@@ -129,7 +130,7 @@ end
         end
 
         local item = response:JSON()
-        Noir.Libraries.Logging:Info("Item", item.Name)
+        Noir.Logger:Info("Item: "..item.Name)
     end)
 ]]
 ---@param URL string

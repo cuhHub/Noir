@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ function Noir.Classes.ScreenPopupWidget:Init(ID, visible, text, X, Y, player)
         Noir.Classes.Widget,
         ID,
         visible,
-        "ScreenPopup",
+        Noir.Enums.WidgetType.SCREEN_POPUP,
         player
     )
 
@@ -104,15 +104,16 @@ end
 --[[
     Handles updating this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.ScreenPopupWidget:_Update(player)
-    Noir.TypeChecking:Assert("Noir.Classes.ScreenPopupWidget:_Update()", "player", player, Noir.Classes.Player)
+function Noir.Classes.ScreenPopupWidget:_Update()
+    if not self:IsVisible() then
+        return
+    end
 
     server.setPopupScreen(
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         "",
-        self.Visible,
+        self:IsVisible(),
         self.Text,
         self.X,
         self.Y
@@ -122,12 +123,9 @@ end
 --[[
     Handles destroying this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.ScreenPopupWidget:_Destroy(player)
-    Noir.TypeChecking:Assert("Noir.Classes.ScreenPopupWidget:_Destroy()", "player", player, Noir.Classes.Player)
-
+function Noir.Classes.ScreenPopupWidget:_Destroy()
     server.setPopupScreen( -- `server.removePopup` shows a tutorial popup for a brief moment, so we aren't using it
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         "",
         false,

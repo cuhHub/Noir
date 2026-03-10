@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ local Item = Noir.Libraries.Dataclasses:New("Item", {
 
 -- Create a sword (item)
 local sword = Item:New("Sword", 5, true)
-Noir.Libraries.Logging:Info("Sword", "Name: %s | Weight: %s | Stackable: %s", sword.Name, sword.Weight, sword.Stackable)
+Noir.Logger:Info("Sword - Name: %s | Weight: %s | Stackable: %s", sword.Name, sword.Weight, sword.Stackable)
 
 -- Create a shield (item)
 local shield = Item:New("Shield", 10, false)
-Noir.Libraries.Logging:Info("Shield", "Name: %s | Weight: %s | Stackable: %s", shield.Name, shield.Weight, shield.Stackable)
+Noir.Logger:Info("Shield - Name: %s | Weight: %s | Stackable: %s", shield.Name, shield.Weight, shield.Stackable)

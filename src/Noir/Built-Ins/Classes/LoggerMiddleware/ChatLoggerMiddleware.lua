@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Example - Vehicle Management Addon
+-- [Noir] Classes - Chat Logger Middleware
 --------------------------------------------------------
 
 --[[
@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -31,18 +31,27 @@
 -- // Main
 -------------------------------
 
--- Create ?vehicles command
-local VehicleService = Noir.Services:GetService("VehicleService") ---@type VehicleService
+--[[
+    Logger middleware to send logs to chat.
+]]
+---@class NoirChatLoggerMiddleware: NoirLoggerMiddleware
+---@field New fun(self: NoirChatLoggerMiddleware): NoirChatLoggerMiddleware
+Noir.Classes.ChatLoggerMiddleware = Noir.Class("ChatLoggerMiddleware", Noir.Classes.LoggerMiddleware)
 
-Noir.Services.CommandService:CreateCommand("vehicles", {"v", "veh"}, {}, true, false, false, "Returns your vehicles", function (player, message, args, hasPermission)
-    if not hasPermission then
-        Notifications:SendErrorNotification("Permissions", "You do not have permission to run this command.", player)
-        return
-    end
+--[[
+    Initializes ChatLoggerMiddleware class objects.
+]]
+function Noir.Classes.ChatLoggerMiddleware:Init()
+    self:InitFrom(
+        Noir.Classes.LoggerMiddleware,
+        "ChatLoggerMiddleware"
+    )
+end
 
-    -- Get the player's vehicles
-    local vehicles = VehicleService:GetVehicles(player)
-
-    -- Send the player their vehicles
-    Notifications:SendInfoNotification("Vehicles", "IDs:\n"..table.concat(vehicles, "\n"), player)
-end)
+--[[
+    Called when a log from the attached logger is received.
+]]
+---@param record NoirLogRecord
+function Noir.Classes.ChatLoggerMiddleware:OnLog(record)
+    server.announce(record.Logger.Name, record:Format())
+end

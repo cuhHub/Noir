@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@
 
     ---@param message NoirMessage
     Noir.Services.MessageService.OnMessage:Connect(function(message)
-        Noir.Libraries.Logging:Info("Message", "(%s) > %s (%s)", message.Title, message.Content, message.IsAddon and "Sent by addon" or "Sent by player")
+        Noir.Logger:Info("(%s) > %s (%s)", message.Title, message.Content, message.IsAddon and "Sent by addon" or "Sent by player")
     end)
 
     Noir.Services.MessageService:SendMessage(nil, "[Server]", "Hello world!")
@@ -75,7 +75,7 @@ function Noir.Services.MessageService:ServiceStart()
         local author = Noir.Services.PlayerService:GetPlayer(peerID)
 
         if not author then
-            error("MessageService", "Failed to get author of message via 'onChatMessage' callback.")
+            return
         end
 
         -- Register message

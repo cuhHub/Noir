@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ function Noir.Classes.MapLabelWidget:Init(ID, visible, text, labelType, position
         Noir.Classes.Widget,
         ID,
         visible,
-        "MapLabel",
+        Noir.Enums.WidgetType.MAP_LABEL,
         player
     )
 
@@ -103,12 +103,13 @@ end
 --[[
     Handles updating this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.MapLabelWidget:_Update(player)
-    Noir.TypeChecking:Assert("Noir.Classes.MapLabelWidget:_Update()", "player", player, Noir.Classes.Player)
+function Noir.Classes.MapLabelWidget:_Update()
+    if not self:IsVisible() then
+        return
+    end
 
     server.addMapLabel(
-        player.ID,
+        self:_GetPeerID(),
         self.ID,
         self.LabelType,
         self.Text,
@@ -120,10 +121,8 @@ end
 --[[
     Handles destroying this widget.
 ]]
----@param player NoirPlayer
-function Noir.Classes.MapLabelWidget:_Destroy(player)
-    Noir.TypeChecking:Assert("Noir.Classes.MapLabelWidget:_Destroy()", "player", player, Noir.Classes.Player)
-    server.removeMapLabel(player.ID, self.ID)
+function Noir.Classes.MapLabelWidget:_Destroy()
+    server.removeMapLabel(self:_GetPeerID(), self.ID)
 end
 
 -------------------------------

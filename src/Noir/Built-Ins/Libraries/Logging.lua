@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -32,158 +32,22 @@
 -------------------------------
 
 --[[
-    A library containing methods related to logging.
+    A library providing standard logging functionality.
 ]]
 ---@class NoirLoggingLib: NoirLibrary
 Noir.Libraries.Logging = Noir.Libraries:Create(
     "Logging",
-    "A library containing methods related to logging.",
+    "A library providing standard logging functionality.",
     nil,
     {"Cuh4"}
 )
 
 --[[
-    The mode to use when logging.<br>
-    - "DebugLog": Sends logs to DebugView<br>
-    - "Chat": Sends logs to chat
+    Creates a logger.
 ]]
-Noir.Libraries.Logging.LoggingMode = "DebugLog" ---@type NoirLoggingMode
-
---[[
-    An event called when a log is sent.<br>
-    Arguments: (log: string)
-]]
-Noir.Libraries.Logging.OnLog = Noir.Libraries.Events:Create()
-
---[[
-    Represents the logging layout.<br>
-    Requires two '%s' in the layout. First %s is the addon name, second %s is the log type, and the third %s is the log title. The message is then added after the layout.
-]]
-Noir.Libraries.Logging.Layout = "[Noir] [%s] [%s] [%s]: "
-
---[[
-    Set the logging mode.
-
-    Noir.Libraries.Logging:SetMode("DebugLog")
-]]
----@param mode NoirLoggingMode
-function Noir.Libraries.Logging:SetMode(mode)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:SetMode()", "mode", mode, "string")
-    self.LoggingMode = mode
+---@param name string
+---@return NoirLogger
+function Noir.Libraries.Logging:CreateLogger(name)
+    Noir.TypeChecking:Assert("Noir.Libraries.Logging:CreateLogger()", "name", name, "string")
+    return Noir.Classes.Logger:New(name)
 end
-
---[[
-    Sends a log.
-
-    Noir.Libraries.Logging:Log("Warning", "Title", "Something went wrong relating to %s", "something.")
-]]
----@param logType string
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:Log(logType, title, message, ...)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Log()", "logType", logType, "string")
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Log()", "title", title, "string")
-
-    -- Format
-    local formattedText = self:_FormatLog(logType, title, message, ...)
-
-    -- Send log
-    if self.LoggingMode == "DebugLog" then
-        debug.log(formattedText)
-    elseif self.LoggingMode == "Chat" then
-        debug.log(formattedText)
-        server.announce("Noir", formattedText) -- this goes against the rules of noir libraries as they should not interact with the game, but i suppose this is a special case. whups!
-    else
-        self:Error("Logging", "'%s' is not a valid logging mode.", true, tostring(Noir.Libraries.LoggingMode))
-    end
-
-    -- Send event
-    self.OnLog:Fire(formattedText)
-end
-
---[[
-    Format a log.<br>
-    Used internally.
-]]
----@param logType string
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:_FormatLog(logType, title, message, ...)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:_FormatLog()", "logType", logType, "string")
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:_FormatLog()", "title", title, "string")
-
-    -- Validate args
-    local validatedLogType = tostring(logType)
-    local validatedTitle = tostring(title)
-    local validatedMessage = type(message) == "table" and Noir.Libraries.Table:ToString(message) or (... and tostring(message):format(...) or tostring(message))
-
-    -- Format text
-    local formattedMessage = (self.Layout:format(Noir.AddonName, validatedLogType, validatedTitle)..validatedMessage):gsub("\n", "\n"..self.Layout:format(Noir.AddonName, validatedLogType, validatedTitle))
-
-    -- Return
-    return formattedMessage
-end
-
---[[
-    Sends an error log.
-
-    Noir.Libraries.Logging:Error("Title", "Something went wrong relating to %s", "something.")
-]]
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:Error(title, message, ...)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Error()", "title", title, "string")
-    self:Log("Error", title, message, ...)
-end
-
---[[
-    Sends a warning log.
-
-    Noir.Libraries.Logging:Warning("Title", "Something went unexpected relating to %s", "something.")
-]]
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:Warning(title, message, ...)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Warning()", "title", title, "string")
-    self:Log("Warning", title, message, ...)
-end
-
---[[
-    Sends an info log.
-
-    Noir.Libraries.Logging:Info("Title", "Something went okay relating to %s", "something.")
-]]
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:Info(title, message, ...)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Info()", "title", title, "string")
-    self:Log("Info", title, message, ...)
-end
-
---[[
-    Sends a success log.
-
-    Noir.Libraries.Logging:Success("Title", "Something went right relating to %s", "something.")
-]]
----@param title string
----@param message any
----@param ... any
-function Noir.Libraries.Logging:Success(title, message, ...)
-    Noir.TypeChecking:Assert("Noir.Libraries.Logging:Success()", "title", title, "string")
-    self:Log("Success", title, message, ...)
-end
-
--------------------------------
--- // Intellisense
--------------------------------
-
----@alias NoirLoggingMode
----| "Chat" Sends via server.announce and via debug.log
----| "DebugLog" Sends only via debug.log

@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -217,7 +217,7 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
 
     -- Check if Noir has started
     if not Noir.HasStarted and not hideStartWarning then
-        Noir.Libraries.Logging:Warning("Callbacks", "Noir has not started yet. It is not recommended to connect to callbacks before `Noir:Start()` is called and finalized. Please connect to the `Noir.Started` event and attach to game callbacks in that.")
+        Noir.Logger:Warning( "Noir has not started yet. It is not recommended to connect to callbacks before `Noir:Start()` is called and finalized. Please connect to the `Noir.Started` event and attach to game callbacks in that.")
     end
 
     -- For later
@@ -239,7 +239,7 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
 
     if existing then
         -- Inform developer that a function for a game callback already exists
-        Noir.Libraries.Logging:Warning("Callbacks", "Your addon has a function for the game callback '%s'. Noir will wrap around it to prevent overwriting. Please use `Noir.Callbacks:Connect(\"%s\", function(...) end)` instead of `function %s(...) end` function to avoid this warning.", name, name, name)
+        Noir.Logger:Warning("Your addon has a function for the game callback '%s'. Noir will wrap around it to prevent overwriting. Please use `Noir.Callbacks:Connect(\"%s\", function(...) end)` instead of `function %s(...) end` function to avoid this warning.", name, name, name)
 
         -- Wrap around existing function
         _ENV[name] = function(...)

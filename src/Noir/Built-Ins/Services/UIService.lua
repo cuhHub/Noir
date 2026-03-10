@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -71,17 +71,44 @@ end
 function Noir.Services.UIService:ServiceStart()
     ---@param player NoirPlayer
     self._OnJoinConnection = Noir.Services.PlayerService.OnJoin:Connect(function(player)
-        for _, widget in pairs(self:GetWidgetsShownToPlayer(player)) do
-            widget:_Update(player)
+        if player:GetCharacter() then
+            Noir.Services.TaskService:AddTimeTask(function() -- hacky fix for a bug where widgets don't show up for players who join
+                self:_ShowWidgetsToPlayer(player)                       -- not sure why this happens, guessing its a stormworks issue
+            end, 1)
+        else
+            player.OnCharacterLoad:Once(function()
+                self:_ShowWidgetsToPlayer(player)
+            end)
         end
     end)
 
     ---@param player NoirPlayer
-    self._OnLeaveConnection = Noir.Services.PlayerService.OnJoin:Connect(function(player)
-        for _, widget in pairs(self:GetWidgetsBelongingToPlayer(player)) do
-            self:RemoveWidget(widget.ID)
-        end
+    self._OnLeaveConnection = Noir.Services.PlayerService.OnLeave:Connect(function(player)
+        self:_RemoveWidgetsFromPlayer(player)
     end)
+end
+
+
+--[[
+    Shows all widgets to a new player.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+function Noir.Services.UIService:_ShowWidgetsToPlayer(player)
+    for _, widget in pairs(self:GetWidgetsShownToPlayer(player)) do
+        widget:Update()
+    end
+end
+
+--[[
+    Removes all widgets from a player who left.<br>
+    Used internally. Do not use in your code.
+]]
+---@param player NoirPlayer
+function Noir.Services.UIService:_RemoveWidgetsFromPlayer(player)
+    for _, widget in pairs(self:GetWidgetsBelongingToPlayer(player)) do
+        self:RemoveWidget(widget.ID)
+    end
 end
 
 --[[
@@ -107,29 +134,29 @@ function Noir.Services.UIService:_LoadWidgets()
 
         ---@type table<NoirWidgetType, function>
         local deserializers = {
-            ["MapObject"] = function(serializedWidget)
+            [Noir.Enums.WidgetType.MAP_OBJECT] = function(serializedWidget)
                 return Noir.Classes.MapObjectWidget:Deserialize(serializedWidget)
             end,
 
-            ["MapLabel"] = function(serializedWidget)
+            [Noir.Enums.WidgetType.MAP_LABEL] = function(serializedWidget)
                 return Noir.Classes.MapLabelWidget:Deserialize(serializedWidget)
             end,
 
-            ["Popup"] = function(serializedWidget)
+            [Noir.Enums.WidgetType.POPUP] = function(serializedWidget)
                 return Noir.Classes.PopupWidget:Deserialize(serializedWidget)
             end,
 
-            ["ScreenPopup"] = function(serializedWidget)
+            [Noir.Enums.WidgetType.SCREEN_POPUP] = function(serializedWidget)
                 return Noir.Classes.ScreenPopupWidget:Deserialize(serializedWidget)
             end,
 
-            ["MapLine"] = function(serializedWidget)
+            [Noir.Enums.WidgetType.MAP_LINE] = function(serializedWidget)
                 return Noir.Classes.MapLineWidget:Deserialize(serializedWidget)
             end
         }
 
         if not deserializers[savedWidget.WidgetType] then
-            Noir.Libraries.Logging:Warning("UIService", "Got unknown saved widget of type: %s", savedWidget.WidgetType)
+            Noir.Logger:Warning("Got unknown saved widget of type: %s", savedWidget.WidgetType)
             goto continue
         end
 
@@ -449,7 +476,8 @@ function Noir.Services.UIService:RemoveWidget(ID)
     local widget = self:GetWidget(ID)
 
     if not widget then
-        error("Noir.Services.UIService:RemoveWidget()", "No widget with ID %d exists.", ID)
+        -- error("Noir.Services.UIService:RemoveWidget()", "No widget with ID %d exists.", ID)
+        return
     end
 
     widget:Destroy()

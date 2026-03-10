@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -94,14 +94,33 @@ Noir.Debugging.Enabled = false
 --[[
     A table containing all created trackers for functions.
 ]]
+---@type table<integer, NoirTracker>
 Noir.Debugging.Trackers = {}
 
 --[[
     A table containing all functions and tables that should not be tracked.
 ]]
+---@type table<function|table, boolean>
 Noir.Debugging._TrackingExceptions = {
     [Noir] = true
 }
+
+--[[
+    Fired whenever an error is raised.
+]]
+Noir.Debugging.OnError = Noir.Libraries.Events:Create()
+
+--[[
+    Fired before any tracked function is called.<br>
+    Arguments: tracker (NoirTracker), ... (any)
+]]
+Noir.Debugging.OnBeforeCall = Noir.Libraries.Events:Create()
+
+--[[
+    Fired after any tracked function is called.<br>
+    Arguments: tracker (NoirTracker), ... (any)
+]]
+Noir.Debugging.OnAfterCall = Noir.Libraries.Events:Create()
 
 --[[
     Raises an error.<br>
@@ -112,7 +131,9 @@ Noir.Debugging._TrackingExceptions = {
 ---@param message string
 ---@param ... any
 function Noir.Debugging:RaiseError(source, message, ...)
-    Noir.Libraries.Logging:Error("Error", source..": "..message, ...)
+    Noir.Logger:Error(source..": "..message, ...)
+    self.OnError:Fire(source, ... and message:format(...) or message)
+
     _ENV["Noir: An error was raised. See logs for details."]()
 end
 
@@ -126,6 +147,23 @@ end
 ---@param ... any
 function error(source, message, ...)
     Noir.Debugging:RaiseError(source, message, ...)
+end
+
+--[[
+    Presents trackers in a category.<br>
+    Used internally.
+]]
+---@param category string
+---@param trackers table<integer, NoirTracker>
+function Noir.Debugging:_PresentTrackers(category, trackers)
+    Noir.TypeChecking:Assert("Noir.Debugging:_PresentTrackers()", "category", category, "string")
+    Noir.TypeChecking:Assert("Noir.Debugging:_PresentTrackers()", "trackers", trackers, "table")
+
+    Noir.Logger:Success("--- "..category.." functions:")
+
+    for index, tracker in ipairs(trackers) do
+        Noir.Logger:Info("Tracker #%d: %s", index, tracker:ToFormattedString())
+    end
 end
 
 --[[
@@ -157,12 +195,7 @@ end
 ]]
 function Noir.Debugging:ShowLastCalledTracked()
     local trackers = self:GetLastCalledTracked()
-
-    Noir.Libraries.Logging:Success("Debugging", "--- *Last* called functions:")
-
-    for index, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Info("Debugging", "#%d: %s", index, tracker:ToFormattedString())
-    end
+    self:_PresentTrackers("*Last* called", trackers)
 end
 
 --[[
@@ -184,12 +217,7 @@ end
 ]]
 function Noir.Debugging:ShowLeastPerformantTracked()
     local trackers = self:GetLeastPerformantTracked()
-
-    Noir.Libraries.Logging:Success("Debugging", "--- *Least* performant functions:")
-
-    for index, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Info("Debugging", "#%d: %s", index, tracker:ToFormattedString())
-    end
+    self:_PresentTrackers("*Least* performant", trackers)
 end
 
 --[[
@@ -211,12 +239,51 @@ end
 ]]
 function Noir.Debugging:ShowMostPerformantTracked()
     local trackers = self:GetMostPerformantTracked()
+    self:_PresentTrackers("*Most* performant", trackers)
+end
 
-    Noir.Libraries.Logging:Success("Debugging", "--- *Most* performant functions:")
+--[[
+    Returns the tracked functions with the most calls.
+]]
+---@return table<integer, NoirTracker>
+function Noir.Debugging:GetMostCalledTracked()
+    local trackers = self:GetTrackedFunctions(true)
 
-    for index, tracker in ipairs(trackers) do
-        Noir.Libraries.Logging:Info("Debugging", "#%d: %s", index, tracker:ToFormattedString())
-    end
+    table.sort(trackers, function(a, b)
+        return a:GetCallCount() > b:GetCallCount()
+    end)
+
+    return trackers
+end
+
+--[[
+    Shows the tracked functions with the most calls.
+]]
+function Noir.Debugging:ShowMostCalledTracked()
+    local trackers = self:GetMostCalledTracked()
+    self:_PresentTrackers("*Most* called", trackers)
+end
+
+--[[
+    Returns the tracked functions with the most calls per tick.
+]]
+---@return table<integer, NoirTracker>
+function Noir.Debugging:GetMostCalledPerTickTracked()
+    local trackers = self:GetTrackedFunctions(true)
+
+    table.sort(trackers, function(a, b)
+        return a:GetAverageCallsPerTick() > b:GetAverageCallsPerTick()
+    end)
+
+    return trackers
+end
+
+--[[
+    Shows the tracked functions with the most calls per tick.
+]]
+function Noir.Debugging:ShowMostCalledPerTickTracked()
+    local trackers = self:GetMostCalledPerTickTracked()
+    self:_PresentTrackers("*Most* calls/tick", trackers)
 end
 
 --[[
@@ -250,6 +317,15 @@ function Noir.Debugging:TrackFunction(name, func)
     -- Track
     local tracker = Noir.Classes.Tracker:New(name, func)
     table.insert(self.Trackers, tracker)
+
+    -- Handle events
+    tracker.OnBeforeCall:Connect(function(...)
+        self.OnBeforeCall:Fire(tracker, ...)
+    end)
+
+    tracker.OnAfterCall:Connect(function(...)
+        self.OnAfterCall:Fire(tracker, ...)
+    end)
 
     -- Return
     return tracker
@@ -303,7 +379,7 @@ function Noir.Debugging:TrackAll(name, tbl, _journey)
             goto continue
         end
 
-        local tracker = self:TrackFunction(("%s:%s"):format(name, index), value)
+        local tracker = self:TrackFunction(("%s.%s"):format(name, index), value)
 
         if not tracker then
             goto continue

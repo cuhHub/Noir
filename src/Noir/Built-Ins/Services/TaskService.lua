@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -69,7 +69,8 @@ function Noir.Services.TaskService:ServiceInit()
 
     self._TaskTypeHandlers = {}
 
-    self._TaskTypeHandlers["Time"] = function(task)
+    ---@param task NoirTask
+    self._TaskTypeHandlers[Noir.Enums.TaskType.TIME] = function(task)
         local time = self:GetTimeSeconds()
 
         if time < task.StopsAt then
@@ -79,15 +80,15 @@ function Noir.Services.TaskService:ServiceInit()
         if task.IsRepeating then
             task.StartedAt = time
             task.StopsAt = time + task.Duration
-
-            task.OnCompletion:Fire(table.unpack(task.Arguments))
         else
             self:RemoveTask(task)
-            task.OnCompletion:Fire(table.unpack(task.Arguments))
         end
+
+        task.OnCompletion:Fire(table.unpack(task.Arguments))
     end
 
-    self._TaskTypeHandlers["Ticks"] = function(task)
+    ---@param task NoirTask
+    self._TaskTypeHandlers[Noir.Enums.TaskType.TICKS] = function(task)
         if self.Ticks < task.StopsAt then
             return
         end
@@ -95,18 +96,17 @@ function Noir.Services.TaskService:ServiceInit()
         if task.IsRepeating then
             task.StartedAt = self.Ticks
             task.StopsAt = self.Ticks + task.Duration
-
-            task.OnCompletion:Fire(table.unpack(task.Arguments))
         else
             self:RemoveTask(task)
-            task.OnCompletion:Fire(table.unpack(task.Arguments))
         end
+
+        task.OnCompletion:Fire(table.unpack(task.Arguments))
     end
 end
 
 function Noir.Services.TaskService:ServiceStart()
     self._OnTickConnection = Noir.Callbacks:Connect("onTick", function(ticks)
-        self.Ticks = self.Ticks + ticks
+        self.Ticks = self.Ticks + 1
         self.DeltaTicks = ticks
 
         self:_HandleTickIterationProcesses()
@@ -119,12 +119,17 @@ end
     Used internally.
 ]]
 function Noir.Services.TaskService:_HandleTickIterationProcesses()
-    for _, tickIterationProcess in pairs(self:GetTickIterationProcesses(true)) do
-        if tickIterationProcess.Completed then
-            self:RemoveTickIterationProcess(tickIterationProcess)
-        else
-            tickIterationProcess:Iterate()
+    ---@type table<integer, NoirTickIterationProcess>
+    local toRemove = {}
+
+    for _, tickIterationProcess in pairs(self:GetTickIterationProcesses()) do
+        if tickIterationProcess:Iterate() then
+            table.insert(toRemove, tickIterationProcess)
         end
+    end
+
+    for _, tickIterationProcess in pairs(toRemove) do
+        self:RemoveTickIterationProcess(tickIterationProcess)
     end
 end
 
@@ -187,7 +192,7 @@ end
     Returns whether or not a task type is valid.<br>
     Used internally.
 ]]
----@param taskType string
+---@param taskType NoirTaskType
 ---@return boolean
 function Noir.Services.TaskService:_IsValidTaskType(taskType)
     return self._TaskTypeHandlers[taskType] ~= nil
@@ -226,7 +231,7 @@ function Noir.Services.TaskService:AddTimeTask(callback, duration, arguments, is
     Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTimeTask()", "isRepeating", isRepeating, "boolean", "nil")
 
     -- Create task
-    local task = self:_AddTask(callback, duration, arguments or {}, isRepeating or false, "Time", self:GetTimeSeconds())
+    local task = self:_AddTask(callback, duration, arguments or {}, isRepeating or false, Noir.Enums.TaskType.TIME, self:GetTimeSeconds())
     return task
 end
 
@@ -282,7 +287,7 @@ function Noir.Services.TaskService:AddTickTask(callback, duration, arguments, is
     Noir.TypeChecking:Assert("Noir.Services.TaskService:AddTickTask()", "isRepeating", isRepeating, "boolean", "nil")
 
     -- Create task
-    local task = self:_AddTask(callback, duration, arguments or {}, isRepeating or false, "Ticks", self.Ticks)
+    local task = self:_AddTask(callback, duration, arguments or {}, isRepeating or false, Noir.Enums.TaskType.TICKS, self.Ticks)
     return task
 end
 
@@ -352,9 +357,9 @@ end
         print(value)
     end)
 ]]
----@param tbl table<integer, any>
+---@param tbl table
 ---@param chunkSize integer How many values to iterate per tick
----@param callback fun(index: any, value: any, currentTick: integer|nil, completed: boolean|nil) `currentTick` and `completed` are never nil. this is just to mark the paramters as optional
+---@param callback fun(index: any, value: any, currentTick: integer, completed: boolean)
 ---@return NoirTickIterationProcess
 function Noir.Services.TaskService:IterateOverTicks(tbl, chunkSize, callback)
     -- Type checking

@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ function Noir.Services.RelPosService:_FillTileCache()
     end
 
     local took = (server.getTimeMillisec() - start) / 1000 -- seconds
-    Noir.Libraries.Logging:Info("RelPosService", "Took %.5f seconds to fill tile cache. Got positions for %d tiles.", took, count)
+    Noir.Logger:Info("Took %.5f seconds to fill tile cache. Got positions for %d tiles.", took, count)
 end
 
 --[[

@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -86,3 +86,41 @@ local foundIndex, foundTbl = Noir.Libraries.Table:FindDeep(findDeepTbl, 1)
 assert(foundIndex == "foo", ":FindDeep() returned incorrect index")
 assert(foundTbl == hidingPlace, ":FindDeep() returned incorrect table")
 assert(Noir.Libraries.Table:FindDeep(findDeepTbl, "bar") == nil, ":FindDeep() returned incorrect value (expected nil)")
+
+local mapTbl1 = {1, 2, 3}
+
+local mappedTbl1 = Noir.Libraries.Table:Map(mapTbl1, function(index, value)
+    return index + value
+end)
+
+assert(mappedTbl1[1] == 2, ":Map() returned incorrect values (expected [1] to be '2')")
+assert(mappedTbl1[2] == 4, ":Map() returned incorrect values (expected [2] to be '4')")
+assert(mappedTbl1[3] == 6, ":Map() returned incorrect values (expected [3] to be '6')")
+
+local mapTbl2 = {1, foo = 5, bar = 2}
+
+local mappedTbl2 = Noir.Libraries.Table:Map(mapTbl2, function(index, value)
+    return value * 2
+end)
+
+assert(mappedTbl2[1] == 2, ":Map() returned incorrect values (expected [1] to be '2')")
+assert(mappedTbl2.foo == 10, ":Map() returned incorrect values (expected [foo] to be '10')")
+assert(mappedTbl2.bar == 4, ":Map() returned incorrect values (expected [bar] to be '4')")
+
+local filterTbl1 = {1, 2, 3, 4, 5, 6}
+
+local filteredTbl1 = Noir.Libraries.Table:Filter(filterTbl1, function(index, value)
+    return value % 2 == 0
+end)
+
+assert(filteredTbl1[2] == 2, ":Filter() returned incorrect values (expected [2] to be '2')")
+assert(filteredTbl1[4] == 4, ":Filter() returned incorrect values (expected [4] to be '4')")
+assert(filteredTbl1[6] == 6, ":Filter() returned incorrect values (expected [6] to be '6')")
+
+local filteredTbl2 = Noir.Libraries.Table:FilterSequential(filterTbl1, function(index, value)
+    return value % 2 == 0
+end)
+
+assert(filteredTbl2[1] == 2, ":FilterSequential() returned incorrect values (expected [1] to be '2')")
+assert(filteredTbl2[2] == 4, ":FilterSequential() returned incorrect values (expected [2] to be '4')")
+assert(filteredTbl2[3] == 6, ":FilterSequential() returned incorrect values (expected [3] to be '6')")

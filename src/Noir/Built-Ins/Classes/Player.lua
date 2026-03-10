@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -35,20 +35,21 @@
     Represents a player.
 
     local character = player:GetCharacter() -- NoirObject
-    character:SetTooltip("A Tooltip")
 
-    player:SetPermission("Awesome")
-    player:HasPermission("Awesome") -- true
+    if character then -- Can be nil if the player's character hasn't loaded
+        character:SetTooltip("A Tooltip")
+    end
 ]]
 ---@class NoirPlayer: NoirClass
----@field New fun(self: NoirPlayer, name: string, ID: integer, steam: string, admin: boolean, auth: boolean, permissions: table<string, boolean>): NoirPlayer
+---@field New fun(self: NoirPlayer, name: string, ID: integer, steam: string, admin: boolean, auth: boolean): NoirPlayer
 ---@field Name string The name of this player
 ---@field ID integer The ID of this player
 ---@field Steam string The Steam ID of this player
 ---@field Admin boolean Whether or not this player is an admin
 ---@field Auth boolean Whether or not this player is authed
----@field Permissions table<string, boolean> The permissions this player has
 ---@field InGame boolean Whether or not this player is in the game. This is set to false when the player leaves
+---
+---@field OnCharacterLoad NoirEvent Arguments: character (NoirObject) | Fired when this player's character is loaded
 Noir.Classes.Player = Noir.Class("Player")
 
 --[[
@@ -59,70 +60,30 @@ Noir.Classes.Player = Noir.Class("Player")
 ---@param steam string
 ---@param admin boolean
 ---@param auth boolean
----@param permissions table<string, boolean>
-function Noir.Classes.Player:Init(name, ID, steam, admin, auth, permissions)
+function Noir.Classes.Player:Init(name, ID, steam, admin, auth)
     Noir.TypeChecking:Assert("Noir.Classes.Player:Init()", "name", name, "string")
     Noir.TypeChecking:Assert("Noir.Classes.Player:Init()", "ID", ID, "number")
     Noir.TypeChecking:Assert("Noir.Classes.Player:Init()", "steam", steam, "string")
     Noir.TypeChecking:Assert("Noir.Classes.Player:Init()", "admin", admin, "boolean")
     Noir.TypeChecking:Assert("Noir.Classes.Player:Init()", "auth", auth, "boolean")
-    Noir.TypeChecking:Assert("Noir.Classes.Player:Init()", "permissions", permissions, "table")
 
     self.Name = name
     self.ID = math.floor(ID)
     self.Steam = steam
     self.Admin = admin
     self.Auth = auth
-    self.Permissions = permissions
     self.InGame = true
+
+    self.OnCharacterLoad = Noir.Libraries.Events:Create()
 end
 
 --[[
-    Give this player a permission.
+    Triggers `OnCharacterLoad`.<br>
+    Used internally.
 ]]
----@param permission string
-function Noir.Classes.Player:SetPermission(permission)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.Player:SetPermission()", "permission", permission, "string")
-
-    -- Set permission
-    self.Permissions[permission] = true
-
-    -- Save changes
-    Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
-end
-
---[[
-    Returns whether or not this player has a permission.
-]]
----@param permission string
----@return boolean
-function Noir.Classes.Player:HasPermission(permission)
-    Noir.TypeChecking:Assert("Noir.Classes.Player:HasPermission()", "permission", permission, "string")
-    return self.Permissions[permission] ~= nil
-end
-
---[[
-    Remove a permission from this player.
-]]
----@param permission string
-function Noir.Classes.Player:RemovePermission(permission)
-    -- Type checking
-    Noir.TypeChecking:Assert("Noir.Classes.Player:RemovePermission()", "permission", permission, "string")
-
-    -- Remove permission
-    self.Permissions[permission] = nil
-
-    -- Save changes
-    Noir.Services.PlayerService:_SaveProperty(self, "Permissions")
-end
-
---[[
-    Returns a table containing the player's permissions.
-]]
----@return table<integer, string>
-function Noir.Classes.Player:GetPermissions()
-    return Noir.Libraries.Table:Keys(self.Permissions)
+---@param character NoirObject
+function Noir.Classes.Player:_CharacterLoad(character)
+    self.OnCharacterLoad:Fire(character)
 end
 
 --[[
@@ -213,18 +174,16 @@ end
 --[[
     Returns this player's character as a NoirObject.
 ]]
----@return NoirObject
+---@return NoirObject|nil
 function Noir.Classes.Player:GetCharacter()
     -- Get the character
-    local character = server.getPlayerCharacterID(self.ID)
+    local object_id, success = server.getPlayerCharacterID(self.ID)
 
-    if not character then
-        error("Noir.Classes.Player:GetCharacter()", "server.getPlayerCharacterID() returned nil")
+    if not success then
+        return
     end
 
-    -- Return character
-    local object = Noir.Services.ObjectService:GetObject(character)
-    return object
+    return Noir.Services.ObjectService:GetObject(object_id)
 end
 
 --[[

@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -36,11 +36,17 @@
 ]]
 ---@class NoirTracker: NoirClass
 ---@field New fun(self: NoirTracker, name: string, func: function): NoirTracker
+---@field OnBeforeCall NoirEvent Fired before the function is called | Arguments: ... (any)
+---@field OnAfterCall NoirEvent Fired after the function is called | Arguments: ... (any)
 ---@field FunctionName string The name of the function provided
 ---@field Function function The original unmodified function
 ---@field CallCount integer The number of times the function has been called
 ---@field ExecutionTimes table<integer, integer> A table containing the execution time of each function call in milliseconds
 ---@field AverageExecutionTime number The average execution time of the function
+---@field AverageCallsPerTick integer The average number of times the function gets called per tick
+---@field CallsPerTick integer The number of times the function has been called this tick
+---@field CallsPerTickHistory table<integer, integer> A table containing the number of times the function has been called per tick
+---@field _LastProcessedTick integer The amount of ticks that have passed since the last calls per tick calculation
 ---@field _TimeBeforeCall number The time before the function was called via server.getTimeMillisec()
 ---@field _ModifiedFunction function The unmodified function but wrapped with debug code
 Noir.Classes.Tracker = Noir.Class("Tracker")
@@ -54,11 +60,20 @@ function Noir.Classes.Tracker:Init(name, func)
     Noir.TypeChecking:Assert("Noir.Classes.Tracker:Init()", "name", name, "string")
     Noir.TypeChecking:Assert("Noir.Classes.Tracker:Init()", "func", func, "function")
 
+    self.OnBeforeCall = Noir.Libraries.Events:Create()
+    self.OnAfterCall = Noir.Libraries.Events:Create()
+
     self.FunctionName = name
     self.Function = func
     self.CallCount = 0
+
     self.ExecutionTimes = {}
     self.AverageExecutionTime = 0
+
+    self.AverageCallsPerTick = 0
+    self.CallsPerTick = 0
+    self.CallsPerTickHistory = {}
+    self._LastProcessedTick = 0
 
     self._TimeBeforeCall = 0
 
@@ -77,6 +92,7 @@ end
 ]]
 function Noir.Classes.Tracker:_BeforeCall(...)
     self._TimeBeforeCall = server.getTimeMillisec()
+    self.OnBeforeCall:Fire(...)
 end
 
 --[[
@@ -87,6 +103,24 @@ function Noir.Classes.Tracker:_AfterCall(...)
     -- Increment call count
     self.CallCount = self.CallCount + 1
 
+    -- Calculate calls per tick
+    local currentTick = Noir.Services.TaskService.Ticks
+
+    if currentTick ~= self._LastProcessedTick then
+        table.insert(self.CallsPerTickHistory, self.CallsPerTick)
+
+        if #self.CallsPerTickHistory >= 10 then
+            table.remove(self.CallsPerTickHistory, 1)
+        end
+
+        self.AverageCallsPerTick = Noir.Libraries.Number:Average(self.CallsPerTickHistory)
+
+        self.CallsPerTick = 0
+        self._LastProcessedTick = currentTick
+    end
+
+    self.CallsPerTick = self.CallsPerTick + 1
+
     -- Add execution time
     if #self.ExecutionTimes >= 10 then
         table.remove(self.ExecutionTimes, 1)
@@ -96,6 +130,9 @@ function Noir.Classes.Tracker:_AfterCall(...)
 
     -- Calculate average execution time
     self.AverageExecutionTime = Noir.Libraries.Number:Average(self.ExecutionTimes)
+
+    -- Fire events
+    self.OnAfterCall:Fire(...)
 end
 
 --[[
@@ -103,11 +140,12 @@ end
 ]]
 ---@return string
 function Noir.Classes.Tracker:ToFormattedString()
-    return ("%s() | Avg. Exc. Time: %.4f ms, Last Exc. Time: %.4fms, Call Count: %d"):format(
+    return ("%s() | Avg. Exc. Time: %.8f ms, Last Exc. Time: %.8fms, Call Count: %d, %.1f calls/tick"):format(
         self:GetName(),
         self:GetAverageExecutionTime(),
         self:GetLastExecutionTime(),
-        self:GetCallCount()
+        self:GetCallCount(),
+        self:GetAverageCallsPerTick()
     )
 end
 
@@ -128,6 +166,22 @@ end
 ---@return string
 function Noir.Classes.Tracker:GetName()
     return self.FunctionName
+end
+
+--[[
+    Returns the calls per tick.
+]]
+---@return number
+function Noir.Classes.Tracker:GetCallsPerTick()
+    return self.CallsPerTick
+end
+
+--[[
+    Returns the average calls per tick.
+]]
+---@return number
+function Noir.Classes.Tracker:GetAverageCallsPerTick()
+    return self.AverageCallsPerTick
 end
 
 --[[

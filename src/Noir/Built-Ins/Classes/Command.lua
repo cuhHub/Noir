@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -32,18 +32,22 @@
 -------------------------------
 
 --[[
+    Represents a command trigger callback.
+]]
+---@alias NoirCommandCallback fun(context: NoirCommandContext)
+
+--[[
     Represents a command.
 ]]
 ---@class NoirCommand: NoirClass
----@field New fun(self: NoirCommand, name: string, aliases: table<integer, string>, requiredPermissions: table<integer, string>, requiresAuth: boolean, requiresAdmin: boolean, capsSensitive: boolean, description: string): NoirCommand
+---@field New fun(self: NoirCommand, name: string, aliases: table<integer, string>, requiresAuth: boolean, requiresAdmin: boolean, capsSensitive: boolean, description: string): NoirCommand
 ---@field Name string The name of this command
 ---@field Aliases table<integer, string> The aliases of this command
----@field RequiredPermissions table<integer, string> The required permissions for this command. If this is empty, anyone can use this command
 ---@field RequiresAuth boolean Whether or not this command requires auth
 ---@field RequiresAdmin boolean Whether or not this command requires admin
 ---@field CapsSensitive boolean Whether or not this command is case-sensitive
 ---@field Description string The description of this command
----@field OnUse NoirEvent Arguments: player (NoirPlayer), message (string), args (table<integer, string>), hasPermission (boolean) | Fired when this command is used
+---@field OnUse NoirEvent Arguments: context (NoirCommandContext) | Fired when this command is used
 Noir.Classes.Command = Noir.Class("Command")
 
 --[[
@@ -51,15 +55,13 @@ Noir.Classes.Command = Noir.Class("Command")
 ]]
 ---@param name string
 ---@param aliases table<integer, string>
----@param requiredPermissions table<integer, string>
 ---@param requiresAuth boolean
 ---@param requiresAdmin boolean
 ---@param capsSensitive boolean
 ---@param description string
-function Noir.Classes.Command:Init(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description)
+function Noir.Classes.Command:Init(name, aliases, requiresAuth, requiresAdmin, capsSensitive, description)
     Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "name", name, "string")
     Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "aliases", aliases, "table")
-    Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "requiredPermissions", requiredPermissions, "table")
     Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "requiresAuth", requiresAuth, "boolean")
     Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "requiresAdmin", requiresAdmin, "boolean")
     Noir.TypeChecking:Assert("Noir.Classes.Command:Init()", "capsSensitive", capsSensitive, "boolean")
@@ -67,7 +69,6 @@ function Noir.Classes.Command:Init(name, aliases, requiredPermissions, requiresA
 
     self.Name = name
     self.Aliases = aliases
-    self.RequiredPermissions = requiredPermissions
     self.RequiresAuth = requiresAuth
     self.RequiresAdmin = requiresAdmin
     self.CapsSensitive = capsSensitive
@@ -90,7 +91,13 @@ function Noir.Classes.Command:_Use(player, message, args)
     Noir.TypeChecking:Assert("Noir.Classes.Command:_Use()", "args", args, "table")
 
     -- Fire event
-    self.OnUse:Fire(player, message, args, self:CanUse(player))
+    self.OnUse:Fire(Noir.Classes.CommandContext:New(
+        player,
+        args,
+        message,
+        self:CanUse(player),
+        self
+    ))
 end
 
 --[[
@@ -148,13 +155,6 @@ function Noir.Classes.Command:CanUse(player)
     -- Check if the player can use this command via admin
     if self.RequiresAdmin and not player.Admin then
         return false
-    end
-
-    -- Check if the player has the required permissions
-    for _, permission in ipairs(self.RequiredPermissions) do
-        if not player:HasPermission(permission) then
-            return false
-        end
     end
 
     -- Woohoo!

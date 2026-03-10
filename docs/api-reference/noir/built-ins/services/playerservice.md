@@ -70,14 +70,14 @@ Used internally.
 ---
 
 ```lua
-Noir.Services.PlayerService:_IsRecognized(player)
+Noir.Services.PlayerService:_IsRecognized(peerID)
 ```
 Returns whether or not a player is recognized.
 
 Used internally.
 
 ### Parameters
-- `player`: NoirPlayer
+- `peerID`: integer
 ### Returns
 - `boolean`
 

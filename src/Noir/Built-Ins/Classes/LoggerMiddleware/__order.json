@@ -1,0 +1,7 @@
+{
+    "order" : [
+        "LoggerMiddleware.lua",
+        "ChatLoggerMiddleware.lua",
+        "DebugLogLoggerMiddleware.lua"
+    ]
+}

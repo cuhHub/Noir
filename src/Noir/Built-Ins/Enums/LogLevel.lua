@@ -1,5 +1,5 @@
 --------------------------------------------------------
--- [Noir] Example - Welcome Addon
+-- [Noir] Enums - Log Level
 --------------------------------------------------------
 
 --[[
@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -31,5 +31,42 @@
 -- // Main
 -------------------------------
 
--- Start the Noir framework
-Noir:Start()
+--[[
+    Represents a log level, with higher levels being more severe.
+]]
+Noir.Enums.LogLevel = {
+    --[[
+        The log level for debug messages.
+    ]]
+    DEBUG = 0,
+
+    --[[
+        The log level for info messages.
+    ]]
+    INFO = 5,
+
+    --[[
+        The log level for success messages.
+    ]]
+    SUCCESS = 10,
+
+    --[[
+        The log level for warning messages.
+    ]]
+    WARNING = 15,
+
+    --[[
+        The log level for error messages.
+    ]]
+    ERROR = 20
+}
+
+--[[
+    Represents a log level, with higher levels being more severe.
+]]
+---@alias NoirLogLevel
+---| 0 # The log level for debug messages.
+---| 5 # The log level for info messages.
+---| 10 # The log level for success messages.
+---| 15 # The log level for warning messages.
+---| 20 # The log level for error messages.

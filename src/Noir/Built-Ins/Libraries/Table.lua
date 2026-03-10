@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -180,44 +180,44 @@ end
 ]]
 ---@param tbl table
 ---@param indent integer|nil
+---@param _journey table<table, boolean>|nil
 ---@return string
-function Noir.Libraries.Table:ToString(tbl, indent)
+function Noir.Libraries.Table:ToString(tbl, indent, _journey)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "tbl", tbl, "table")
     Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "indent", indent, "number", "nil")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:ToString()", "_journey", _journey, "table", "nil")
 
-    -- Set default indent
+    -- Convert table to string
     if not indent then
         indent = 0
     end
 
-    -- Create a table for later
+    _journey = _journey or {}
+
+    if _journey[tbl] then
+        return "{<circular reference!>}"
+    end
+
+    _journey[tbl] = true
+
     local toConcatenate = {}
 
-    -- Convert the table to a string
     for index, value in pairs(tbl) do
-        -- Get value type
         local valueType = type(value)
-
-        -- Format the index for later
         local formattedIndex = ("[%s]:"):format(type(index) == "string" and "\""..index.."\"" or tostring(index):gsub("\n", "\\n"))
-
-        -- Format the value
         local toAdd = formattedIndex
 
         if valueType == "table" then
-            -- Format table
             local nextIndent = indent + 2
             local formattedValue = Noir.Libraries.Table:ToString(value, nextIndent)
 
-            -- Check if empty table
             if formattedValue == "" then
                 formattedValue = "{}"
             else
                 formattedValue = "\n"..formattedValue
             end
 
-            -- Add to string
             toAdd = toAdd..(" %s"):format(formattedValue)
         elseif valueType == "number" or valueType == "boolean" then
             toAdd = toAdd..(" %s"):format(tostring(value))
@@ -225,11 +225,9 @@ function Noir.Libraries.Table:ToString(tbl, indent)
             toAdd = toAdd..(" \"%s\""):format(tostring(value):gsub("\n", "\\n"))
         end
 
-        -- Add to table
         table.insert(toConcatenate, ("  "):rep(indent)..toAdd)
     end
 
-    -- Return the table as a formatted string
     return table.concat(toConcatenate, "\n")
 end
 
@@ -256,6 +254,7 @@ function Noir.Libraries.Table:Copy(tbl)
 
     return new
 end
+
 --[[
     Copy a table (deep).
 
@@ -265,17 +264,30 @@ end
 ]]
 ---@generic tbl: table
 ---@param tbl tbl
+---@param _journey table|nil
 ---@return tbl
-function Noir.Libraries.Table:DeepCopy(tbl)
+function Noir.Libraries.Table:DeepCopy(tbl, _journey)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Libraries.Table:DeepCopy()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:DeepCopy()", "_journey", _journey, "table", "nil")
 
     -- Perform a deep copy
+    _journey = _journey or {}
+
+    if _journey[tbl] then
+        return _journey[tbl]
+    end
+
     local new = {}
+    _journey[tbl] = new
 
     for index, value in pairs(tbl) do
+        if type(index) == "table" then
+            index = self:DeepCopy(index, _journey)
+        end
+
         if type(value) == "table" then
-            new[index] = self:DeepCopy(value)
+            new[index] = self:DeepCopy(value, _journey)
         else
             new[index] = value
         end
@@ -387,4 +399,97 @@ function Noir.Libraries.Table:FindDeep(tbl, value)
             return self:FindDeep(iterValue, value)
         end
     end
+end
+
+--[[
+    Calls the function for every value in a table, and returns a new table with the results.
+    
+    local myTbl = {1, 2, 3}
+
+    local myChangedTbl = Noir.Libraries.Table:Map(myTbl, function(index, value)
+        return value * 2
+    end)
+
+    print(myChangedTbl) -- {2, 4, 6}
+]]
+---@param tbl table
+---@param callback fun(index: any, value: any): any
+---@return table
+function Noir.Libraries.Table:Map(tbl, callback)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Map()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Map()", "callback", callback, "function")
+
+    -- Map the table
+    local new = {}
+
+    for index, value in pairs(tbl) do
+        new[index] = callback(index, value)
+    end
+
+    return new
+end
+
+--[[
+    Calls the function for every value in the provided table, keeping the value in a new table if the
+    function returns true.
+
+    local myTbl = {1, 2, 3, 1}
+
+    local myFilteredTbl = Noir.Libraries.Table:Filter(myTbl, function(index, value)
+        return value == 1
+    end)
+
+    print(myFilteredTbl) -- {[1] = 1, [4] = 1}
+]]
+---@param tbl table
+---@param callback fun(index: any, value: any): boolean
+---@return table
+function Noir.Libraries.Table:Filter(tbl, callback)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Filter()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Filter()", "callback", callback, "function")
+
+    -- Filter the table
+    local new = {}
+
+    for index, value in pairs(tbl) do
+        if callback(index, value) then
+            new[index] = value
+        end
+    end
+
+    return new
+end
+
+--[[
+    Calls the function for every value in the provided table, keeping the value in a new table if the
+    function returns false. Unlike `:Filter()`, the indices are not maintained and `table.insert` is used instead.
+
+    local myTbl = {1, 2, 3, 1}
+
+    local myFilteredTbl = Noir.Libraries.Table:FilterSequential(myTbl, function(index, value)
+        return value == 1
+    end)
+
+    print(myFilteredTbl) -- {[1] = 1, [2] = 1}
+]]
+---@param tbl table
+---@param callback fun(index: any, value: any): boolean
+---@return table
+function Noir.Libraries.Table:FilterSequential(tbl, callback)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:FilterSequential()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:FilterSequential()", "callback", callback, "function")
+
+    -- Filter the table
+    local new = {}
+
+    for index, value in pairs(tbl) do
+        if callback(index, value) then
+            table.insert(new, value)
+        end
+    end
+
+    return new
 end

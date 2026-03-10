@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -31,58 +31,67 @@
 -- // Main
 -------------------------------
 
+---@alias NoirHoarderCheckpoint fun(instance: NoirHoardable): boolean, table|nil
+
 --[[
     A service for easily saving/loading class instances within a service with minimal hassle.<br>
-    Example:
+    Example (see `Hoardable` code sample for info on the class side of things):
 
-    -- For the code for the `Fruit` class used below, see the code sample in `Noir.Classes.Hoardable`
-
-    -- A service that stores Fruit instances.
-    ---@class Fruits: NoirService
     Fruits = Noir.Services:CreateService("Fruits")
 
     function Fruits:ServiceInit()
-        ---@type table<string, Fruit>
         self.Basket = {}
+        self.Bin = {}
 
         -- Before a fruit is loaded, the below is called
-        ---@param fruit Fruit
         Noir.Services.HoarderService:AddCheckpoint(self, Fruit, function(fruit)
+            -- Decrease the value of the fruit by 0.1. This is to show you can manipulate the fruit before it is loaded.
             fruit.Value = fruit.Value - 0.1
-            fruit:Hoard(self, "Basket") -- update changes on the saving side of things
 
-            return true -- return true to let the fruit load. if false, it will be discarded and unhoarded (never seen again)
+            -- We need to save the changes hence this line
+            fruit:Hoard(self, "Basket")
+
+            -- Return `true` to 100% load the fruit (`false` would skip loading it and remove it forever).
+            -- We also return a second value which is where the fruit should be stored upon loading.
+            -- Returning `nil` for the second value would just move the fruit to its original destination
+            -- provided by `:LoadAll()`, which in this case, is `self.Basket`.
+            return true, math.random(0, 1) == 1 and self.Bin or nil
         end)
 
-        Noir.Services.HoarderService:LoadAll(Fruit, self, "Basket")
+        -- Load all saved fruits
+        Noir.Services.HoarderService:LoadAll(
+            self, -- the service holding the save data that the fruits are stored in
+            "Basket", -- the name of the table in the save data the fruits are stored in
+            self.Basket, -- where to store the loaded fruits (can be overwritten by a checkpoint, see `:AddCheckpoint()` above)
+            Fruit, -- the class the saved fruits are instances of
+            {ItemInfo, Noir.Classes.Event} -- any classes that may be in `Fruit`. they do not have to inherit from NoirHoardable
+        )
 
+        -- Show the loaded fruits
         print("Fruits have been loaded!")
+        print("Basket:")
         for _, fruit in pairs(self.Basket) do
             print("   \\____ %s ($%s)", fruit.Name, fruit.Value)
         end
+
+        print("Bin:")
+        for _, fruit in pairs(self.Bin) do
+            print("   \\____ %s ($%s)", fruit.Name, fruit.Value)
+        end
+
+        if Noir.AddonReason == "SaveCreate" then
+            -- Create some fruits
+            self:AddFruit("Apple")
+            self:AddFruit("Banana")
+            self:AddFruit("Cherry")
+            self:AddFruit("Watermelon")
+            self:AddFruit("Pineapple")
+            self:AddFruit("Grapes")
+            self:AddFruit("Strawberry")
+            self:AddFruit("Orange")
+        end
     end
 
-    function Fruits:ServiceStart()
-        Noir.Services.CommandService:CreateCommand(
-            "fruit",
-            {},
-            {},
-            false,
-            false,
-            false,
-            "",
-            function(player, message, args, hasPermission)
-                if not hasPermission then
-                    return
-                end
-
-                self:AddFruit(args[1] or "Banana")
-            end
-        )
-    end
-
-    -- Adds a new fruit.
-    ---@param name string
     function Fruits:AddFruit(name)
         local fruit = Fruit:New(name, 1)
         fruit:Hoard(self, "Basket")
@@ -92,7 +101,7 @@
     end
 ]]
 ---@class NoirHoarderService: NoirService
----@field Checkpoints table<NoirService, table<NoirHoardable, table<integer, fun(instance: NoirHoardable)>>> The checkpoint functions for each service and class that dictate whether or not to load a serialized class instance
+---@field Checkpoints table<NoirService, table<NoirClass, NoirHoarderCheckpoint>> The checkpoint functions for each service and class that dictate whether or not to load a serialized class instance
 Noir.Services.HoarderService = Noir.Services:CreateService(
     "HoarderService",
     true,
@@ -106,32 +115,142 @@ function Noir.Services.HoarderService:ServiceInit()
 end
 
 --[[
+    Returns if a value is serializable.
+]]
+---@param value any
+---@return boolean
+function Noir.Services.HoarderService:_IsSerializable(value)
+    local allowed = {
+        ["number"] = true,
+        ["string"] = true,
+        ["boolean"] = true
+    }
+
+    return allowed[type(value)] ~= nil
+end
+
+--[[
+    Serializes a table for saving by removing all functions.<br>
+    Used internally.
+]]
+---@param tbl table
+---@param _active table<any, boolean>|nil
+---@return table
+function Noir.Services.HoarderService:_Serialize(tbl, _active)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_Serialize()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_Serialize()", "_active", _active, "table", "nil")
+
+    -- Check for cyclic tables/shared references
+    _active = _active or {}
+
+    if _active[tbl] then
+        error("Noir.Services.HoarderService:_Serialize()", "Cyclic table detected during serialization. Cyclic tables cannot be saved! Consider replacing this value via `:OnPreSerialize()` and recreating the original manually via `:OnPostDeserialize()`.")
+    end
+
+    _active[tbl] = true
+
+    -- Serialize
+    local serialized = {}
+
+    for key, value in pairs(tbl) do
+        if not self:_IsSerializable(key) then
+            goto continue
+        end
+
+        if type(value) == "table" then
+            -- Recursively serialize
+            serialized[key] = self:_Serialize(value, _active)
+        else
+            if not self:_IsSerializable(value) then
+                goto continue
+            end
+
+            -- Add value (it's allowed)
+            serialized[key] = value
+        end
+
+        ::continue::
+    end
+
+    _active[tbl] = nil
+
+    -- Return
+    return serialized
+end
+
+--[[
+    Adds class names as indices to a table of classes.<br>
+    Used internally.
+]]
+---@param classes table<integer, NoirClass>
+---@return table<string, NoirClass>
+function Noir.Services.HoarderService:_IndexClasses(classes)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_IndexClasses()", "classes", classes, "table")
+
+    -- Index classes
+    ---@type table<string, NoirClass>
+    local indexed = {}
+
+    for _, class in pairs(classes) do
+        indexed[class.ClassName] = class
+    end
+
+    return indexed
+end
+
+
+--[[
     Deserializes a serialized class instance.<br>
     Used internally.
 ]]
----@param class NoirHoardable
+---@param class NoirHoardable|NoirClass
 ---@param serialized table
----@return NoirHoardable
-function Noir.Services.HoarderService:_Deserialize(class, serialized)
+---@param lookupClasses table<string, NoirClass>
+---@return NoirClass
+function Noir.Services.HoarderService:_Deserialize(class, serialized, lookupClasses)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:_Deserialize()", "class", class, "class")
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:_Deserialize()", "serialized", serialized, "table")
-
-    if not Noir.Classes.Hoardable:IsSameType(class) then
-        error("Noir.Services.HoarderService:_Deserialize()", "`class` argument must inherit from `Hoardable` to work with `HoarderService`.")
-    end
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_Deserialize()", "lookupClasses", lookupClasses, "table")
 
     -- Setup instance
+    ---@type NoirHoardable|NoirClass
+    ---@diagnostic disable-next-line: missing-fields
     local instance = {}
     class:_SetupObject(instance)
 
+    -- Call `OnPreDeserialize`
+    if Noir.Classes.Hoardable:IsSameType(instance)  and instance.OnPreDeserialize then
+        ---@diagnostic disable-next-line: param-type-mismatch
+        instance:OnPreDeserialize(serialized, lookupClasses)
+    end
+
     -- Set attributes
     for key, value in pairs(serialized) do
-        instance[key] = value
+        if Noir.IsClass(value) then -- .IsClass(), at least for 3.0.0, checks for a `ClassName` attribute. so even if serialized, it'll work here 
+            local className = value.ClassName
+            local _class = lookupClasses[className]
+
+            if not _class then
+                error("Noir.Services.HoarderService:_Deserialize()", "Class '%s' is unrecognised and cannot be serialized. Please ensure it is in the `lookupClasses` table passed to `:LoadAll()` (or `:_Deserialize()`).", className)
+            end
+
+            instance[key] = self:_Deserialize(_class, value, lookupClasses)
+        else
+            instance[key] = value
+        end
     end
 
     -- Re-add parents
     instance._Parents = class._Parents
+
+    -- Call `OnPostDeserialize`
+    if Noir.Classes.Hoardable:IsSameType(instance)  and instance.OnPostDeserialize then
+        ---@diagnostic disable-next-line: param-type-mismatch
+        instance:OnPostDeserialize(serialized, lookupClasses)
+    end
 
     -- Return
     return instance
@@ -145,69 +264,64 @@ end
 ---@param tblName string
 function Noir.Services.HoarderService:_InitSaveData(service, tblName)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_InitSaveDataCategory()", "service", service, "class")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_InitSaveDataCategory()", "service", service, Noir.Classes.Service)
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:_InitSaveDataCategory()", "tblName", tblName, "string")
-
-    if not Noir.Classes.Service:IsSameType(service) then
-        error("Noir.Services.HoarderService:_InitSaveDataCategory()", "`service` argument must be a `NoirService` class instance.")
-    end
 
     -- Create table
     service:EnsuredLoad(tblName, {})
 end
 
 --[[
-    Returns whether a class instance about to be loaded should be loaded.<br>
+    Invokes the checkpoint for the provided service and class if any.<br>
+    It then returns the result which should be whether or not to load the instance and an optional overwritten location for the instance.<br>
     Used internally.
 ]]
 ---@param service NoirService
----@param class NoirHoardable
+---@param class NoirClass
 ---@param instance NoirHoardable
 ---@return boolean
-function Noir.Services.HoarderService:_ShouldLoad(service, class, instance)
+---@return table|nil
+function Noir.Services.HoarderService:_HandleCheckpoint(service, class, instance)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_ShouldLoad()", "service", service, "class")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_ShouldLoad()", "service", service, Noir.Classes.Service)
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:_ShouldLoad()", "class", class, "class")
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_ShouldLoad()", "instance", instance, "class")
-
-    if not Noir.Classes.Service:IsSameType(service) then
-        error("Noir.Services.HoarderService:_ShouldLoad()", "`service` argument must be a `NoirService` class instance.")
-    end
-
-    if not Noir.Classes.Hoardable:IsSameType(class) then
-        error("Noir.Services.HoarderService:_ShouldLoad()", "`class` argument must inherit from `Hoardable` to work with `HoarderService`.")
-    end
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:_ShouldLoad()", "instance", instance, Noir.Classes.Hoardable)
 
     -- Run checkpoint if it exists
     if self.Checkpoints[service] and self.Checkpoints[service][class] then
         return self.Checkpoints[service][class](instance)
     end
 
-    -- Default to true
+    -- Default to true and default location
     return true
 end
 
 --[[
-    Adds a checkpoint function for a service. It must return a boolean.<br>
+    Adds a checkpoint function for a service and class. It must return a boolean and an optional location for the instance.<br>
     if `true` is returned, the passed instance will be loaded.<br>
-    if `false` is returned, the passed instance will not be loaded.
+    if `false` is returned, the passed instance will not be loaded.<br><br>
+    Example Checkpoint:
+
+    function myCheckpoint(instance)
+        if not instance:DoesObjectExist() then
+            return false -- do not load
+        end
+    
+        if instance.HasOwner then
+            return true, myService.InstancesWithOwner -- loads, and goes to a different table
+        else
+            return true -- loads, and goes to the default table provided with `:LoadAll()`
+        end
+    end
 ]]
 ---@param service NoirService
 ---@param class NoirHoardable
----@param func fun(instance: NoirHoardable): boolean
+---@param func NoirHoarderCheckpoint
 function Noir.Services.HoarderService:AddCheckpoint(service, class, func)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:AddCheckpoint()", "service", service, "class")
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:AddCheckpoint()", "class", class, "class")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:AddCheckpoint()", "service", service, Noir.Classes.Service)
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:AddCheckpoint()", "class", class, Noir.Classes.Hoardable)
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:AddCheckpoint()", "func", func, "function")
-
-    if not Noir.Classes.Service:IsSameType(service) then
-        error("Noir.Services.HoarderService:AddCheckpoint()", "`service` argument must be a `NoirService` class instance.")
-    end
-
-    if not Noir.Classes.Hoardable:IsSameType(class) then
-        error("Noir.Services.HoarderService:AddCheckpoint()", "`class` argument must inherit from `Hoardable` to work with `HoarderService`.")
-    end
 
     -- Add function
     if not self.Checkpoints[service] then
@@ -225,31 +339,34 @@ end
     Saves the provided class instance within a service.
 ]]
 ---@param service NoirService
----@param tblName string
+---@param tblName string The name of the sub-table in the provided service's savedata to save the serialized instance to
 ---@param instance NoirHoardable
 function Noir.Services.HoarderService:Hoard(service, tblName, instance)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Hoard()", "service", service, "class")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Hoard()", "service", service, Noir.Classes.Service)
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:Hoard()", "tblName", tblName, "string")
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Hoard()", "instance", instance, "class")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Hoard()", "instance", instance, Noir.Classes.Hoardable)
 
-    if not Noir.Classes.Service:IsSameType(service) then
-        error("Noir.Services.HoarderService:Hoard()", "`service` argument must be a `NoirService` class instance.")
+    -- Serialize
+    instance = Noir.Libraries.Table:DeepCopy(instance)
+
+    if instance.OnPreSerialize then
+        instance:OnPreSerialize()
     end
 
-    if not Noir.Classes.Hoardable:IsSameType(instance) then
-        error("Noir.Services.HoarderService:Hoard()", "`instance` argument must inherit from `Hoardable` to work with `HoarderService`.")
+    local serialized = self:_Serialize(instance)
+
+    if instance.OnPostSerialize then
+        instance:OnPostSerialize(serialized)
     end
 
-    -- Serialize and save
-    local serialized = instance:Serialize()
-    local id = instance:GetHoardableID()
-    local saveData = service:GetSaveData()
-
+    -- Save serialized instance
     self:_InitSaveData(service, tblName)
 
-    if id then
-        saveData[tblName][id] = serialized
+    local saveData = service:GetSaveData()
+
+    if instance:HasHoardableID() then
+        saveData[tblName][instance:GetHoardableID()] = serialized
     else
         table.insert(saveData[tblName], serialized)
     end
@@ -263,27 +380,18 @@ end
 ---@param instance NoirHoardable
 function Noir.Services.HoarderService:Unhoard(service, tblName, instance)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Unhoard()", "service", service, "class")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Unhoard()", "service", service, Noir.Classes.Service)
     Noir.TypeChecking:Assert("Noir.Services.HoarderService:Unhoard()", "tblName", tblName, "string")
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Unhoard()", "instance", instance, "class")
-
-    if not Noir.Classes.Service:IsSameType(service) then
-        error("Noir.Services.HoarderService:Unhoard()", "`service` argument must be a `NoirService` class instance.")
-    end
-
-    if not Noir.Classes.Hoardable:IsSameType(instance) then
-        error("Noir.Services.HoarderService:Unhoard()", "`instance` argument must inherit from `Hoardable` to work with `HoarderService`.")
-    end
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Unhoard()", "instance", instance, Noir.Classes.Hoardable)
 
     -- Init savedata
     self:_InitSaveData(service, tblName)
 
     -- Unhoard
     local saveData = service:GetSaveData()
-    local ID = instance:GetHoardableID()
 
-    if ID then
-        saveData[tblName][ID] = nil
+    if instance:HasHoardableID() then
+        saveData[tblName][instance:GetHoardableID()] = nil
     else
         local index = Noir.Libraries.Table:Find(saveData[tblName], instance)
 
@@ -296,48 +404,62 @@ function Noir.Services.HoarderService:Unhoard(service, tblName, instance)
 end
 
 --[[
-    Loads all serialized class instances into a table in the provided service.
+    Clears out saved instances for the provided service.
 ]]
----@param class NoirHoardable
 ---@param service NoirService
 ---@param tblName string
-function Noir.Services.HoarderService:LoadAll(class, service, tblName)
+function Noir.Services.HoarderService:Clear(service, tblName)
     -- Type checking
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:LoadAll()", "class", class, "class")
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:LoadAll()", "service", service, "class")
-    Noir.TypeChecking:Assert("Noir.Services.HoarderService:LoadAll()", "tblName", tblName, "string")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Clear()", "service", service, Noir.Classes.Service)
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:Clear()", "tblName", tblName, "string")
 
-    if not Noir.Classes.Service:IsSameType(service) then
-        error("Noir.Services.HoarderService:LoadAll()", "`service` argument must be a `NoirService` class instance.")
-    end
+    -- Init savedata
+    self:_InitSaveData(service, tblName)
 
-    if not Noir.Classes.Hoardable:IsSameType(class) then
-        error("Noir.Services.HoarderService:LoadAll()", "`class` argument must inherit from `Hoardable` to work with `HoarderService`.")
-    end
+    -- Clear
+    service:GetSaveData()[tblName] = {}
+end
 
-    if not service[tblName] then
-        error("Noir.Services.HoarderService:LoadAll()", "`service` does not have a table with the name `%s`. Check the `tblName` argument.", tblName)
-    end
+--[[
+    Loads all serialized class instances into a table in the provided service.
+]]
+---@param service NoirService
+---@param from string The name of the sub-table in the provided service's savedata to load the serialized instances from
+---@param to table The table to load the class instances into
+---@param class NoirHoardable The class the serialized instances are of
+---@param lookupClasses table<integer, NoirClass> A table of classes that the provided class may contain instances of. This is used to deserialize instances of classes that are not the provided class but may be contained within it.
+function Noir.Services.HoarderService:LoadAll(service, from, to, class, lookupClasses)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:LoadAll()", "service", service, Noir.Classes.Service)
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:LoadAll()", "from", from, "string")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:LoadAll()", "to", to, "table")
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:LoadAll()", "class", class, Noir.Classes.Hoardable)
+    Noir.TypeChecking:Assert("Noir.Services.HoarderService:LoadAll()", "lookupClasses", lookupClasses, "table")
+
+    -- Convert classes to lookup table (classes indexed by their class name)
+    local _lookupClasses = self:_IndexClasses(lookupClasses)
 
     -- Get save data
     local saveData = service:GetSaveData()
-    self:_InitSaveData(service, tblName)
+    self:_InitSaveData(service, from)
 
     -- Load
-    for _, serialized in pairs(saveData[tblName]) do
-        local instance = self:_Deserialize(class, serialized)
+    for _, serialized in pairs(saveData[from]) do
+        ---@type NoirHoardable
+        local instance = self:_Deserialize(class, serialized, _lookupClasses)
+        local shouldLoad, overwrittenLocation = self:_HandleCheckpoint(service, class, instance)
 
-        if not self:_ShouldLoad(service, class, instance) then
-            self:Unhoard(service, tblName, instance)
+        if not shouldLoad then
+            self:Unhoard(service, from, instance)
             goto continue
         end
 
-        local ID = instance:GetHoardableID()
+        local location = overwrittenLocation or to
 
-        if ID then
-            service[tblName][ID] = instance
+        if instance:HasHoardableID() then
+            location[instance:GetHoardableID()] = instance
         else
-            table.insert(service[tblName], instance)
+            table.insert(location, instance)
         end
 
         ::continue::

@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -42,9 +42,16 @@
 require("Noir.Definition")
 require("Noir.TypeChecking")
 
+require("Noir.Enums")
+require("Noir.Built-Ins.Enums.AddonReason")
+require("Noir.Built-Ins.Enums.LogLevel")
+require("Noir.Built-Ins.Enums.TaskType")
+require("Noir.Built-Ins.Enums.WidgetType")
+
 require("Noir.Classes")
 require("Noir.Class")
 require("Noir.Built-Ins.Classes.Connection")
+require("Noir.Built-Ins.Classes.CommandContext")
 require("Noir.Built-Ins.Classes.Event")
 require("Noir.Built-Ins.Classes.Service")
 require("Noir.Built-Ins.Classes.Player")
@@ -68,6 +75,11 @@ require("Noir.Built-Ins.Classes.Widgets.ScreenPopupWidget")
 require("Noir.Built-Ins.Classes.Widgets.PopupWidget")
 require("Noir.Built-Ins.Classes.RelPos")
 require("Noir.Built-Ins.Classes.Hoardable")
+require("Noir.Built-Ins.Classes.Logger")
+require("Noir.Built-Ins.Classes.LogRecord")
+require("Noir.Built-Ins.Classes.LoggerMiddleware.LoggerMiddleware")
+require("Noir.Built-Ins.Classes.LoggerMiddleware.ChatLoggerMiddleware")
+require("Noir.Built-Ins.Classes.LoggerMiddleware.DebugLogLoggerMiddleware")
 
 require("Noir.Libraries")
 require("Noir.Built-Ins.Libraries.Events")

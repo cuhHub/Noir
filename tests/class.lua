@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ end
 
 ---@class Person: AnimatedEntity, Networked
 ---@field New fun(self: Person, name: string): Person
-Person = Noir.Class("Person", Entity, Networked)
+Person = Noir.Class("Person", AnimatedEntity, Networked)
 
 ---@param name string
 function Person:Init(name)

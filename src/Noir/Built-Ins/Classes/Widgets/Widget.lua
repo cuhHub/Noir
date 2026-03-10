@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@
 ---@field Visible boolean Whether or not this widget is visible
 ---@field WidgetType NoirWidgetType The type of this widget (eg: "MapObject")
 ---@field Player NoirPlayer|nil The player that this widget is attached to. If nil, all players can see this UI
+---@field ForceHidden boolean Whether or not this widget is forcefully hidden
 Noir.Classes.Widget = Noir.Class("Widget")
 
 --[[
@@ -59,6 +60,7 @@ function Noir.Classes.Widget:Init(ID, visible, widgetType, player)
     self.Visible = visible
     self.WidgetType = widgetType
     self.Player = player
+    self.ForceHidden = false
 end
 
 --[[
@@ -70,7 +72,8 @@ function Noir.Classes.Widget:Serialize()
         ID = self.ID,
         Visible = self.Visible,
         WidgetType = self.WidgetType,
-        Player = self.Player and self.Player.ID or -1
+        Player = self.Player and self.Player.ID or -1,
+        ForceHidden = self.ForceHidden
     }, self:_Serialize())
 end
 
@@ -95,18 +98,19 @@ function Noir.Classes.Widget:Deserialize(serializedWidget)
 end
 
 --[[
+    Returns if this widget is visible.
+]]
+---@return boolean
+function Noir.Classes.Widget:IsVisible()
+    return self.Visible and not self.ForceHidden
+end
+
+--[[
     Updates this widget.
 ]]
 function Noir.Classes.Widget:Update()
-    if self.Player then
-        self:_Destroy(self.Player) -- destroy old version. prevents duplication
-        self:_Update(self.Player)
-    else
-        for _, player in pairs(Noir.Services.PlayerService:GetPlayers(true)) do
-            self:_Destroy(player)
-            self:_Update(player)
-        end
-    end
+    self:_Destroy() -- destroy old version. prevents duplication
+    self:_Update()
 
     if self:Exists() then
         Noir.Services.UIService:_SaveWidget(self)
@@ -117,8 +121,7 @@ end
     Updates this widget.<br>
     *abstract method*
 ]]
----@param player NoirPlayer
-function Noir.Classes.Widget:_Update(player)
+function Noir.Classes.Widget:_Update()
     error("Noir.Classes.Widget:Update()", "This method is abstract and must be overridden.")
 end
 
@@ -126,22 +129,23 @@ end
     Destroys this widget.
 ]]
 function Noir.Classes.Widget:Destroy()
-    if self.Player then
-        self:_Destroy(self.Player)
-    else
-        for _, player in pairs(Noir.Services.PlayerService:GetPlayers(true)) do
-            self:_Destroy(player)
-        end
-    end
+    self:_Destroy()
 end
 
 --[[
     Destroys this widget.<br>
     *abstract method*
 ]]
----@param player NoirPlayer
-function Noir.Classes.Widget:_Destroy(player)
+function Noir.Classes.Widget:_Destroy()
     error("Noir.Classes.Widget:_Destroy()", "This method is abstract and must be overridden.")
+end
+
+--[[
+    Returns the peer ID for the player this widget is attached to, or -1 if for everyone.
+]]
+---@return integer
+function Noir.Classes.Widget:_GetPeerID()
+    return self.Player and self.Player.ID or -1
 end
 
 --[[
@@ -171,13 +175,4 @@ end
 ---@field Visible boolean Whether or not this widget is visible
 ---@field WidgetType NoirWidgetType The type of this widget (eg: "MapObject")
 ---@field Player integer The peer ID of the player that this widget is attached to, or -1 if for everyone
-
---[[
-    Represents a widget type.
-]]
----@alias NoirWidgetType
----| "MapObject" # A map object widget
----| "MapLabel" # A map label widget
----| "MapLine" # A map line widget
----| "ScreenPopup" # A screen popup widget
----| "Popup" # A popup widget in 3D space
+---@field ForceHidden boolean Whether or not the widget is force-hidden

@@ -16,7 +16,7 @@ Noir.Classes.Hoardable:Init(ID)
 Initializes `Hoardable` class instances.
 
 ### Parameters
-- `ID`: any
+- `ID`: any|nil
 
 ---
 
@@ -27,28 +27,6 @@ Returns the ID of this class instance.
 
 ### Returns
 - `any|nil`
-
----
-
-```lua
-Noir.Classes.Hoardable:_Strip(tbl)
-```
-Returns the provided table but stripped of non-serializable values.
-
-### Parameters
-- `tbl`: table
-### Returns
-- `table`
-
----
-
-```lua
-Noir.Classes.Hoardable:Serialize()
-```
-Serializes this class instance.
-
-### Returns
-- `table`
 
 ---
 
@@ -71,3 +49,40 @@ Unhoards this instance.
 ### Parameters
 - `service`: NoirService
 - `tblName`: string
+
+---
+
+```lua
+Noir.Classes.Hoardable:OnSerialize(serialized) end
+```
+Called during serialization.
+
+`self` is the class instance being serialized.
+
+`serialized` is the serialized data of the class instance.
+
+This is an `abstractmethod` and should be overridden in subclasses (optional).
+
+### Parameters
+- `serialized`: table
+
+---
+
+```lua
+Noir.Classes.Hoardable:OnDeserialize(serialized, lookupClasses) end
+```
+Called during deserialization.
+
+`self` is the deserialized class instance.
+
+`serialized` is the serialized data of the class instance.
+
+`lookupClasses` is a table of classes that can be used to deserialize the class instance.
+
+This is a useful place to apply corrections if the `HoarderService` didn't deserialize the class instance to your expectation.
+
+This is an `abstractmethod` and should be overridden in subclasses (optional).
+
+### Parameters
+- `serialized`: table
+- `lookupClasses`: table<string, NoirClass>

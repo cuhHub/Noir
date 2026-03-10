@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -81,9 +81,6 @@ function Noir.Classes.Task:Init(ID, taskType, duration, isRepeating, arguments, 
     self.OnCompletion = Noir.Libraries.Events:Create()
 end
 
-    --[[
-]]
-
 --[[
     Sets whether or not this task is repeating.<br>
     If repeating, the task will be triggered repeatedly as implied.<br>
@@ -121,14 +118,3 @@ end
 function Noir.Classes.Task:Remove()
     Noir.Services.TaskService:RemoveTask(self)
 end
-
--------------------------------
--- // Intellisense
--------------------------------
-
---[[
-    Represents a task type.
-]]
----@alias NoirTaskType
----| "Time" The task will use `server.getTimeMillisec()`
----| "Ticks" The task will count ticks in `onTick` while considering the amount of ticks passed in a single tick

@@ -10,7 +10,7 @@
         GitHub Repository: https://github.com/cuhHub/Noir
 
     License:
-        Copyright (C) 2025 Cuh4
+        Copyright (C) 2026 Cuh4
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -32,16 +32,17 @@
 -------------------------------
 
 --[[
-    A service for easily creating commands with support for command aliases, permissions, etc.
+    A service for easily creating commands with support for command aliases, etc.
 
-    Noir.Services.CommandService:CreateCommand("info", {"i"}, {"Nerd"}, false, false, false, "Shows random information.", function(player, message, args, hasPermission)
+    -- `true` = requires auth
+    Noir.Services.CommandService:CreateCommand("help", {"h"}, true, false, false, "My Command Description", function(player, message, args, hasPermission)
         if not hasPermission then
-            server.announce("Server", "Sorry, you don't have permission to use this command. Try again though.", player.ID)
-            player:SetPermission("Nerd")
+            player:Notify("Lacking Permissions", "Sorry, you don't have permission to run this command. Try again.", 3)
+            player:SetAuth(true)
             return
         end
 
-        server.announce("Info", "This addon uses Noir!")
+        player:Notify("Help", "TODO: Add a help message", 4)
     end)
 ]]
 ---@class NoirCommandService: NoirService
@@ -51,7 +52,7 @@ Noir.Services.CommandService = Noir.Services:CreateService(
     "CommandService",
     true,
     "A service that allows you to create commands.",
-    "A service that allows you to create commands with support for aliases, permissions, etc.",
+    "A service that allows you to create commands with support for aliases, etc.",
     {"Cuh4"}
 )
 
@@ -103,30 +104,29 @@ end
 --[[
     Create a new command.
 
-    Noir.Services.CommandService:CreateCommand("help", {"h"}, {"Nerd"}, false, false, false, "Example Command", function(player, message, args, hasPermission)
-        if not hasPermission then
-            player:Notify("Lacking Permissions", "Sorry, you don't have permission to run this command. Try again.", 3)
-            player:SetPermission("Nerd")
+    -- `true` = requires auth
+    Noir.Services.CommandService:CreateCommand("help", {"h"}, true, false, false, "My Command Description", function(context)
+        if not context.HasPermission then
+            context.Player:Notify("Lacking Permissions", "Sorry, you don't have permission to run this command. Try again.", 3)
+            context.Player:SetAuth(true)
             return
         end
 
-        player:Notify("Help", "TODO: Add a help message", 4)
+        context.Player:Notify("Help", "TODO: Add a help message", 4)
     end)
 ]]
 ---@param name string The name of the command (eg: if you provided "help", the player would need to type "?help" in chat)
 ---@param aliases table<integer, string> The aliases of the command
----@param requiredPermissions table<integer, string>|nil The required permissions for this command
 ---@param requiresAuth boolean|nil Whether or not this command requires auth
 ---@param requiresAdmin boolean|nil Whether or not this command requires admin
 ---@param capsSensitive boolean|nil Whether or not this command is case-sensitive
 ---@param description string|nil The description of this command
----@param callback fun(player: NoirPlayer, message: string, args: table<integer, string>, hasPermission: boolean)
+---@param callback NoirCommandCallback
 ---@return NoirCommand
-function Noir.Services.CommandService:CreateCommand(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description, callback)
+function Noir.Services.CommandService:CreateCommand(name, aliases, requiresAuth, requiresAdmin, capsSensitive, description, callback)
     -- Type checking
     Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "name", name, "string")
     Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "aliases", aliases, "table")
-    Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiredPermissions", requiredPermissions, "table", "nil")
     Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiresAuth", requiresAuth, "boolean", "nil")
     Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "requiresAdmin", requiresAdmin, "boolean", "nil")
     Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "capsSensitive", capsSensitive, "boolean", "nil")
@@ -134,7 +134,7 @@ function Noir.Services.CommandService:CreateCommand(name, aliases, requiredPermi
     Noir.TypeChecking:Assert("Noir.Services.CommandService:CreateCommand()", "callback", callback, "function")
 
     -- Create command
-    local command = Noir.Classes.Command:New(name, aliases, requiredPermissions or {}, requiresAuth or false, requiresAdmin or false, capsSensitive or false, description or "")
+    local command = Noir.Classes.Command:New(name, aliases, requiresAuth or false, requiresAdmin or false, capsSensitive or false, description or "")
 
     -- Connect to event
     command.OnUse:Connect(callback)

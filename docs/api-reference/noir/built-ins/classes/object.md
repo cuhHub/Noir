@@ -234,7 +234,7 @@ Returns the item this character is holding in the specified slot (if character).
 ### Parameters
 - `slot`: SWSlotNumberEnum
 ### Returns
-- `integer`
+- `SWEquipmentTypeEnum`
 
 ---
 
