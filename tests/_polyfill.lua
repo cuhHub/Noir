@@ -34,6 +34,9 @@ debug.log = print
 
 server = {}
 server.announce = print
+server.getTimeMillisec = function()
+    return os.clock() * 1000
+end
 
 matrix = {}
 matrix.translation = function(x, y, z)
