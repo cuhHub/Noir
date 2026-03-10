@@ -9,14 +9,30 @@ A service that wraps SW players in a class. Essentially makes players OOP.
 ```lua
 Noir.Services.PlayerService:_LoadPlayers()
 ```
-Load players current in-game.
+Load players current in-game and returns a table of players to register later.
+
+Used internally.
+
+### Returns
+- `table<integer, NoirPlayer>`
 
 ---
 
 ```lua
-Noir.Services.PlayerService:_GivePlayerData(steam_id, name, peer_id, admin, auth)
+Noir.Services.PlayerService:_CharacterLoad(player, character)
 ```
-Gives data to a player.
+To be called when a player's character is loaded.
+
+### Parameters
+- `player`: NoirPlayer
+- `character`: NoirObject
+
+---
+
+```lua
+Noir.Services.PlayerService:_ConstructPlayer(steam_id, name, peer_id, admin, auth)
+```
+Makes data for a player. Returns nil if player is invalid (e.g.: unnamed client).
 
 Used internally.
 
@@ -28,6 +44,19 @@ Used internally.
 - `auth`: boolean
 ### Returns
 - `NoirPlayer|nil`
+
+---
+
+```lua
+Noir.Services.PlayerService:_RegisterPlayer(player, triggerEvent)
+```
+Registers a player.
+
+Used internally.
+
+### Parameters
+- `player`: NoirPlayer
+- `triggerEvent`: boolean
 
 ---
 
@@ -98,57 +127,6 @@ Noir.Services.PlayerService:_UnmarkRecognized(player)
 Mark a player as not recognized.
 
 Used internally.
-
-### Parameters
-- `player`: NoirPlayer
-
----
-
-```lua
-Noir.Services.PlayerService:_GetSavedProperties()
-```
-Returns all saved player properties saved in g_savedata.
-
-Used internally. Do not use in your code.
-
-### Returns
-- `NoirSavedPlayerProperties`
-
----
-
-```lua
-Noir.Services.PlayerService:_SaveProperty(player, property)
-```
-Save a player's property to g_savedata.
-
-Used internally. Do not use in your code.
-
-### Parameters
-- `player`: NoirPlayer
-- `property`: string
-
----
-
-```lua
-Noir.Services.PlayerService:_GetSavedPropertiesForPlayer(player)
-```
-Get a player's saved properties.
-
-Used internally. Do not use in your code.
-
-### Parameters
-- `player`: NoirPlayer
-### Returns
-- `table<string, boolean>|nil`
-
----
-
-```lua
-Noir.Services.PlayerService:_RemoveSavedProperties(player)
-```
-Removes a player's saved properties from g_savedata.
-
-Used internally. Do not use in your code.
 
 ### Parameters
 - `player`: NoirPlayer

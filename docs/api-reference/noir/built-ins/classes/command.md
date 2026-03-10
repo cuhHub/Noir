@@ -7,14 +7,13 @@ Represents a command.
 ---
 
 ```lua
-Noir.Classes.Command:Init(name, aliases, requiredPermissions, requiresAuth, requiresAdmin, capsSensitive, description)
+Noir.Classes.Command:Init(name, aliases, requiresAuth, requiresAdmin, capsSensitive, description)
 ```
 Initializes command class objects.
 
 ### Parameters
 - `name`: string
 - `aliases`: table<integer, string>
-- `requiredPermissions`: table<integer, string>
 - `requiresAuth`: boolean
 - `requiresAdmin`: boolean
 - `capsSensitive`: boolean

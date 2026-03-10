@@ -48,19 +48,13 @@ Deserializes a map line widget.
 ---
 
 ```lua
-Noir.Classes.MapLineWidget:_Update(player)
+Noir.Classes.MapLineWidget:_Update()
 ```
 Handles updating this widget.
-
-### Parameters
-- `player`: NoirPlayer
 
 ---
 
 ```lua
-Noir.Classes.MapLineWidget:_Destroy(player)
+Noir.Classes.MapLineWidget:_Destroy()
 ```
 Handles destroying this widget.
-
-### Parameters
-- `player`: NoirPlayer

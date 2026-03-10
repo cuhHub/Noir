@@ -48,7 +48,7 @@ Noir.Classes.Object:GetData()
 Returns the data of this object.
 
 ### Returns
-- `SWObjectData`
+- `SWObjectData|nil`
 
 ---
 
@@ -231,10 +231,12 @@ Noir.Classes.Object:GetItem(slot)
 ```
 Returns the item this character is holding in the specified slot (if character).
 
+Returns nil if unsuccessful.
+
 ### Parameters
 - `slot`: SWSlotNumberEnum
 ### Returns
-- `SWEquipmentTypeEnum`
+- `SWEquipmentTypeEnum|nil`
 
 ---
 

@@ -19,7 +19,8 @@ Used internally.
 - `URL`: string
 - `port`: integer
 ### Returns
-- `NoirHTTPRequest|nil,`: integer|nil
+- `NoirHTTPRequest|nil`
+- `integer|nil`
 
 ---
 

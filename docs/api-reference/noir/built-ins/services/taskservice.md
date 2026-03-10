@@ -51,7 +51,7 @@ Returns whether or not a task type is valid.
 Used internally.
 
 ### Parameters
-- `taskType`: string
+- `taskType`: NoirTaskType
 ### Returns
 - `boolean`
 
@@ -178,9 +178,9 @@ Useful for iterating through large tables without freezes due to taking too long
 Works for sequential and non-sequential tables, although **order is NOT guaranteed**.
 
 ### Parameters
-- `tbl`: table<integer, any>
+- `tbl`: table
 - `chunkSize`: integer - How many values to iterate per tick
-- `callback`: fun(index: - any, value: any, currentTick: integer|nil, completed: boolean|nil) `currentTick` and `completed` are never nil. this is just to mark the paramters as optional
+- `callback`: fun(index: - any, value: any, currentTick: integer, completed: boolean)
 ### Returns
 - `NoirTickIterationProcess`
 

@@ -69,13 +69,14 @@ Get a portion of a table between two points.
 ---
 
 ```lua
-Noir.Libraries.Table:ToString(tbl, indent)
+Noir.Libraries.Table:ToString(tbl, indent, _journey)
 ```
 Converts a table to a string by iterating deep through the table.
 
 ### Parameters
 - `tbl`: table
 - `indent`: integer|nil
+- `_journey`: table<table, boolean>|nil
 ### Returns
 - `string`
 
@@ -94,12 +95,13 @@ Copy a table (shallow).
 ---
 
 ```lua
-Noir.Libraries.Table:DeepCopy(tbl)
+Noir.Libraries.Table:DeepCopy(tbl, _journey)
 ```
 Copy a table (deep).
 
 ### Parameters
 - `tbl`: tbl
+- `_journey`: table|nil
 ### Returns
 - `tbl`
 
@@ -154,3 +156,42 @@ Find a value in a table. Unlike `:Find()`, this method will recursively search t
 - `value`: any
 ### Returns
 - `any|nil,`: table|nil
+
+---
+
+```lua
+Noir.Libraries.Table:Map(tbl, callback)
+```
+Calls the function for every value in a table, and returns a new table with the results.        local myTbl = {1, 2, 3}
+
+### Parameters
+- `tbl`: table
+- `callback`: fun(index: - any, value: any): any
+### Returns
+- `table`
+
+---
+
+```lua
+Noir.Libraries.Table:Filter(tbl, callback)
+```
+Calls the function for every value in the provided table, keeping the value in a new table if the    function returns true.
+
+### Parameters
+- `tbl`: table
+- `callback`: fun(index: - any, value: any): boolean
+### Returns
+- `table`
+
+---
+
+```lua
+Noir.Libraries.Table:FilterSequential(tbl, callback)
+```
+Calls the function for every value in the provided table, keeping the value in a new table if the    function returns false. Unlike `:Filter()`, the indices are not maintained and `table.insert` is used instead.
+
+### Parameters
+- `tbl`: table
+- `callback`: fun(index: - any, value: any): boolean
+### Returns
+- `table`

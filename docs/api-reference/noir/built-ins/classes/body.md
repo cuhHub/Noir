@@ -66,6 +66,8 @@ Returns the position of this body.
 - `voxelX`: integer|nil
 - `voxelY`: integer|nil
 - `voxelZ`: integer|nil
+### Returns
+- `SWMatrix`
 
 ---
 

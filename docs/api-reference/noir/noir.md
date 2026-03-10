@@ -52,6 +52,14 @@ This represents whether or not the addon was:
 
 ---
 
+**Noir.Logger**: `unknown`
+
+The main logger for Noir.
+
+This should only be used by Noir. It is recommended to create your own logger for your addon.
+
+---
+
 ```lua
 Noir:GetVersion()
 ```

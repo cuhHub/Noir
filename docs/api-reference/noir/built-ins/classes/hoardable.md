@@ -16,7 +16,7 @@ Noir.Classes.Hoardable:Init(ID)
 Initializes `Hoardable` class instances.
 
 ### Parameters
-- `ID`: any|nil
+- `ID`: NoirHoardableID
 
 ---
 
@@ -26,7 +26,17 @@ Noir.Classes.Hoardable:GetHoardableID()
 Returns the ID of this class instance.
 
 ### Returns
-- `any|nil`
+- `NoirHoardableID`
+
+---
+
+```lua
+Noir.Classes.Hoardable:HasHoardableID()
+```
+Returns if this class instance has a hoardable ID.
+
+### Returns
+- `boolean`
 
 ---
 
@@ -53,13 +63,28 @@ Unhoards this instance.
 ---
 
 ```lua
-Noir.Classes.Hoardable:OnSerialize(serialized) end
+Noir.Classes.Hoardable:OnPreSerialize() end
 ```
-Called during serialization.
+Called before serialization.
+
+You can use this to replace unserializable values like cyclic tables with something else.
+
+These can then be converted back via `OnDeserialize`.
 
 `self` is the class instance being serialized.
 
-`serialized` is the serialized data of the class instance.
+This is an `abstractmethod` and should be overridden in subclasses (optional).
+
+---
+
+```lua
+Noir.Classes.Hoardable:OnPostSerialize(serialized) end
+```
+Called after serialization.
+
+`self` is the class instance being serialized.
+
+`serialized` is the now serialized data of the class instance.
 
 This is an `abstractmethod` and should be overridden in subclasses (optional).
 
@@ -69,9 +94,30 @@ This is an `abstractmethod` and should be overridden in subclasses (optional).
 ---
 
 ```lua
-Noir.Classes.Hoardable:OnDeserialize(serialized, lookupClasses) end
+Noir.Classes.Hoardable:OnPreDeserialize(serialized, lookupClasses) end
 ```
-Called during deserialization.
+Called before deserialization.
+
+Can be used to replace serialized values with something else, e.g. converting older data to newer data.
+
+`self` is the class instance being deserialized.
+
+`serialized` is the serialized data of the class instance.
+
+`lookupClasses` is a table of classes that can be used to deserialize the class instance.
+
+This is an `abstractmethod` and should be overridden in subclasses (optional).
+
+### Parameters
+- `serialized`: table
+- `lookupClasses`: table<string, NoirClass>
+
+---
+
+```lua
+Noir.Classes.Hoardable:OnPostDeserialize(serialized, lookupClasses) end
+```
+Called after deserialization.
 
 `self` is the deserialized class instance.
 

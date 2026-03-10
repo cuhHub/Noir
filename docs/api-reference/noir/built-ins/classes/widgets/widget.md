@@ -58,6 +58,16 @@ Deserializes a serialized widget.
 ---
 
 ```lua
+Noir.Classes.Widget:IsVisible()
+```
+Returns if this widget is visible.
+
+### Returns
+- `boolean`
+
+---
+
+```lua
 Noir.Classes.Widget:Update()
 ```
 Updates this widget.
@@ -65,14 +75,11 @@ Updates this widget.
 ---
 
 ```lua
-Noir.Classes.Widget:_Update(player)
+Noir.Classes.Widget:_Update()
 ```
 Updates this widget.
 
 *abstract method*
-
-### Parameters
-- `player`: NoirPlayer
 
 ---
 
@@ -84,14 +91,21 @@ Destroys this widget.
 ---
 
 ```lua
-Noir.Classes.Widget:_Destroy(player)
+Noir.Classes.Widget:_Destroy()
 ```
 Destroys this widget.
 
 *abstract method*
 
-### Parameters
-- `player`: NoirPlayer
+---
+
+```lua
+Noir.Classes.Widget:_GetPeerID()
+```
+Returns the peer ID for the player this widget is attached to, or -1 if for everyone.
+
+### Returns
+- `integer`
 
 ---
 

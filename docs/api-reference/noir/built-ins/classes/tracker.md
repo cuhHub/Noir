@@ -66,6 +66,26 @@ Returns the name of the function.
 ---
 
 ```lua
+Noir.Classes.Tracker:GetCallsPerTick()
+```
+Returns the calls per tick.
+
+### Returns
+- `number`
+
+---
+
+```lua
+Noir.Classes.Tracker:GetAverageCallsPerTick()
+```
+Returns the average calls per tick.
+
+### Returns
+- `number`
+
+---
+
+```lua
 Noir.Classes.Tracker:GetAverageExecutionTime()
 ```
 Returns the average execution time of the function.

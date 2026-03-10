@@ -44,19 +44,13 @@ Deserializes a map label widget.
 ---
 
 ```lua
-Noir.Classes.MapLabelWidget:_Update(player)
+Noir.Classes.MapLabelWidget:_Update()
 ```
 Handles updating this widget.
-
-### Parameters
-- `player`: NoirPlayer
 
 ---
 
 ```lua
-Noir.Classes.MapLabelWidget:_Destroy(player)
+Noir.Classes.MapLabelWidget:_Destroy()
 ```
 Handles destroying this widget.
-
-### Parameters
-- `player`: NoirPlayer

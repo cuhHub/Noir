@@ -83,19 +83,13 @@ Deserializes a popup widget.
 ---
 
 ```lua
-Noir.Classes.PopupWidget:_Update(player)
+Noir.Classes.PopupWidget:_Update()
 ```
 Handles updating this widget.
-
-### Parameters
-- `player`: NoirPlayer
 
 ---
 
 ```lua
-Noir.Classes.PopupWidget:_Destroy(player)
+Noir.Classes.PopupWidget:_Destroy()
 ```
 Handles destroying this widget.
-
-### Parameters
-- `player`: NoirPlayer

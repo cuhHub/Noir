@@ -9,7 +9,19 @@ Example (see `Hoardable` code sample for info on the class side of things):
 ---
 
 ```lua
-Noir.Services.HoarderService:_Serialize(tbl)
+Noir.Services.HoarderService:_IsSerializable(value)
+```
+Returns if a value is serializable.
+
+### Parameters
+- `value`: any
+### Returns
+- `boolean`
+
+---
+
+```lua
+Noir.Services.HoarderService:_Serialize(tbl, _active)
 ```
 Serializes a table for saving by removing all functions.
 
@@ -17,6 +29,7 @@ Used internally.
 
 ### Parameters
 - `tbl`: table
+- `_active`: table<any, boolean>|nil
 ### Returns
 - `table`
 
@@ -77,9 +90,10 @@ Used internally.
 ### Parameters
 - `service`: NoirService
 - `class`: NoirClass
-- `instance`: NoirClass
+- `instance`: NoirHoardable
 ### Returns
-- `boolean,`: nil
+- `boolean`
+- `table|nil`
 
 ---
 
@@ -99,7 +113,7 @@ Example Checkpoint:
 ### Parameters
 - `service`: NoirService
 - `class`: NoirHoardable
-- `func`: fun(instance: - NoirHoardable): boolean, table|nil
+- `func`: NoirHoarderCheckpoint
 
 ---
 
@@ -124,6 +138,17 @@ Unhoards the provided class instance within a service.
 - `service`: NoirService
 - `tblName`: string
 - `instance`: NoirHoardable
+
+---
+
+```lua
+Noir.Services.HoarderService:Clear(service, tblName)
+```
+Clears out saved instances for the provided service.
+
+### Parameters
+- `service`: NoirService
+- `tblName`: string
 
 ---
 

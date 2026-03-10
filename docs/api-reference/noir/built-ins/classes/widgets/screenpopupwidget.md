@@ -46,19 +46,13 @@ Deserializes a screen popup widget.
 ---
 
 ```lua
-Noir.Classes.ScreenPopupWidget:_Update(player)
+Noir.Classes.ScreenPopupWidget:_Update()
 ```
 Handles updating this widget.
-
-### Parameters
-- `player`: NoirPlayer
 
 ---
 
 ```lua
-Noir.Classes.ScreenPopupWidget:_Destroy(player)
+Noir.Classes.ScreenPopupWidget:_Destroy()
 ```
 Handles destroying this widget.
-
-### Parameters
-- `player`: NoirPlayer

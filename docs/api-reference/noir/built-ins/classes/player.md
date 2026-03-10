@@ -7,7 +7,7 @@ Represents a player.
 ---
 
 ```lua
-Noir.Classes.Player:Init(name, ID, steam, admin, auth, permissions)
+Noir.Classes.Player:Init(name, ID, steam, admin, auth)
 ```
 Initializes player class objects.
 
@@ -17,49 +17,18 @@ Initializes player class objects.
 - `steam`: string
 - `admin`: boolean
 - `auth`: boolean
-- `permissions`: table<string, boolean>
 
 ---
 
 ```lua
-Noir.Classes.Player:SetPermission(permission)
+Noir.Classes.Player:_CharacterLoad(character)
 ```
-Give this player a permission.
+Triggers `OnCharacterLoad`.
+
+Used internally.
 
 ### Parameters
-- `permission`: string
-
----
-
-```lua
-Noir.Classes.Player:HasPermission(permission)
-```
-Returns whether or not this player has a permission.
-
-### Parameters
-- `permission`: string
-### Returns
-- `boolean`
-
----
-
-```lua
-Noir.Classes.Player:RemovePermission(permission)
-```
-Remove a permission from this player.
-
-### Parameters
-- `permission`: string
-
----
-
-```lua
-Noir.Classes.Player:GetPermissions()
-```
-Returns a table containing the player's permissions.
-
-### Returns
-- `table<integer, string>`
+- `character`: NoirObject
 
 ---
 
@@ -133,7 +102,7 @@ Noir.Classes.Player:GetCharacter()
 Returns this player's character as a NoirObject.
 
 ### Returns
-- `NoirObject`
+- `NoirObject|nil`
 
 ---
 

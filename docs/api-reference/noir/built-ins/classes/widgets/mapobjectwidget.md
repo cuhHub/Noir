@@ -89,19 +89,13 @@ Deserializes a map object widget.
 ---
 
 ```lua
-Noir.Classes.MapObjectWidget:_Update(player)
+Noir.Classes.MapObjectWidget:_Update()
 ```
 Handles updating this widget.
-
-### Parameters
-- `player`: NoirPlayer
 
 ---
 
 ```lua
-Noir.Classes.MapObjectWidget:_Destroy(player)
+Noir.Classes.MapObjectWidget:_Destroy()
 ```
 Handles destroying this widget.
-
-### Parameters
-- `player`: NoirPlayer

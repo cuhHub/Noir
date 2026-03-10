@@ -28,6 +28,28 @@ A table containing all functions and tables that should not be tracked.
 
 ---
 
+**Noir.Debugging.OnError**: `NoirEvent`
+
+Fired whenever an error is raised.
+
+---
+
+**Noir.Debugging.OnBeforeCall**: `NoirEvent`
+
+Fired before any tracked function is called.
+
+Arguments: tracker (NoirTracker), ... (any)
+
+---
+
+**Noir.Debugging.OnAfterCall**: `NoirEvent`
+
+Fired after any tracked function is called.
+
+Arguments: tracker (NoirTracker), ... (any)
+
+---
+
 ```lua
 Noir.Debugging:RaiseError(source, message, ...)
 ```
@@ -41,6 +63,19 @@ This method can still be called regardless of if debugging is enabled or not.
 - `source`: string
 - `message`: string
 - `...`: any
+
+---
+
+```lua
+Noir.Debugging:_PresentTrackers(category, trackers)
+```
+Presents trackers in a category.
+
+Used internally.
+
+### Parameters
+- `category`: string
+- `trackers`: table<integer, NoirTracker>
 
 ---
 
@@ -104,6 +139,40 @@ Returns the tracked functions with the best performance.
 Noir.Debugging:ShowMostPerformantTracked()
 ```
 Shows the tracked functions with the best performance.
+
+---
+
+```lua
+Noir.Debugging:GetMostCalledTracked()
+```
+Returns the tracked functions with the most calls.
+
+### Returns
+- `table<integer, NoirTracker>`
+
+---
+
+```lua
+Noir.Debugging:ShowMostCalledTracked()
+```
+Shows the tracked functions with the most calls.
+
+---
+
+```lua
+Noir.Debugging:GetMostCalledPerTickTracked()
+```
+Returns the tracked functions with the most calls per tick.
+
+### Returns
+- `table<integer, NoirTracker>`
+
+---
+
+```lua
+Noir.Debugging:ShowMostCalledPerTickTracked()
+```
+Shows the tracked functions with the most calls per tick.
 
 ---
 

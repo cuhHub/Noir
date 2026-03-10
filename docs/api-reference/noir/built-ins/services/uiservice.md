@@ -7,6 +7,30 @@ A service for showing UI to players in an OOP manner.    Map UI, screen popups, 
 ---
 
 ```lua
+Noir.Services.UIService:_ShowWidgetsToPlayer(player)
+```
+Shows all widgets to a new player.
+
+Used internally. Do not use in your code.
+
+### Parameters
+- `player`: NoirPlayer
+
+---
+
+```lua
+Noir.Services.UIService:_RemoveWidgetsFromPlayer(player)
+```
+Removes all widgets from a player who left.
+
+Used internally. Do not use in your code.
+
+### Parameters
+- `player`: NoirPlayer
+
+---
+
+```lua
 Noir.Services.UIService:_GetSavedWidgets()
 ```
 Returns all saved widgets (serialized versions).
