@@ -106,3 +106,21 @@ end)
 assert(mappedTbl2[1] == 2, ":Map() returned incorrect values (expected [1] to be '2')")
 assert(mappedTbl2.foo == 10, ":Map() returned incorrect values (expected [foo] to be '10')")
 assert(mappedTbl2.bar == 4, ":Map() returned incorrect values (expected [bar] to be '4')")
+
+local filterTbl1 = {1, 2, 3, 4, 5, 6}
+
+local filteredTbl1 = Noir.Libraries.Table:Filter(filterTbl1, function(index, value)
+    return value % 2 == 0
+end)
+
+assert(filteredTbl1[2] == 2, ":Filter() returned incorrect values (expected [2] to be '2')")
+assert(filteredTbl1[4] == 4, ":Filter() returned incorrect values (expected [4] to be '4')")
+assert(filteredTbl1[6] == 6, ":Filter() returned incorrect values (expected [6] to be '6')")
+
+local filteredTbl2 = Noir.Libraries.Table:FilterSequential(filterTbl1, function(index, value)
+    return value % 2 == 0
+end)
+
+assert(filteredTbl2[1] == 2, ":FilterSequential() returned incorrect values (expected [1] to be '2')")
+assert(filteredTbl2[2] == 4, ":FilterSequential() returned incorrect values (expected [2] to be '4')")
+assert(filteredTbl2[3] == 6, ":FilterSequential() returned incorrect values (expected [3] to be '6')")

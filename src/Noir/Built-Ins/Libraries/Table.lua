@@ -429,3 +429,59 @@ function Noir.Libraries.Table:Map(tbl, callback)
 
     return new
 end
+
+--[[
+    Calls the function for every value in the provided table, keeping the value in a new table if the
+    function returns true.
+
+    local myTbl = {1, 2, 3, 1}
+
+    local myFilteredTbl = Noir.Libraries.Table:Filter(myTbl, function(index, value)
+        return value == 1
+    end)
+
+    print(myFilteredTbl) -- {[1] = 1, [4] = 1}
+]]
+---@param tbl table
+---@param callback fun(index: any, value: any): boolean
+---@return table
+function Noir.Libraries.Table:Filter(tbl, callback)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Filter()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:Filter()", "callback", callback, "function")
+
+    -- Filter the table
+    local new = {}
+
+    for index, value in pairs(tbl) do
+        if callback(index, value) then
+            new[index] = value
+        end
+    end
+
+    return new
+end
+
+--[[
+    Calls the function for every value in the provided table, keeping the value in a new table if the
+    function returns false. Unlike `:Filter()`, the indices are not maintained and `table.insert` is used instead.
+]]
+---@param tbl table
+---@param callback fun(index: any, value: any): boolean
+---@return table
+function Noir.Libraries.Table:FilterSequential(tbl, callback)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:FilterSequential()", "tbl", tbl, "table")
+    Noir.TypeChecking:Assert("Noir.Libraries.Table:FilterSequential()", "callback", callback, "function")
+
+    -- Filter the table
+    local new = {}
+
+    for index, value in pairs(tbl) do
+        if callback(index, value) then
+            table.insert(new, value)
+        end
+    end
+
+    return new
+end
