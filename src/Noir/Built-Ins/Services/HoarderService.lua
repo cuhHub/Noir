@@ -222,7 +222,7 @@ function Noir.Services.HoarderService:_Deserialize(class, serialized, lookupClas
     class:_SetupObject(instance)
 
     -- Call `OnPreDeserialize`
-    if Noir.Classes.Hoardable:IsSameType(instance)  and instance.OnPreDeserialize then
+    if Noir.Classes.Hoardable:IsA(instance) and instance.OnPreDeserialize then
         ---@diagnostic disable-next-line: param-type-mismatch
         instance:OnPreDeserialize(serialized, lookupClasses)
     end
@@ -247,7 +247,7 @@ function Noir.Services.HoarderService:_Deserialize(class, serialized, lookupClas
     instance._Parents = class._Parents
 
     -- Call `OnPostDeserialize`
-    if Noir.Classes.Hoardable:IsSameType(instance)  and instance.OnPostDeserialize then
+    if Noir.Classes.Hoardable:IsA(instance)  and instance.OnPostDeserialize then
         ---@diagnostic disable-next-line: param-type-mismatch
         instance:OnPostDeserialize(serialized, lookupClasses)
     end
