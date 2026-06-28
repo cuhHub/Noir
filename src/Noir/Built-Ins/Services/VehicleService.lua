@@ -66,6 +66,7 @@
 ---@field OnBodyLoad NoirEvent Arguments: body (NoirBody) | Fired when a body is loaded
 ---@field OnBodyUnload NoirEvent Arguments: body (NoirBody) | Fired when a body is unloaded
 ---@field OnBodyDamage NoirEvent Arguments: body (NoirBody), damage (number), voxelX (number), voxelY (number), voxelZ (number) | Fired when a body is damaged
+---@field OnBodyButtonPress NoirEvent Arguments: body (NoirBody), player (NoirPlayer|nil), buttonName (string), isPressed (boolean) | Fired when a button is pressed
 ---
 ---@field _OnGroupSpawnConnection NoirConnection A connection to the onGroupSpawn event
 ---@field _OnBodySpawnConnection NoirConnection A connection to the onVehicleSpawn event
@@ -98,6 +99,7 @@ function Noir.Services.VehicleService:ServiceInit()
     self.OnBodyLoad = Noir.Libraries.Events:Create()
     self.OnBodyUnload = Noir.Libraries.Events:Create()
     self.OnBodyDamage = Noir.Libraries.Events:Create()
+    self.OnBodyButtonPress = Noir.Libraries.Events:Create()
 
     -- Load saved vehicles and bodies
     self:_LoadSavedBodies()
@@ -167,6 +169,18 @@ function Noir.Services.VehicleService:ServiceStart()
         end
 
         self:_DamageBody(body, x, y, z, damage)
+    end)
+
+    -- Listen for body button presses
+    self._OnBodyButtonPressConnection = Noir.Callbacks:Connect("onButtonPress", function(vehicle_id, peer_id, button_name, is_pressed)
+        local body = self:GetBody(vehicle_id)
+
+        if not body then
+            return
+        end
+
+        local player = Noir.Services.PlayerService:GetPlayer(peer_id)
+        self:_ButtonPressBody(body, player, button_name, is_pressed)
     end)
 end
 
@@ -462,6 +476,26 @@ function Noir.Services.VehicleService:_DamageBody(body, x, y, z, damage)
     -- Fire events
     body.OnDamage:Fire(damage, x, y, z)
     self.OnBodyDamage:Fire(body, damage, x, y, z)
+end
+
+--[[
+    Fires events for button presses.<br>
+    Used internally.
+]]
+---@param body NoirBody
+---@param player NoirPlayer|nil
+---@param button_name string
+---@param is_pressed boolean
+function Noir.Services.VehicleService:_ButtonPressBody(body, player, button_name, is_pressed)
+    -- Type checking
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_ButtonPressBody()", "body", body, Noir.Classes.Body)
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_ButtonPressBody()", "player", player, Noir.Classes.Player, "nil")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_ButtonPressBody()", "button_name", button_name, "string")
+    Noir.TypeChecking:Assert("Noir.Services.VehicleService:_ButtonPressBody()", "is_pressed", is_pressed, "boolean")
+
+    -- Fire events
+    body.OnButtonPress:Fire(player, button_name, is_pressed)
+    self.OnBodyButtonPress:Fire(body, player, button_name, is_pressed)
 end
 
 --[[

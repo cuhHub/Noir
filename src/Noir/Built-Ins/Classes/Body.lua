@@ -46,6 +46,7 @@
 ---@field OnLoad NoirEvent Fired when this body is loaded
 ---@field OnUnload NoirEvent Fired when this body is unloaded
 ---@field OnDamage NoirEvent Arguments: damage (number), voxelX (number), voxelY (number), voxelZ (number) | Fired when this body is damaged
+---@field OnButtonPress NoirEvent Arguments: player (NoirPlayer|nil), buttonName (string), isPressed (boolean) | Fired when a button is pressed
 Noir.Classes.Body = Noir.Class("Body")
 
 --[[
@@ -69,6 +70,7 @@ function Noir.Classes.Body:Init(ID, owner, loaded)
     self.OnLoad = Noir.Libraries.Events:Create()
     self.OnUnload = Noir.Libraries.Events:Create()
     self.OnDamage = Noir.Libraries.Events:Create()
+    self.OnButtonPress = Noir.Libraries.Events:Create()
 end
 
 --[[
