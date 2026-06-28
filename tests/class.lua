@@ -86,3 +86,20 @@ assert(bob.HasAnims == true, "Expected 'true' for HasAnims, got "..tostring(bob.
 -- methods
 assert(bob.SayEntityName == Entity.SayEntityName, "Expected 'Entity.SayEntityName' for SayEntityName, got "..tostring(bob.SayEntityName))
 assert(bob.SayAnimatedEntityName == AnimatedEntity.SayAnimatedEntityName, "Expected 'AnimatedEntity.SayAnimatedEntityName' for SayAnimatedEntityName, got "..tostring(bob.SayAnimatedEntityName))
+
+-- comparison
+assert(AnimatedEntity:IsA(Entity), "Expected true for AnimatedEntity:IsA(Entity)")
+assert(not Entity:IsA(AnimatedEntity), "Expected false for Entity:IsA(AnimatedEntity)")
+assert(Person:IsA(AnimatedEntity), "Expected true for Person:IsA(AnimatedEntity)")
+assert(Person:IsA(Networked), "Expected true for Person:IsA(Networked)")
+assert(Person:IsA(Person), "Expected true for Person:IsA(Person)")
+assert(Person:IsA(Entity), "Expected true for Person:IsA(Entity)")
+assert(Person:IsExactly(Person), "Expected true for Person:IsExactly(Person)")
+assert(Person:IsExactly(Entity) == false, "Expected false for Person:IsExactly(Entity)")
+assert(Entity:IsExactly(Entity), "Expected true for Entity:IsExactly(Entity)")
+assert(not AnimatedEntity:IsA(Networked), "AnimatedEntity should NOT inherit Networked")
+assert(not Networked:IsA(AnimatedEntity), "Networked should NOT inherit AnimatedEntity")
+assert(Person:IsA(Entity), "Person should inherit Entity")
+assert(Person:IsA(Networked), "Person should inherit Networked")
+assert(AnimatedEntity:IsA(Entity), "AnimatedEntity should inherit Entity")
+assert(not Entity:IsA(Networked), "Entity should not inherit Networked")
