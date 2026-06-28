@@ -33,7 +33,8 @@
 
 --[[
     Create a class that objects can be created from.<br>
-    Note that classes can inherit from other classes.
+    Note that classes can inherit from other classes.<br>
+    **Class names must be unique!** Otherwise, the comparison helper methods may work improperly.
 
     local MyClass = Noir.Class("MyClass")
 
@@ -48,12 +49,13 @@
     local object = MyClass:New("Cuh4")
     object:MyName() -- "Cuh4"
 ]]
----@param name string
+---@param name string **Must be unique**
 ---@param ... NoirClass
 ---@return NoirClass
 function Noir.Class(name, ...)
     --[[
-        A class that objects can be created from.
+        A class that objects can be created from.<br>
+        **Class names must be unique!** Otherwise, the comparison helper methods may work improperly.
 
         local MyClass = Noir.Class("MyClass")
 
@@ -178,12 +180,57 @@ function Noir.Class(name, ...)
     end
 
     --[[
-        Returns if a class/object is the same type as another.<br>
-        If `other` is not a class, it will return false.
+        Returns if the provided class is the same as `self` or inherits from it.
     ]]
     ---@param other NoirClass
     ---@return boolean
+    function class:IsA(other)
+        if not Noir.IsClass(other) then
+            return false
+        end
+
+        if self:IsExactly(other) then
+            return true
+        end
+
+        for _, parent in pairs(self._Parents) do
+            if parent:IsA(other) then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    --[[
+        Returns if the provided class is exactly the same as `self`.<br>
+        Use `:IsA()` to check if the provided class inherits from `self` as well.
+    ]]
+    ---@param other NoirClass
+    ---@return boolean
+    function class:IsExactly(other)
+        if not Noir.IsClass(other) then
+            return false
+        end
+
+        return self.ClassName == other.ClassName
+    end
+
+    --[[
+        Returns if a class/object is the same type as another.<br>
+        If `other` is not a class, it will return false.<br>
+        *deprecated: the method name is largely misleading, use `:IsRelated()` instead.
+    ]]
+    ---@deprecated
+    ---@param other NoirClass
+    ---@return boolean
     function class:IsSameType(other)
+        Noir.Libraries.Deprecation:Deprecated(
+            "Noir.Class().IsSameType()",
+            nil,
+            "This method will be getting removed in a future update. Consider using `:IsExactly()` or `:IsA()` instead."
+        )
+
         -- Check if even class
         if not Noir.IsClass(other) then
             return false
@@ -201,7 +248,7 @@ function Noir.Class(name, ...)
                 return true
             end
 
-            if parent:IsSameType(self) then
+            if parent:IsSameType(self) then ---@diagnostic disable-line: deprecated
                 return true
             end
         end
@@ -212,7 +259,7 @@ function Noir.Class(name, ...)
                 return true
             end
 
-            if parent:IsSameType(other) then
+            if parent:IsSameType(other) then ---@diagnostic disable-line: deprecated
                 return true
             end
         end
