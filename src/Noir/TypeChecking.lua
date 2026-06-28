@@ -67,7 +67,7 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
         end
 
         -- Value == Exact Class
-        if Noir.IsClass(typeToCheck) and typeToCheck:IsSameType(value) then ---@diagnostic disable-line param-type-mismatch
+        if Noir.IsClass(typeToCheck) and value:IsA(typeToCheck) then
             return
         end
     end
