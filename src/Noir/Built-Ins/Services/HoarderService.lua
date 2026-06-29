@@ -222,7 +222,7 @@ function Noir.Services.HoarderService:_Deserialize(class, serialized, lookupClas
     class:_SetupObject(instance)
 
     -- Call `OnPreDeserialize`
-    if Noir.Classes.Hoardable:IsA(instance) and instance.OnPreDeserialize then
+    if instance:IsA(Noir.Classes.Hoardable) then
         ---@diagnostic disable-next-line: param-type-mismatch
         instance:OnPreDeserialize(serialized, lookupClasses)
     end
@@ -247,7 +247,7 @@ function Noir.Services.HoarderService:_Deserialize(class, serialized, lookupClas
     instance._Parents = class._Parents
 
     -- Call `OnPostDeserialize`
-    if Noir.Classes.Hoardable:IsA(instance)  and instance.OnPostDeserialize then
+    if instance:IsA(Noir.Classes.Hoardable) then
         ---@diagnostic disable-next-line: param-type-mismatch
         instance:OnPostDeserialize(serialized, lookupClasses)
     end
@@ -349,16 +349,10 @@ function Noir.Services.HoarderService:Hoard(service, tblName, instance)
 
     -- Serialize
     instance = Noir.Libraries.Table:DeepCopy(instance)
-
-    if instance.OnPreSerialize then
-        instance:OnPreSerialize()
-    end
+    instance:OnPreSerialize()
 
     local serialized = self:_Serialize(instance)
-
-    if instance.OnPostSerialize then
-        instance:OnPostSerialize(serialized)
-    end
+    instance:OnPostSerialize(serialized)
 
     -- Save serialized instance
     self:_InitSaveData(service, tblName)
