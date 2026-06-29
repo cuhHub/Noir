@@ -61,14 +61,16 @@ function Noir.TypeChecking:Assert(origin, parameterName, value, ...)
             return
         end
 
-        -- Value == Any Class
-        if typeToCheck == "class" and Noir.IsClass(value) then
-            return
-        end
+        if Noir.IsClass(value) then
+            -- Value == Any Class
+            if typeToCheck == "class" then
+                return
+            end
 
-        -- Value == Exact Class
-        if Noir.IsClass(typeToCheck) and value:IsA(typeToCheck) then
-            return
+            -- Value == Exact Class
+            if Noir.IsClass(typeToCheck) and value:IsA(typeToCheck) then
+                return
+            end
         end
     end
 
