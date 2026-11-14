@@ -76,7 +76,7 @@
     }
 
     local trackers = Noir.Debugging:TrackAll("myTbl", myTbl)
-    -- To track all functions in your addon that are non-local, you can use the above method on `_ENV`. :TrackAll() will ignore non-local functions as they aren't in `_ENV` anyway
+    -- To track all functions in your addon that are non-local, you can use the above method on `_ENV`. Existing local references keep calling the original function.
 
     -- Getting least performant functions
     Noir.Debugging:GetLeastPerformantTracked() -- A table of trackers. Index 1 being the least performant
@@ -90,6 +90,46 @@ Noir.Debugging = {}
     Enables/disables debugging. False by default, and it is recommended to keep it this way in production.
 ]]
 Noir.Debugging.Enabled = false
+
+--[[
+    Number of completed calls used to calculate recent timing averages.
+]]
+Noir.Debugging.ExecutionTimeWindow = 20
+
+--[[
+    Number of completed ticks used to average calls per tick, including idle ticks.
+]]
+Noir.Debugging.CallsPerTickWindow = 64
+
+--[[
+    Maximum number of trackers shown per report. Set to zero to show all matching trackers.
+]]
+Noir.Debugging.ReportLimit = 120
+
+--[[
+    Whether reports include functions that have never been called.
+]]
+Noir.Debugging.IncludeUncalled = false
+
+--[[
+    Active tracker frames, with the current call at the top.
+]]
+Noir.Debugging._Stack = {}
+
+--[[
+    Maps each original function and its mounted wrapper to their shared tracker.
+]]
+Noir.Debugging._ByFunction = {}
+
+--[[
+    Increments when a tracked call starts to record call order.
+]]
+Noir.Debugging._Sequence = 0
+
+--[[
+    Pauses tracking while the profiler updates statistics, fires its events, or prints reports.
+]]
+Noir.Debugging._Busy = false
 
 --[[
     A table containing all created trackers for functions.
@@ -150,19 +190,140 @@ function error(source, message, ...)
 end
 
 --[[
+    Pauses the caller while a tracked function runs.
+]]
+---@param tracker NoirTracker
+---@param ... any
+---@return NoirTrackerFrame
+function Noir.Debugging:_BeginCall(tracker, ...)
+    local now = server.getTimeMillisec()
+    local stack = self._Stack
+    local parent = stack[#stack]
+
+    if parent then
+        parent.SelfTime = parent.SelfTime + now - parent.Start
+    end
+
+    self._Busy = true
+
+    local frame = Noir.Classes.TrackerFrame:New(tracker)
+    stack[#stack + 1] = frame
+
+    self._Sequence = self._Sequence + 1
+    tracker.LastCallSequence = self._Sequence
+    tracker.LastCalledAt = now
+    tracker:_CountCall()
+
+    tracker.OnBeforeCall:Fire(...)
+
+    self._Busy = false
+
+    return frame
+end
+
+--[[
+    Records the call and resumes its caller.
+]]
+---@param frame NoirTrackerFrame
+---@param ... any
+function Noir.Debugging:_EndCall(frame, ...)
+    local selfTime = frame.SelfTime + server.getTimeMillisec() - frame.Start
+    local inclusive = selfTime + frame.ChildTime
+    local stack = self._Stack
+    local tracker = frame.Tracker
+
+    self._Busy = true
+    stack[#stack] = nil
+
+    if tracker.ExecutionTimes == frame.Samples then
+        tracker:_Record(selfTime, inclusive)
+    end
+
+    tracker.OnAfterCall:Fire(...)
+
+    local parent = stack[#stack]
+
+    if parent then
+        parent.ChildTime = parent.ChildTime + inclusive
+        parent.Start = server.getTimeMillisec()
+    end
+
+    self._Busy = false
+end
+
+--[[
+    Discards unfinished calls at the next game callback.
+]]
+function Noir.Debugging:_RecoverCallback()
+    for index = #self._Stack, 1, -1 do
+        local frame = self._Stack[index]
+
+        if frame.Samples == frame.Tracker.ExecutionTimes then
+            frame.Tracker.InterruptedCalls = frame.Tracker.InterruptedCalls + 1
+        end
+
+        self._Stack[index] = nil
+    end
+
+    self._Busy = false
+end
+
+--[[
     Presents trackers in a category.<br>
     Used internally.
 ]]
 ---@param category string
 ---@param trackers table<integer, NoirTracker>
-function Noir.Debugging:_PresentTrackers(category, trackers)
-    Noir.TypeChecking:Assert("Noir.Debugging:_PresentTrackers()", "category", category, "string")
-    Noir.TypeChecking:Assert("Noir.Debugging:_PresentTrackers()", "trackers", trackers, "table")
+---@param limit integer|nil
+---@param includeUncalled boolean|nil
+function Noir.Debugging:_PresentTrackers(category, trackers, limit, includeUncalled)
+    if includeUncalled == nil then
+        includeUncalled = self.IncludeUncalled
+    end
 
-    Noir.Logger:Success("--- "..category.." functions:")
+    limit = limit or self.ReportLimit
 
-    for index, tracker in ipairs(trackers) do
-        Noir.Logger:Info("Tracker #%d: %s", index, tracker:ToFormattedString())
+    local rows = {}
+
+    for _, tracker in ipairs(trackers) do
+        if includeUncalled or tracker.CallCount > 0 then
+            table.insert(rows, tracker:ToFormattedString())
+
+            if limit > 0 and #rows >= limit then
+                break
+            end
+        end
+    end
+
+    Noir.Logger:Success("--- %s functions (last %d calls, %d completed ticks):", category, self.ExecutionTimeWindow, self.CallsPerTickWindow)
+
+    for index, row in ipairs(rows) do
+        Noir.Logger:Info("Tracker #%d: %s", index, row)
+    end
+end
+
+--[[
+    Excludes sorting and logging from the active call's timing.
+]]
+---@param category string
+---@param getTrackers fun(self: table, inclusive: boolean|nil): table<integer, NoirTracker>
+---@param limit integer|nil
+---@param includeUncalled boolean|nil
+---@param inclusive boolean|nil
+function Noir.Debugging:_Show(category, getTrackers, limit, includeUncalled, inclusive)
+    local busy = self._Busy
+    local frame = self._Stack[#self._Stack]
+
+    if frame and not busy then
+        frame.SelfTime = frame.SelfTime + server.getTimeMillisec() - frame.Start
+    end
+
+    self._Busy = true
+    self:_PresentTrackers(category, getTrackers(self, inclusive), limit, includeUncalled)
+    self._Busy = busy
+
+    if frame and not busy then
+        frame.Start = server.getTimeMillisec()
     end
 end
 
@@ -184,7 +345,7 @@ function Noir.Debugging:GetLastCalledTracked()
     local trackers = self:GetTrackedFunctions(true)
 
     table.sort(trackers, function(a, b)
-        return a:GetLastExecutionTime() > b:GetLastExecutionTime()
+        return a.LastCallSequence > b.LastCallSequence
     end)
 
     return trackers
@@ -193,20 +354,26 @@ end
 --[[
     Shows the most recently called tracked functions.
 ]]
-function Noir.Debugging:ShowLastCalledTracked()
-    local trackers = self:GetLastCalledTracked()
-    self:_PresentTrackers("*Last* called", trackers)
+---@param limit integer|nil
+---@param includeUncalled boolean|nil
+function Noir.Debugging:ShowLastCalledTracked(limit, includeUncalled)
+    self:_Show("*Last* called", self.GetLastCalledTracked, limit, includeUncalled)
 end
 
 --[[
     Returns the tracked functions with the worst performance.
 ]]
+---@param inclusive boolean|nil
 ---@return table<integer, NoirTracker>
-function Noir.Debugging:GetLeastPerformantTracked()
+function Noir.Debugging:GetLeastPerformantTracked(inclusive)
     local trackers = self:GetTrackedFunctions(true)
 
     table.sort(trackers, function(a, b)
-        return a:GetAverageExecutionTime() > b:GetAverageExecutionTime()
+        if inclusive then
+            return a:GetAverageExecutionTime() > b:GetAverageExecutionTime()
+        end
+
+        return a:GetAverageSelfExecutionTime() > b:GetAverageSelfExecutionTime()
     end)
 
     return trackers
@@ -215,20 +382,27 @@ end
 --[[
     Shows the tracked functions with the worst performance.
 ]]
-function Noir.Debugging:ShowLeastPerformantTracked()
-    local trackers = self:GetLeastPerformantTracked()
-    self:_PresentTrackers("*Least* performant", trackers)
+---@param limit integer|nil
+---@param includeUncalled boolean|nil
+---@param inclusive boolean|nil
+function Noir.Debugging:ShowLeastPerformantTracked(limit, includeUncalled, inclusive)
+    self:_Show("*Least* performant"..(inclusive and " (inclusive)" or " (self)"), self.GetLeastPerformantTracked, limit, includeUncalled, inclusive)
 end
 
 --[[
     Returns the tracked functions with the best performance.
 ]]
+---@param inclusive boolean|nil
 ---@return table<integer, NoirTracker>
-function Noir.Debugging:GetMostPerformantTracked()
+function Noir.Debugging:GetMostPerformantTracked(inclusive)
     local trackers = self:GetTrackedFunctions(true)
 
     table.sort(trackers, function(a, b)
-        return a:GetAverageExecutionTime() < b:GetAverageExecutionTime()
+        if inclusive then
+            return a:GetAverageExecutionTime() < b:GetAverageExecutionTime()
+        end
+
+        return a:GetAverageSelfExecutionTime() < b:GetAverageSelfExecutionTime()
     end)
 
     return trackers
@@ -237,9 +411,11 @@ end
 --[[
     Shows the tracked functions with the best performance.
 ]]
-function Noir.Debugging:ShowMostPerformantTracked()
-    local trackers = self:GetMostPerformantTracked()
-    self:_PresentTrackers("*Most* performant", trackers)
+---@param limit integer|nil
+---@param includeUncalled boolean|nil
+---@param inclusive boolean|nil
+function Noir.Debugging:ShowMostPerformantTracked(limit, includeUncalled, inclusive)
+    self:_Show("*Most* performant"..(inclusive and " (inclusive)" or " (self)"), self.GetMostPerformantTracked, limit, includeUncalled, inclusive)
 end
 
 --[[
@@ -259,9 +435,10 @@ end
 --[[
     Shows the tracked functions with the most calls.
 ]]
-function Noir.Debugging:ShowMostCalledTracked()
-    local trackers = self:GetMostCalledTracked()
-    self:_PresentTrackers("*Most* called", trackers)
+---@param limit integer|nil
+---@param includeUncalled boolean|nil
+function Noir.Debugging:ShowMostCalledTracked(limit, includeUncalled)
+    self:_Show("*Most* called", self.GetMostCalledTracked, limit, includeUncalled)
 end
 
 --[[
@@ -281,9 +458,10 @@ end
 --[[
     Shows the tracked functions with the most calls per tick.
 ]]
-function Noir.Debugging:ShowMostCalledPerTickTracked()
-    local trackers = self:GetMostCalledPerTickTracked()
-    self:_PresentTrackers("*Most* calls/tick", trackers)
+---@param limit integer|nil
+---@param includeUncalled boolean|nil
+function Noir.Debugging:ShowMostCalledPerTickTracked(limit, includeUncalled)
+    self:_Show("*Most* calls/tick", self.GetMostCalledPerTickTracked, limit, includeUncalled)
 end
 
 --[[
@@ -314,8 +492,18 @@ function Noir.Debugging:TrackFunction(name, func)
         return
     end
 
+    local existing = self._ByFunction[func]
+
+    if existing then
+        existing.Aliases[name] = true
+        return existing
+    end
+
     -- Track
     local tracker = Noir.Classes.Tracker:New(name, func)
+    self._ByFunction[func] = tracker
+    self._ByFunction[tracker:Mount()] = tracker
+
     table.insert(self.Trackers, tracker)
 
     -- Handle events
@@ -336,7 +524,7 @@ end
     Returns an empty table if debugging isn't enabled or the provided table is an exception.
 ]]
 ---@param name string
----@param tbl table<integer, function>
+---@param tbl table
 ---@param _journey table<table, boolean>|nil Used internally to prevent infinite recursion
 ---@return table<integer, NoirTracker>
 function Noir.Debugging:TrackAll(name, tbl, _journey)
@@ -345,54 +533,58 @@ function Noir.Debugging:TrackAll(name, tbl, _journey)
     Noir.TypeChecking:Assert("Noir.Debugging:TrackAll()", "tbl", tbl, "table")
     Noir.TypeChecking:Assert("Noir.Debugging:TrackAll()", "_journey", _journey, "table", "nil")
 
-    -- Checks
-    if not _journey then
-        _journey = {}
-    end
-
-    if not self.Enabled then
-        return {}
-    end
-
-    if self._TrackingExceptions[tbl] then
-        return {}
-    end
-
-    -- Track
+    local visited = _journey or {}
     local trackers = {}
+    local seen = {}
 
-    for index, value in pairs(tbl) do
-        if _journey[value] then
-            goto continue
+    ---@param path string
+    ---@param source table
+    local function visit(path, source)
+        if visited[source] or self._TrackingExceptions[source] then
+            return
         end
 
-        _journey[value] = true
+        visited[source] = true
 
-        if type(value) == "table" then
-            local _trackers = self:TrackAll(("%s.%s"):format(name, index), value, _journey)
-            trackers = Noir.Libraries.Table:Merge(trackers, _trackers)
+        for key, value in pairs(source) do
+            if type(value) == "table" then
+                visit(("%s.%s"):format(path, key), value)
+            elseif type(value) == "function" then
+                local tracker = self:TrackFunction(("%s.%s"):format(path, key), value)
 
-            goto continue
+                if tracker then
+                    local wrapper = tracker:Mount()
+
+                    if source == _ENV and Noir.Libraries.Table:Find(Noir.Callbacks.GameCallbacks, key) then
+                        local tracked = wrapper
+
+                        wrapper = function(...)
+                            self:_RecoverCallback()
+
+                            return tracked(...)
+                        end
+
+                        self._TrackingExceptions[wrapper] = true
+                    end
+
+                    if value ~= wrapper then
+                        source[key] = wrapper
+                        table.insert(tracker._Bindings, Noir.Classes.TrackerBinding:New(source, key, value, wrapper))
+                    end
+
+                    if not seen[tracker] then
+                        seen[tracker] = true
+                        table.insert(trackers, tracker)
+                    end
+                end
+            end
         end
-
-        if type(value) ~= "function" then
-            goto continue
-        end
-
-        local tracker = self:TrackFunction(("%s.%s"):format(name, index), value)
-
-        if not tracker then
-            goto continue
-        end
-
-        tbl[index] = tracker:Mount()
-
-        table.insert(trackers, tracker)
-
-        ::continue::
     end
 
-    -- Return
+    if self.Enabled then
+        visit(name, tbl)
+    end
+
     return trackers
 end
 
@@ -407,4 +599,102 @@ function Noir.Debugging:TrackService(service)
 
     -- Track
     return self:TrackAll(service.Name, service)
+end
+
+--[[
+    Returns trackers sorted by total self time.
+]]
+---@return table<integer, NoirTracker>
+function Noir.Debugging:GetMostTotalSelfTimeTracked()
+    local trackers = self:GetTrackedFunctions(true)
+
+    table.sort(trackers, function(a, b)
+        return a.TotalSelfTime > b.TotalSelfTime
+    end)
+
+    return trackers
+end
+
+--[[
+    Shows the functions with the highest total self time.
+]]
+---@param limit integer|nil
+---@param includeUncalled boolean|nil
+function Noir.Debugging:ShowMostTotalSelfTimeTracked(limit, includeUncalled)
+    self:_Show("Highest total self time", self.GetMostTotalSelfTimeTracked, limit, includeUncalled)
+end
+
+--[[
+    Removes a tracker and restores its mounted functions.
+]]
+---@param tracker NoirTracker
+function Noir.Debugging:RemoveTracker(tracker)
+    if not tracker._Active then
+        return
+    end
+
+    tracker._Active = false
+
+    for _, binding in ipairs(tracker._Bindings) do
+        if binding.Table[binding.Key] == binding.Wrapper then
+            binding.Table[binding.Key] = binding.Original
+        end
+
+        self._TrackingExceptions[binding.Wrapper] = nil
+    end
+
+    tracker._Bindings = {}
+    self._ByFunction[tracker.Function] = nil
+    self._ByFunction[tracker:Mount()] = nil
+
+    for index, item in ipairs(self.Trackers) do
+        if item == tracker then
+            table.remove(self.Trackers, index)
+            break
+        end
+    end
+end
+
+--[[
+    Clears statistics for all trackers.
+]]
+function Noir.Debugging:ResetTrackers()
+    for _, tracker in ipairs(self.Trackers) do
+        tracker:Reset()
+    end
+end
+
+--[[
+    Removes all trackers.
+]]
+function Noir.Debugging:ClearTrackers()
+    for index = #self.Trackers, 1, -1 do
+        self:RemoveTracker(self.Trackers[index])
+    end
+end
+
+-- Protect dependencies before addons can mount their own functions.
+---@param tbl table
+function Noir.Debugging:_Protect(tbl)
+    if Noir.Debugging._TrackingExceptions[tbl] then
+        return
+    end
+
+    Noir.Debugging._TrackingExceptions[tbl] = true
+
+    for _, value in pairs(tbl) do
+        if type(value) == "function" then
+            Noir.Debugging._TrackingExceptions[value] = true
+        elseif type(value) == "table" then
+            self:_Protect(value)
+        end
+    end
+end
+
+for _, lib in pairs({server, matrix, math, table, string, Noir.Classes, Noir.Libraries, Noir.TypeChecking, Noir.Debugging}) do
+    Noir.Debugging:_Protect(lib)
+end
+
+for _, func in pairs({pairs, ipairs, next, type, tostring, tonumber, error}) do
+    Noir.Debugging._TrackingExceptions[func] = true
 end

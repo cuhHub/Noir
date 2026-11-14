@@ -26,6 +26,7 @@ limitations under the License.
 # ---- // Imports
 import click
 import subprocess
+import re
 from rich import print
 from rich.panel import Panel
 from pathlib import Path
@@ -87,22 +88,29 @@ class NoirTest():
         # Return
         return temp_file
     
-    def _get_error_message(self, stderr: bytes) -> str:
+    def _get_error_message(self, stderr: bytes, test_start_line: int) -> str:
         """
         Gets the error message from test command stderr.
         
         Args:
             stderr (bytes): The test command stderr.
+            test_start_line (int): The first line of test code in the temporary build.
             
         Returns:
             str: The formatted error message.
         """
         
-        error = stderr.decode("utf-8")
-        no_path = "".join(error.split("_temp.lua:")[1:]) # removes long path at start of error message
-        no_traceback = no_path.split("\n")[0] # removes traceback at end of error message
+        error = stderr.decode("utf-8", errors = "replace")
 
-        return no_traceback 
+        def add_test_location(match: re.Match) -> str:
+            line = int(match.group(1))
+
+            if line < test_start_line:
+                return match.group(0)
+
+            return f"{match.group(0)} ({self.path.as_posix()}:{line - test_start_line + 1})"
+
+        return re.sub(rf"{re.escape(self.name)}_temp\.lua:(\d+)", add_test_location, error).rstrip()
         
     def run(self) -> tuple[bool, str]:
         """
@@ -117,6 +125,7 @@ class NoirTest():
         
         # Add test code to the temp file
         test_content = self.path.read_text()
+        test_start_line = temp_noir_build.read_text().count("\n") + 3
         
         with temp_noir_build.open("a") as file:
             file.write("\n\n" + test_content)
@@ -129,7 +138,7 @@ class NoirTest():
         if result.returncode == 0:
             return True, ""
         else:
-            return False, self._get_error_message(result.stderr)
+            return False, self._get_error_message(result.stderr, test_start_line)
 
 def success(message: str):
     """

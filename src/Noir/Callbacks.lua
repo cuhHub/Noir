@@ -46,6 +46,55 @@
 Noir.Callbacks = {}
 
 --[[
+    Names of the supported game callbacks.
+]]
+---@type string[]
+Noir.Callbacks.GameCallbacks = {
+    "httpReply",
+    "onButtonPress",
+    "onCharacterPickup",
+    "onCharacterSit",
+    "onCharacterUnsit",
+    "onChatMessage",
+    "onClearOilSpill",
+    "onCreate",
+    "onCreaturePickup",
+    "onCreatureSit",
+    "onCreatureUnsit",
+    "onCustomCommand",
+    "onDestroy",
+    "onEquipmentDrop",
+    "onEquipmentPickup",
+    "onFireExtinguished",
+    "onForestFireExtinguished",
+    "onForestFireSpawned",
+    "onGroupSpawn",
+    "onMeteor",
+    "onObjectLoad",
+    "onObjectUnload",
+    "onOilSpill",
+    "onPlayerDie",
+    "onPlayerJoin",
+    "onPlayerLeave",
+    "onPlayerRespawn",
+    "onPlayerSit",
+    "onPlayerUnsit",
+    "onSpawnAddonComponent",
+    "onTick",
+    "onToggleMap",
+    "onTornado",
+    "onTsunami",
+    "onVehicleDamaged",
+    "onVehicleDespawn",
+    "onVehicleLoad",
+    "onVehicleSpawn",
+    "onVehicleTeleport",
+    "onVehicleUnload",
+    "onVolcano",
+    "onWhirlpool",
+}
+
+--[[
     A table of events assigned to game callbacks.<br>
     Do not directly modify this table.
 ]]
@@ -243,15 +292,21 @@ function Noir.Callbacks:_InstantiateCallback(name, hideStartWarning)
 
         -- Wrap around existing function
         _ENV[name] = function(...)
+            Noir.Debugging:_RecoverCallback()
+
             existing(...)
             event:Fire(...)
         end
     else
         -- Create function for game callback
         _ENV[name] = function(...)
+            Noir.Debugging:_RecoverCallback()
+
             event:Fire(...)
         end
     end
+
+    Noir.Debugging._TrackingExceptions[_ENV[name]] = true
 
     -- Return event
     return event

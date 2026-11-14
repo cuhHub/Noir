@@ -71,7 +71,24 @@ Noir.Debugging:ShowLeastPerformantTracked()
 ```
 {% endcode %}
 
-This will print out all tracked functions and their statistics in order of performance (least performant being shown first).
+By default this shows the called functions with the highest average self time. Self time excludes time spent in tracked children. If a function does 2 ms of work and calls a tracked function for 10 ms, its self time is 2 ms and its inclusive time is 12 ms. Untracked calls count towards the caller's self time.
+
+`GetAverageExecutionTime()` and `GetLastExecutionTime()` return inclusive time. Use `GetAverageSelfExecutionTime()` and `GetLastSelfExecutionTime()` for self time. All timings are approximate milliseconds.
+
+```lua
+Noir.Debugging:ShowLeastPerformantTracked(20, false, true) -- rank by inclusive time
+Noir.Debugging:ShowMostTotalSelfTimeTracked() -- rank by cumulative self time
+Noir.Debugging:ShowMostCalledTracked(0, true) -- include all trackers
+
+Noir.Debugging.ExecutionTimeWindow = 10 -- completed calls
+Noir.Debugging.CallsPerTickWindow = 60 -- completed ticks, including idle ticks
+Noir.Debugging.ReportLimit = 20
+Noir.Debugging.IncludeUncalled = false
+```
+
+Disabling debugging pauses collection. `:ResetTrackers()` clears statistics and `:ClearTrackers()` removes the trackers. `:RemoveTracker(tracker)` restores table entries mounted by Noir if they still contain its wrapper. Existing local references to the original function bypass tracking.
+
+If a callback aborts, the next managed game callback discards incomplete timings and counts the affected calls as interrupted. This also works for direct game callbacks mounted by `:TrackAll()` on `_ENV`.
 
 If you need the tracked functions sorted and returned, you can use the `Get`variant instead.
 

@@ -46,9 +46,15 @@
 ---@field AverageCallsPerTick integer The average number of times the function gets called per tick
 ---@field CallsPerTick integer The number of times the function has been called this tick
 ---@field CallsPerTickHistory table<integer, integer> A table containing the number of times the function has been called per tick
----@field _LastProcessedTick integer The amount of ticks that have passed since the last calls per tick calculation
----@field _TimeBeforeCall number The time before the function was called via server.getTimeMillisec()
----@field _ModifiedFunction function The unmodified function but wrapped with debug code
+---@field SelfExecutionTimes table<integer, number> Recent self times in milliseconds
+---@field TotalSelfTime number Total self time in milliseconds
+---@field TotalTime number Total inclusive time in milliseconds
+---@field MaxSelfTime number Longest self time in milliseconds
+---@field MaxTime number Longest inclusive time in milliseconds
+---@field CompletedCalls integer Number of calls that returned
+---@field InterruptedCalls integer Number of unfinished calls discarded
+---@field Aliases table<string, boolean> Names used for this function
+---@field _Bindings table<integer, NoirTrackerBinding> Table entries mounted by this tracker
 Noir.Classes.Tracker = Noir.Class("Tracker")
 
 --[[
@@ -65,74 +71,98 @@ function Noir.Classes.Tracker:Init(name, func)
 
     self.FunctionName = name
     self.Function = func
-    self.CallCount = 0
+    self.Aliases = {[name] = true}
 
-    self.ExecutionTimes = {}
-    self.AverageExecutionTime = 0
+    self._Bindings = {}
+    self._Active = true
 
-    self.AverageCallsPerTick = 0
-    self.CallsPerTick = 0
-    self.CallsPerTickHistory = {}
-    self._LastProcessedTick = 0
-
-    self._TimeBeforeCall = 0
+    self:Reset()
 
     self._ModifiedFunction = function(...)
-        self:_BeforeCall(...)
-        local returns = {self.Function(...)}
-        self:_AfterCall(...)
-
-        return table.unpack(returns)
-    end
-end
-
---[[
-    Method called when the unmodified function is about to be called.<br>
-    Used internally.
-]]
-function Noir.Classes.Tracker:_BeforeCall(...)
-    self._TimeBeforeCall = server.getTimeMillisec()
-    self.OnBeforeCall:Fire(...)
-end
-
---[[
-    Method called after the unmodified function has been called.<br>
-    Used internally.
-]]
-function Noir.Classes.Tracker:_AfterCall(...)
-    -- Increment call count
-    self.CallCount = self.CallCount + 1
-
-    -- Calculate calls per tick
-    local currentTick = Noir.Services.TaskService.Ticks
-
-    if currentTick ~= self._LastProcessedTick then
-        table.insert(self.CallsPerTickHistory, self.CallsPerTick)
-
-        if #self.CallsPerTickHistory >= 10 then
-            table.remove(self.CallsPerTickHistory, 1)
+        if not self._Active or not Noir.Debugging.Enabled or Noir.Debugging._Busy then
+            return func(...)
         end
 
-        self.AverageCallsPerTick = Noir.Libraries.Number:Average(self.CallsPerTickHistory)
+        local frame = Noir.Debugging:_BeginCall(self, ...)
+        frame.Start = server.getTimeMillisec()
 
-        self.CallsPerTick = 0
-        self._LastProcessedTick = currentTick
+        local results = table.pack(func(...))
+        Noir.Debugging:_EndCall(frame, ...)
+
+        return table.unpack(results, 1, results.n)
+    end
+end
+
+--[[
+    Clears this tracker's statistics.
+]]
+function Noir.Classes.Tracker:Reset()
+    self.ExecutionTimes = {}
+    self.SelfExecutionTimes = {}
+
+    self.CallsPerTickHistory = {}
+    self._FirstTick = Noir.Services.TaskService.Ticks or 0
+
+    self.CallCount = 0
+    self.CompletedCalls = 0
+    self.InterruptedCalls = 0
+
+    self.TotalTime = 0
+    self.TotalSelfTime = 0
+    self.MaxTime = 0
+    self.MaxSelfTime = 0
+    self.AverageExecutionTime = 0
+    self.AverageSelfTime = 0
+
+    self.LastCallSequence = 0
+    self.LastCalledAt = 0
+
+    self.CallsPerTick = 0
+    self.AverageCallsPerTick = 0
+    self._LastTick = nil
+end
+
+--[[
+    Counts a call in the current tick.
+]]
+function Noir.Classes.Tracker:_CountCall()
+    local tick = Noir.Services.TaskService.Ticks or 0
+
+    if self._LastTick ~= tick then
+        self:GetAverageCallsPerTick()
+        self._LastTick = tick
     end
 
-    self.CallsPerTick = self.CallsPerTick + 1
+    self.CallCount = self.CallCount + 1
+    self.CallsPerTick = (self.CallsPerTickHistory[tick] or 0) + 1
+    self.CallsPerTickHistory[tick] = self.CallsPerTick
+end
 
-    -- Add execution time
-    if #self.ExecutionTimes >= 10 then
+--[[
+    Records the duration of a completed call.
+]]
+---@param selfTime number
+---@param inclusive number
+function Noir.Classes.Tracker:_Record(selfTime, inclusive)
+    local window = math.max(1, Noir.Debugging.ExecutionTimeWindow)
+
+    while #self.ExecutionTimes >= window do
         table.remove(self.ExecutionTimes, 1)
+        table.remove(self.SelfExecutionTimes, 1)
     end
 
-    table.insert(self.ExecutionTimes, server.getTimeMillisec() - self._TimeBeforeCall)
+    table.insert(self.ExecutionTimes, inclusive)
+    table.insert(self.SelfExecutionTimes, selfTime)
 
-    -- Calculate average execution time
     self.AverageExecutionTime = Noir.Libraries.Number:Average(self.ExecutionTimes)
+    self.AverageSelfTime = Noir.Libraries.Number:Average(self.SelfExecutionTimes)
 
-    -- Fire events
-    self.OnAfterCall:Fire(...)
+    self.TotalTime = self.TotalTime + inclusive
+    self.TotalSelfTime = self.TotalSelfTime + selfTime
+    self.MaxTime = math.max(self.MaxTime, inclusive)
+    self.MaxSelfTime = math.max(self.MaxSelfTime, selfTime)
+
+    self.CompletedCalls = self.CompletedCalls + 1
 end
 
 --[[
@@ -140,19 +170,18 @@ end
 ]]
 ---@return string
 function Noir.Classes.Tracker:ToFormattedString()
-    return ("%s() | Avg. Exc. Time: %.8f ms, Last Exc. Time: %.8fms, Call Count: %d, %.1f calls/tick"):format(
-        self:GetName(),
-        self:GetAverageExecutionTime(),
-        self:GetLastExecutionTime(),
-        self:GetCallCount(),
-        self:GetAverageCallsPerTick()
+    return ("%s() | Self/inclusive (ms): avg %.2f/%.2f, last %.0f/%.0f, total %.0f/%.0f, max %.0f/%.0f | %d calls, %d completed, %d interrupted, %.3f calls/tick"):format(
+        self.FunctionName, self.AverageSelfTime, self.AverageExecutionTime,
+        self:GetLastSelfExecutionTime(), self:GetLastExecutionTime(),
+        self.TotalSelfTime, self.TotalTime, self.MaxSelfTime, self.MaxTime,
+        self.CallCount, self.CompletedCalls, self.InterruptedCalls, self:GetAverageCallsPerTick()
     )
 end
 
 --[[
     Returns the modified function.
     
-    local tracker = Noir.Services.DebuggerService:TrackFunction("myFunction", myFunction)
+    local tracker = Noir.Debugging:TrackFunction("myFunction", myFunction)
     myFunction = tracker:Mount()
 ]]
 ---@return function
@@ -173,7 +202,7 @@ end
 ]]
 ---@return number
 function Noir.Classes.Tracker:GetCallsPerTick()
-    return self.CallsPerTick
+    return self.CallsPerTickHistory[Noir.Services.TaskService.Ticks or 0] or 0
 end
 
 --[[
@@ -181,6 +210,20 @@ end
 ]]
 ---@return number
 function Noir.Classes.Tracker:GetAverageCallsPerTick()
+    local tick = Noir.Services.TaskService.Ticks or 0
+    local first = math.max(self._FirstTick, tick - Noir.Debugging.CallsPerTickWindow)
+    local count = 0
+
+    for calledTick, calls in pairs(self.CallsPerTickHistory) do
+        if calledTick < first then
+            self.CallsPerTickHistory[calledTick] = nil
+        elseif calledTick < tick then
+            count = count + calls
+        end
+    end
+
+    self.AverageCallsPerTick = tick > first and count / (tick - first) or 0
+
     return self.AverageCallsPerTick
 end
 
@@ -206,4 +249,20 @@ end
 ---@return number
 function Noir.Classes.Tracker:GetCallCount()
     return self.CallCount
+end
+
+--[[
+    Returns the last call's self time in milliseconds.
+]]
+---@return number
+function Noir.Classes.Tracker:GetLastSelfExecutionTime()
+    return self.SelfExecutionTimes[#self.SelfExecutionTimes] or 0
+end
+
+--[[
+    Returns the recent average self time in milliseconds.
+]]
+---@return number
+function Noir.Classes.Tracker:GetAverageSelfExecutionTime()
+    return self.AverageSelfTime
 end

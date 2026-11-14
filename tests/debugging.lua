@@ -160,5 +160,78 @@ assert(formatted:find("myFunction") ~= nil, "ToFormattedString should contain th
 assert(type(tracker:GetCallsPerTick()) == "number", "GetCallsPerTick should return a number")
 assert(type(tracker:GetAverageCallsPerTick()) == "number", "GetAverageCallsPerTick should return a number")
 
+-- Nested calls and recursion
+local now = 0
+local originalClock = server.getTimeMillisec
+server.getTimeMillisec = function() return now end
+
+local functions = {}
+
+function functions.child(depth)
+    now = now + 5
+
+    if depth > 0 then
+        functions.child(depth - 1)
+    end
+
+    return nil, true, nil
+end
+
+function functions.parent()
+    now = now + 2
+
+    return functions.child(1)
+end
+
+local original = functions.child
+functions.alias = original
+functions.cycle = functions
+functions.nan = 0/0
+
+local trackers = Noir.Debugging:TrackAll("functions", functions)
+assert(#trackers == 2 and functions.alias == functions.child)
+assert(#Noir.Debugging:TrackAll("functions", functions) == 2)
+
+local parent = Noir.Debugging:TrackFunction("parent", functions.parent)
+local child = Noir.Debugging:TrackFunction("child", original)
+
+local results = table.pack(functions.parent())
+assert(results.n == 3 and results[1] == nil and results[2] == true and results[3] == nil)
+assert(parent:GetLastSelfExecutionTime() == 2 and parent:GetLastExecutionTime() == 12)
+assert(child:GetLastSelfExecutionTime() == 5 and child:GetLastExecutionTime() == 10)
+assert(child.TotalSelfTime == 10 and child.CallCount == 2)
+assert(Noir.Debugging:GetLastCalledTracked()[1] == child)
+
+-- Idle ticks count towards the calls/tick average
+local previousTick = Noir.Services.TaskService.Ticks
+local window = Noir.Debugging.CallsPerTickWindow
+
+Noir.Services.TaskService.Ticks = (previousTick or 0) + window
+assert(child:GetAverageCallsPerTick() == 2 / window)
+
+Noir.Services.TaskService.Ticks = (previousTick or 0) + window + 1
+assert(child:GetAverageCallsPerTick() == 0)
+
+Noir.Services.TaskService.Ticks = previousTick
+
+-- Aborted calls are discarded on the next game callback
+local broken = Noir.Debugging:TrackFunction("broken", function() local missing; return missing.value end)
+assert(not pcall(broken:Mount()))
+
+Noir.Callbacks:Connect("onTick", function() end, true)
+onTick()
+assert(broken.InterruptedCalls == 1 and broken.CompletedCalls == 0)
+
+Noir.Debugging.Enabled = false
+functions.parent()
+assert(parent.CallCount == 1)
+
+functions.alias = function() end
+Noir.Debugging:RemoveTracker(child)
+assert(functions.child == original and functions.alias ~= original)
+
+server.getTimeMillisec = originalClock
+Noir.Debugging:ClearTrackers()
+
 -- Disable debugging after tests
 Noir.Debugging.Enabled = false
